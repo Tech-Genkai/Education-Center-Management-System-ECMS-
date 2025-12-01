@@ -14,6 +14,9 @@ A comprehensive web-based Student Management System with ERP capabilities featur
 - **Email Service**: SMTP with Nodemailer
 - **Authentication**: JWT (JSON Web Tokens)
 - **Additional Libraries**: 
+  - Socket.io (for real-time features)
+  - Chart.js (for analytics)
+  - Multer (for file uploads)
   - Mongoose (MongoDB ODM)
   - bcrypt (Password hashing)
   - express-validator (Input validation)
@@ -261,7 +264,7 @@ A comprehensive web-based Student Management System with ERP capabilities featur
   classId: ObjectId (ref: 'classes'),
   subjectId: ObjectId (ref: 'subjects'),
   teacherId: ObjectId (ref: 'teachers'),
-  dayOfWeek: String (enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']),
+  dayOfWeek: String (enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']),
   startTime: String,
   endTime: String,
   room: String,
