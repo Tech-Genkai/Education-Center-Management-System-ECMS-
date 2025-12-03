@@ -1,7 +1,7 @@
 # Student Management System + ERP - Project Plan
 
 ## 🎯 Project Overview
-An automation-first, enterprise-grade Student Management System with embedded ERP capabilities. The platform delivers fully audited, role-aware experiences for Students, Teachers, Operations, and Super Admins without relying on React—favoring lean, server-rendered UX powered by modern vanilla JavaScript enhancements. Industrial objectives include end-to-end workflow automation (admissions, attendance, finance), real-time insights, autoscaling infrastructure, and compliance-ready observability across every service boundary.
+An automation-first, enterprise-grade Student Management System with embedded ERP capabilities. The platform delivers fully audited, role-aware experiences for Students, Teachers, Parents/Guardians, Operations, and Super Admins without relying on React—favoring lean, server-rendered UX powered by modern vanilla JavaScript enhancements. Industrial objectives include end-to-end workflow automation (admissions, attendance, finance, library circulation, grievances), real-time insights, autoscaling infrastructure, and compliance-ready observability across every service boundary. Newly scoped enterprise modules cover Library Management, Fee Management, Parent Portal, Certificate Generation, Assignment Lifecycle, Discussion Forums, Academic Event Calendar, and Grievance Management.
 
 ---
 
@@ -73,6 +73,15 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 - Audit logs, anomaly detection, and tamper proofing
 - Exam schedule automation, seat allocation, and digital hall tickets
 - AI operations co-pilot for analytics insights, anomaly detection, and workflow recommendations
+
+### 4. **Parent / Guardian**
+- Secure parent portal with MFA + delegated access controls
+- Real-time monitoring of student attendance, marks, assignments, and upcoming events
+- Digital fee ledger with online payments, payment plans, and automated reminders
+- Certificate downloads (bonafide, transfer, conduct) with eSign verification
+- Submit grievances, track SLAs, escalate to counselors, and view resolution logs
+- Approve/reject consent forms for trips/events directly from the portal
+- Interact with AI guardian assistant for quick queries, policy clarifications, and support hand-offs
 
 ---
 
@@ -499,6 +508,248 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 }
 ```
 
+#### 24. **parents**
+```javascript
+{
+  _id: ObjectId,
+  userId: ObjectId (ref: 'users'),
+  guardianId: String (unique),
+  firstName: String,
+  lastName: String,
+  relationship: String,
+  phone: String,
+  email: String,
+  addressId: ObjectId (ref: 'addresses'),
+  wards: [ObjectId] (ref: 'students'),
+  preferences: {
+    communicationChannels: [String],
+    language: String
+  },
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 25. **libraryBooks**
+```javascript
+{
+  _id: ObjectId,
+  isbn: String,
+  title: String,
+  authors: [String],
+  publisher: String,
+  edition: String,
+  categories: [String],
+  tags: [String],
+  summary: String,
+  coverImage: String,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 26. **libraryCopies**
+```javascript
+{
+  _id: ObjectId,
+  bookId: ObjectId (ref: 'libraryBooks'),
+  copyNumber: String,
+  barcode: String,
+  location: String,
+  status: String (enum: ['available', 'issued', 'reserved', 'lost', 'maintenance']),
+  acquiredDate: Date,
+  condition: String,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 27. **libraryTransactions**
+```javascript
+{
+  _id: ObjectId,
+  copyId: ObjectId (ref: 'libraryCopies'),
+  borrowerType: String (enum: ['student', 'teacher']),
+  borrowerId: ObjectId,
+  issuedAt: Date,
+  dueAt: Date,
+  returnedAt: Date,
+  renewalCount: Number,
+  fineAmount: Number,
+  status: String (enum: ['active', 'returned', 'overdue', 'lost']),
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 28. **certificateTemplates**
+```javascript
+{
+  _id: ObjectId,
+  name: String,
+  type: String,
+  htmlTemplate: String,
+  dataBindings: Object,
+  approvers: [ObjectId] (ref: 'users'),
+  isActive: Boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 29. **certificates**
+```javascript
+{
+  _id: ObjectId,
+  templateId: ObjectId (ref: 'certificateTemplates'),
+  entityType: String (enum: ['student', 'teacher']),
+  entityId: ObjectId,
+  issuedBy: ObjectId (ref: 'users'),
+  issuedAt: Date,
+  status: String (enum: ['draft', 'issued', 'revoked']),
+  verificationCode: String,
+  downloadUrl: String,
+  metadata: Object,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 30. **assignments**
+```javascript
+{
+  _id: ObjectId,
+  classId: ObjectId (ref: 'classes'),
+  subjectId: ObjectId (ref: 'subjects'),
+  teacherId: ObjectId (ref: 'teachers'),
+  title: String,
+  description: String,
+  attachments: [String],
+  rubric: Object,
+  dueDate: Date,
+  totalMarks: Number,
+  plagiarismCheck: Boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 31. **assignmentSubmissions**
+```javascript
+{
+  _id: ObjectId,
+  assignmentId: ObjectId (ref: 'assignments'),
+  studentId: ObjectId (ref: 'students'),
+  submittedAt: Date,
+  files: [String],
+  status: String (enum: ['submitted', 'late', 'missing']),
+  grade: Number,
+  feedback: String,
+  plagiarismScore: Number,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 32. **discussionThreads**
+```javascript
+{
+  _id: ObjectId,
+  title: String,
+  description: String,
+  scope: String (enum: ['class', 'subject', 'global']),
+  createdBy: ObjectId (ref: 'users'),
+  tags: [String],
+  isLocked: Boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 33. **discussionPosts**
+```javascript
+{
+  _id: ObjectId,
+  threadId: ObjectId (ref: 'discussionThreads'),
+  authorId: ObjectId (ref: 'users'),
+  content: String,
+  attachments: [String],
+  parentPostId: ObjectId,
+  reactions: [{ type: String, count: Number }],
+  toxicityScore: Number,
+  status: String (enum: ['published', 'flagged', 'removed']),
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 34. **events**
+```javascript
+{
+  _id: ObjectId,
+  title: String,
+  description: String,
+  category: String,
+  startDate: Date,
+  endDate: Date,
+  location: String,
+  capacity: Number,
+  requiresConsent: Boolean,
+  attachments: [String],
+  createdBy: ObjectId (ref: 'users'),
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 35. **eventRegistrations**
+```javascript
+{
+  _id: ObjectId,
+  eventId: ObjectId (ref: 'events'),
+  registrantType: String (enum: ['student', 'teacher', 'parent']),
+  registrantId: ObjectId,
+  status: String (enum: ['registered', 'waitlisted', 'cancelled', 'attended']),
+  consentStatus: String (enum: ['pending', 'approved', 'rejected']),
+  checkInAt: Date,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 36. **grievances**
+```javascript
+{
+  _id: ObjectId,
+  submittedByType: String (enum: ['student', 'parent', 'teacher']),
+  submittedById: ObjectId,
+  category: String,
+  priority: String,
+  description: String,
+  attachments: [String],
+  assignedTo: ObjectId (ref: 'users'),
+  status: String (enum: ['open', 'in_progress', 'resolved', 'closed']),
+  slaDueAt: Date,
+  resolutionSummary: String,
+  satisfactionScore: Number,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 37. **grievanceComments**
+```javascript
+{
+  _id: ObjectId,
+  grievanceId: ObjectId (ref: 'grievances'),
+  authorId: ObjectId (ref: 'users'),
+  comment: String,
+  visibility: String (enum: ['public', 'internal']),
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
 ---
 
 ## 📁 Project Structure
@@ -727,6 +978,77 @@ GET    /:id/documents              - Paginate documents with status filters
 POST   /:id/reindex                - Trigger embedding regeneration job
 ```
 
+### Parent Portal Routes (`/api/parents`)
+```
+GET    /dashboard                  - Consolidated metrics for all wards
+GET    /wards                      - List linked students and permissions
+GET    /wards/:id/fees             - Fee ledger + payment actions
+GET    /wards/:id/attendance       - Attendance summary + anomalies
+POST   /wards/:id/consents         - Submit consent decision
+POST   /grievances                 - File grievance on behalf of ward
+```
+
+### Library Routes (`/api/library`)
+```
+GET    /catalog                    - Search books with filters
+POST   /books                      - Create/update book metadata (Admin)
+POST   /copies                     - Add physical copy
+POST   /transactions/issue         - Issue book to student/teacher
+POST   /transactions/return        - Return/renew/mark lost
+GET    /transactions               - Circulation history with overdue filters
+```
+
+### Certificate Routes (`/api/certificates`)
+```
+GET    /templates                  - List templates
+POST   /templates                  - Create/update template
+POST   /issue                      - Generate certificate for entity
+GET    /:id                        - Download certificate metadata
+POST   /:id/revoke                 - Revoke certificate with reason
+GET    /verify/:code               - Public verification endpoint
+```
+
+### Assignment Routes (`/api/assignments`)
+```
+GET    /class/:classId             - List assignments per class/subject
+POST   /                           - Create assignment (Teacher)
+PUT    /:id                        - Update assignment
+DELETE /:id                        - Remove assignment
+POST   /:id/submissions            - Student submission upload
+GET    /:id/submissions            - Teacher review queue
+POST   /:id/grade                  - Grade submission + feedback
+```
+
+### Discussion Forum Routes (`/api/discussions`)
+```
+GET    /threads                    - List threads with filters
+POST   /threads                    - Create thread
+POST   /threads/:id/posts          - Add post/reply
+PUT    /posts/:id/moderate         - Moderate or lock post
+GET    /threads/:id/summary        - AI-generated recap + action items
+```
+
+### Event Calendar Routes (`/api/events`)
+```
+GET    /                           - Calendar feed with filters
+POST   /                           - Create event (Admin/Teacher)
+PUT    /:id                        - Update event
+DELETE /:id                        - Cancel event
+POST   /:id/register               - Register attendee
+POST   /:id/check-in               - Record attendance
+POST   /:id/consent                - Parent consent workflow
+```
+
+### Grievance Routes (`/api/grievances`)
+```
+GET    /                           - List grievances with SLA filters
+POST   /                           - Submit grievance
+GET    /:id                        - View grievance details
+POST   /:id/comment                - Add comment/attachment
+PUT    /:id/status                 - Update status/assignee
+POST   /:id/escalate               - Trigger escalation workflow
+```
+
 ---
 
 ## 🔒 Security Features
@@ -838,6 +1160,8 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 - Upcoming exams
 - Announcements feed
 - Timetable view
+- Assignment timeline with submission status + action buttons
+- Library loans/holds snapshot and grievance ticket tracker
 
 ### Teacher Dashboard
 - Assigned classes overview
@@ -846,6 +1170,8 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 - Student performance analytics
 - Class schedule
 - Pending tasks
+- Assignment pipeline (drafting, grading queue) with plagiarism alerts
+- Library requests pending approval and event facilitation tasks
 
 ### Admin Dashboard
 - Total students/teachers count
@@ -854,6 +1180,15 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 - Recent activities
 - System health
 - Quick actions panel
+- Fee recovery funnel, grievance SLA heatmap, library circulation KPIs
+- Event calendar management with consent status monitoring
+
+### Parent Portal Dashboard
+- Multi-ward switcher with at-a-glance attendance/marks alerts
+- Fee dues, payment actions, and downloadable receipts
+- Upcoming events requiring consent plus transport/hostel notices
+- Assignment reminders, discussion highlights, and AI guardian assistant entry point
+- Grievance status tracker and certificate download center
 
 ---
 
@@ -891,6 +1226,93 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 
 ---
 
+## 📋 Backlog Priorities & Test Strategy (New Modules)
+
+1. **Library Service (P1)**
+  - Sprint Goals: Catalog CRUD, circulation APIs, fines engine, parent/student reservations.
+  - Dependencies: Barcode/RFID integration spike, data migration of legacy inventory.
+  - Test Cases: Issue/renew/return flows, overdue fine calculation, concurrent reservation conflict, role-based access (student vs. librarian), API contract tests for `/api/library`.
+
+2. **Event & Consent Platform (P1)**
+  - Sprint Goals: Calendar UI, registration workflow, consent capture, parent notification loop, attendance check-in.
+  - Dependencies: Parent portal release, notification templates, ICS export.
+  - Test Cases: Consent approval/withdrawal, waitlist auto-promotion, capacity enforcement, multi-timezone rendering, integration with AI assistant prompts.
+
+3. **Grievance Management (P2)**
+  - Sprint Goals: Intake forms, SLA tracking engine, counselor assignment, escalation, analytics widgets.
+  - Dependencies: Workflow service enhancements, compliance reviews.
+  - Test Cases: SLA breach notifications, multi-level escalation path, visibility controls (public vs. internal notes), satisfaction survey capture, data-retention purge job.
+
+4. **Certificate Automation (P2)**
+  - Sprint Goals: Template designer, issuance pipeline, QR verification service, revocation flows.
+  - Test Cases: Template versioning, signature validation, revocation audit logs, localization.
+
+5. **Assignment & Discussion Suite (P3)**
+  - Sprint Goals: Assignment CRUD, submission portal, grading queue, discussion threads with moderation.
+  - Test Cases: Plagiarism flag handling, AI summary accuracy, moderation role checks, file upload limits.
+
+QA teams derive detailed test scripts from these priorities; traceability matrix updated in TestRail/Azure Test Plans referencing this plan.
+
+---
+
+## 🧩 Enterprise Modules
+
+### Library Management
+- Central catalog with ISBN metadata, tags, and digital asset links
+- Inventory tracking for physical copies, barcodes/RFID, and shelf locations
+- Circulation workflows (issue, renew, reserve, recall) with SLA policies
+- Fine calculation engine, automated reminders, lost/damaged workflows
+- Reports: popular titles, overdue trends, utilization heatmaps
+
+### Fee Management Enhancements
+- Multi-ledger support (tuition, transport, hostel, extracurricular)
+- Configurable payment plans, scholarships, concessions, and penalties
+- Parent self-service payments, instant receipts, partial payments, auto-reconciliations
+- Finance dashboards with DSO (days sales outstanding), collection funnels, and escalations
+
+### Parent Portal
+- Role-based dashboards combining attendance, marks, assignments, fees, events, grievances
+- AI guardian assistant with multilingual responses and consent tracking
+- Notification digest and communication preferences per guardian
+
+### Certificate Generation
+- Templates for bonafide, transfer, conduct, admit, and custom certificates
+- Data binding using student/teacher datasets with versioned templates
+- eSignature + QR verification, download history, and revocation logs
+
+### Assignment Lifecycle
+- Assignment authoring with rubric builder, file attachments, and plagiarism integration
+- Submission portal for students, automatic late penalties, peer-review support
+- Teacher grading workflows, moderation, and analytics on completion rates
+
+### Discussion Forum
+- Threaded discussions per class/subject with moderation queue
+- Rich-text/attachments support, reactions, AI summarization, toxicity detection
+- Integration with assignments and announcements for contextual links
+
+### Event Calendar
+- Academic and extracurricular calendar with recurring events and blackout windows
+- Registration workflows, capacity management, waitlists, and attendance capture
+- Consent collection, reminders, and ics feed for external calendar sync
+
+### Grievance Management
+- Intake forms categorized by type/severity with SLA-driven workflows
+- Assignment to counselors/admins, multi-level escalation, and audit trails
+- Analytics on resolution time, root causes, and satisfaction feedback
+
+---
+
+## 🧱 UX & Wireframe Alignment
+- **Parent Portal**: Responsive dashboard wireframes covering multi-ward switcher, assignment digest, fee actions, consent modals, and AI guardian widget placement. Validate accessibility and localization requirements with guardians focus group.
+- **Library**: Circulation console mockups (admin) plus student/teacher search + reservation flows. Ensure barcode/RFID scan interactions are represented in low-fidelity prototypes.
+- **Assignments & Forums**: Dual-pane layout for teacher authoring vs. student submissions, along with moderation/flagging UI states. Include plagiarism alerts and AI summarization entry points.
+- **Certificates**: Template designer wireframes showing drag/drop placeholders, preview, approval steps, and QR verification overlay.
+- **Events & Consent**: Calendar views (month/list) with capacity indicators, registration modals, and parent consent flows (approve/reject + comments). Add mobile-first designs for quick approvals.
+- **Grievances**: Intake wizard screens, SLA timeline visualization, escalation prompts, and counselor collaboration notes with internal/public visibility cues.
+- Capture design decisions in Figma with versioned links; require design sign-off before sprint kick-off.
+
+---
+
 ## ✅ Quality Engineering & Test Automation
 
 - **Static Analysis**: ESLint, TypeScript strict mode, stylelint, commit hooks via Husky.
@@ -919,18 +1341,25 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 - [ ] Student/Teacher/Admin CRUD + workflow approvals
 - [ ] Address, document management, profile automation
 - [ ] Class/subject/timetable services with conflict detection
+- [ ] Parent/Guardian onboarding, linking workflows, and consent models
 
 ### Phase 3: Academic Operations (Week 6-8)
 - [ ] Attendance automation (manual + bulk import + cron jobs)
 - [ ] Marks & grading pipelines, report generation, analytics widgets
 - [ ] Announcement + notification templates
 - [ ] AI assistant MVP (chat widget, persona prompts, basic RAG on policies)
+- [ ] Assignment authoring + submission workflows, discussion forum foundations
+- [ ] Certificate template builder + issuance APIs
 
 ### Phase 4: Finance & Advanced ERP (Week 8-10)
 - [ ] Fee schedules, payment integrations, reminder automation
 - [ ] Workflow builder MVP, audit logging, analytics dashboards
 - [ ] Email/SMS orchestration, PDF/excel export automation
 - [ ] AI assistant tool integrations (fee lookup, workflow triggers, escalation path)
+- [ ] Library catalog/circulation, fines, and RFID/barcode support
+- [ ] Event calendar with registration, consent, and attendance tracking
+- [ ] Grievance management portal + SLA enforcement dashboards
+- [ ] Parent portal UX with payments, certificates, and AI guardian assistant
 
 ### Phase 5: Quality, Security & Observability (Week 10-11)
 - [ ] Automated tests (unit, integration, E2E) + coverage gates
@@ -954,6 +1383,8 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 ✅ View timetable
 ✅ Download reports
 ✅ Update profile
+✅ Submit assignments, join discussions, manage library loans
+✅ View events, register, raise grievances, and chat with AI assistant
 
 ### For Teachers
 ✅ Mark attendance
@@ -962,6 +1393,8 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 ✅ Generate class reports
 ✅ Manage subjects
 ✅ Post announcements
+✅ Publish/grading assignments, moderate forums, issue certificates
+✅ Manage library approvals, events, and respond to grievances
 
 ### For Super Admin
 ✅ Complete user management
@@ -975,6 +1408,14 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 ✅ Audit logs and activity monitoring
 ✅ Academic year management
 ✅ Exam schedule management
+✅ Library, fee, grievance, and event governance dashboards
+✅ Certificate template builder + automation, AI guardrail oversight
+
+### For Parents/Guardians
+✅ Unified portal for attendance, marks, assignments, and fees per ward
+✅ Online payments, receipts, consent approvals, and certificate downloads
+✅ Register for events, borrow/track library assets, and raise grievances
+✅ AI guardian assistant and discussion participation (read/limited write)
 
 ---
 
@@ -1093,6 +1534,14 @@ AI_SAFETY_WEBHOOK=https://hooks.scms.com/ai-alerts
 
 ---
 
+## 🛡️ Compliance, Data Retention & Consent Validation
+- **Certificates**: Define retention by certificate type (bonafide vs. transfer), with auto-expiry + revocation logs. Require compliance sign-off on eSign providers, QR verification, and archival format (PDF/A). Consent for data use captured per issuance and stored with certificate metadata.
+- **Grievances**: Retain full case history for minimum 5 years (configurable) with right-to-be-forgotten workflow once legal holds expire. Escalations and counselor notes flagged for restricted access; consent obtained before sharing with third parties. Quarterly audits with legal/compliance leads.
+- **Event Registrations**: Store parental/guardian consent records, timestamps, and IP/device data. Support opt-out and withdrawal, plus regional requirements (e.g., GDPR/FERPA). Automatically purge PII after event retention period while keeping aggregate analytics.
+- **Stakeholder Workflow**: Compliance lead reviews retention matrix + consent copy decks before each release; changes tracked as ADRs. Add policy checks to CI to prevent deployment without updated retention configs.
+
+---
+
 ## 📝 Notes & Best Practices
 
 1. **Code Organization**
@@ -1148,18 +1597,12 @@ AI_SAFETY_WEBHOOK=https://hooks.scms.com/ai-alerts
 - [ ] SMS notifications
 - [ ] Mobile app (React Native/Flutter)
 - [ ] Online examination system
-- [ ] Library management
-- [ ] Fee management
 - [ ] Hostel management
 - [ ] Transport management
-- [ ] Parent portal
 - [ ] Alumni management
-- [ ] Certificate generation
 - [ ] Video conferencing integration
-- [ ] Assignment submission
-- [ ] Discussion forum
-- [ ] Event calendar
-- [ ] Grievance management
+- [ ] Advanced LMS content authoring + SCORM import
+- [ ] AI-powered personalized learning paths
 
 ---
 
@@ -1173,6 +1616,7 @@ AI_SAFETY_WEBHOOK=https://hooks.scms.com/ai-alerts
 - Zero critical security vulnerabilities + quarterly pen tests closed < 2 weeks
 - User satisfaction score > 4.5/5, support tickets auto-acknowledged < 1m
 - AI assistant deflection rate ≥ 85%, hallucination incidents < 1 per 10k interactions, 100% responses cite data sources
+- Library overdue rate < 3%, grievance resolution SLA compliance ≥ 95%, parent portal CSAT ≥ 4.4/5
 
 ---
 
