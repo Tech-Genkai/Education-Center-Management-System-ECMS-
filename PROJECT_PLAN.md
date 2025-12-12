@@ -1311,6 +1311,22 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 - **Grievances**: Intake wizard screens, SLA timeline visualization, escalation prompts, and counselor collaboration notes with internal/public visibility cues.
 - Capture design decisions in Figma with versioned links; require design sign-off before sprint kick-off.
 
+### Wireframe Production & Sign-Off Plan
+- **Tools & Format**: Figma (desktop + mobile frames), exported PNG/PDF snapshots stored in `docs/ux/` with versioned filenames (`vX.Y`). Keep interaction notes and accessibility annotations in-page.
+- **Ownership**: UX lead drives production; PM + Eng lead + QA sign off. Parents/teachers focus group for portal/library usability validation.
+- **Deliverables** (one page per flow unless noted):
+  - Parent Portal: dashboard, ward switcher, fee/consent modals, AI widget placement.
+  - Library: admin console, student/teacher search + reservation, barcode/RFID scan state.
+  - Assignments & Forums: teacher authoring, student submission, moderation queue, plagiarism alert, AI summary entry point.
+  - Certificates: template designer, preview/approval path, QR verify overlay, download receipt.
+  - Events & Consent: calendar (month/list), registration, waitlist, consent approve/reject with comments, mobile quick-approve.
+  - Grievances: intake wizard, SLA timeline, escalation prompts, counselor/internal notes, visibility toggles.
+- **Process & Timing**: Low-fi in 2 business days, hi-fi in 3 more. Usability spot-check with 3-5 users per persona before sign-off. All comments resolved/recorded before sprint planning.
+- **Sign-Off Log** (store in `docs/ux/signoff.md`):
+  - Checklist: accessibility (WCAG 2.1 AA), localization readiness, error/empty/loading states, mobile/desktop coverage, AI widget placement, consent copy, data minimization callouts.
+  - Approvers: PM, Eng Lead, QA Lead, Compliance (for consent/certificates), UX Lead.
+  - Capture date, version, blocking notes, follow-up actions; no sprint-start without green status.
+
 ---
 
 ## ✅ Quality Engineering & Test Automation

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCMS Dashboard</title>
+    <link rel="stylesheet" href="/assets/css/main.css" />
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div id="app" class="min-h-screen">
+      <header class="px-6 py-4 shadow bg-white flex items-center justify-between">
+        <div class="font-semibold text-lg">SCMS</div>
+        <div class="text-sm text-slate-600">Vanilla JS + Alpine.js</div>
+      </header>
+      <main class="p-6" x-data="dashboardState()">
+        <section class="grid gap-4 md:grid-cols-3">
+          <article class="bg-white rounded-lg shadow p-4">
+            <h2 class="text-sm font-semibold mb-2">Health</h2>
+            <p class="text-sm" x-text="health.status"></p>
+          </article>
+          <article class="bg-white rounded-lg shadow p-4">
+            <h2 class="text-sm font-semibold mb-2">Environment</h2>
+            <p class="text-sm" x-text="health.service"></p>
+          </article>
+          <article class="bg-white rounded-lg shadow p-4">
+            <h2 class="text-sm font-semibold mb-2">Timestamp</h2>
+            <p class="text-sm" x-text="health.ts"></p>
+          </article>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/assets/js/main.js"></script>
+  </body>
+</html>
