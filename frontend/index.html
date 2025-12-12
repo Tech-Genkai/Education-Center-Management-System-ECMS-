@@ -13,10 +13,16 @@
         <div class="text-sm text-slate-600">Vanilla JS + Alpine.js</div>
       </header>
       <main class="p-6" x-data="dashboardState()">
-        <section class="grid gap-4 md:grid-cols-3">
+        <section class="grid gap-4 md:grid-cols-4">
           <article class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-sm font-semibold mb-2">Health</h2>
+            <h2 class="text-sm font-semibold mb-2">Backend Status</h2>
             <p class="text-sm" x-text="health.status"></p>
+          </article>
+          <article class="bg-white rounded-lg shadow p-4">
+            <h2 class="text-sm font-semibold mb-2">Database</h2>
+            <p class="text-sm">
+              <span :class="dbStatus.connected ? 'text-green-600' : 'text-red-600'" x-text="dbStatus.message"></span>
+            </p>
           </article>
           <article class="bg-white rounded-lg shadow p-4">
             <h2 class="text-sm font-semibold mb-2">Environment</h2>
