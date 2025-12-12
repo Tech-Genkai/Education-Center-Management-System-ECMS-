@@ -1,0 +1,13 @@
+{
+  "name": "@scms/shared",
+  "version": "1.0.0",
+  "description": "Shared models, DTOs, and types for SCMS",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["scms", "shared", "models"],
+  "author": "",
+  "license": "ISC"
+}

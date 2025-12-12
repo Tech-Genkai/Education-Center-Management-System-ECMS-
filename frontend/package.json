@@ -10,6 +10,7 @@
     "lint": "eslint ./assets/js ./pages ./components ./layouts --ext .js"
   },
   "dependencies": {
+    "@scms/shared": "file:../shared",
     "alpinejs": "^3.14.1",
     "chart.js": "^4.4.1"
   },
