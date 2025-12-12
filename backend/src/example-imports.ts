@@ -1,4 +1,4 @@
-// Example: How to use shared models in backend
+// Example: How to use models in backend
 
 import { 
   User, 
@@ -12,7 +12,7 @@ import {
   Payment,
   Attendance,
   Event
-} from '@scms/shared';
+} from './models';
 
 // Example usage in a controller or service:
 // const user = await User.findOne({ email: 'student@example.com' });
