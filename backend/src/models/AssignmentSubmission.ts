@@ -9,11 +9,11 @@ const AssignmentSubmissionSchema = new Schema(
     status: { type: String, enum: ['submitted', 'late', 'missing'], default: 'submitted' },
     grade: Number,
     feedback: String,
-    plagiarismScore: Number,
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    plagiarismScore: Number
   },
   { timestamps: true }
 );
+
+AssignmentSubmissionSchema.index({ assignmentId: 1, studentId: 1 }, { unique: true });
 
 export const AssignmentSubmission = model('AssignmentSubmission', AssignmentSubmissionSchema);

@@ -1,30 +1,34 @@
 import { Schema, model, Types } from 'mongoose';
+import { PROFILE_IMAGE_DEFAULT_URL } from '../constants/media.ts';
+import { EMAIL_REGEX, NAME_MAX_LENGTH, PHONE_REGEX } from '../utils/validation.ts';
 
 const StudentSchema = new Schema(
   {
     userId: { type: Types.ObjectId, ref: 'User', required: true },
-    studentId: { type: String, required: true, unique: true },
-    firstName: String,
-    lastName: String,
-    dateOfBirth: { type: String },
-    gender: String,
+    studentId: { type: String, required: true, unique: true, trim: true },
+    firstName: { type: String, trim: true, maxlength: NAME_MAX_LENGTH },
+    lastName: { type: String, trim: true, maxlength: NAME_MAX_LENGTH },
+    dateOfBirth: { type: Date },
+    gender: { type: String, enum: ['male', 'female', 'other', 'unspecified'], default: 'unspecified' },
     bloodGroup: String,
-    email: { type: String, required: true, unique: true, index: true },
-    instituteEmail: { type: String, required: true, unique: true , index: true},
-    phone: { type: String, required: true },
+    email: { type: String, required: true, unique: true, index: true, trim: true, lowercase: true, match: EMAIL_REGEX },
+    instituteEmail: { type: String, required: true, unique: true , index: true, trim: true, lowercase: true, match: EMAIL_REGEX },
+    phone: { type: String, required: true, trim: true, match: PHONE_REGEX },
     addressId: { type: Types.ObjectId, ref: 'Address' },
-    guardianName: String,
-    guardianPhone: String,
-    guardianEmail: String,
+    guardianName: { type: String, trim: true, maxlength: NAME_MAX_LENGTH },
+    guardianPhone: { type: String, trim: true, match: PHONE_REGEX },
+    guardianEmail: { type: String, trim: true, lowercase: true, match: EMAIL_REGEX },
     classId: { type: Types.ObjectId, ref: 'Class' },
-    section: String,
+    section: { type: String, trim: true, maxlength: 20 },
     admissionDate: Date,
-    profilePicture: String,
-    status: { type: String, enum: ['active', 'inactive', 'graduated'], default: 'active' },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    registrationSlips: [{ type: Types.ObjectId, ref: 'RegistrationSlip' }],
+    profilePicture: { type: String, default: PROFILE_IMAGE_DEFAULT_URL },
+    status: { type: String, enum: ['active', 'inactive', 'graduated'], default: 'active' }
   },
   { timestamps: true }
 );
+
+StudentSchema.index({ status: 1 });
+StudentSchema.index({ classId: 1, section: 1 });
 
 export const Student = model('Student', StudentSchema);

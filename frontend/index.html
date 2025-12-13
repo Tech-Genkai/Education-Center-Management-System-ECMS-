@@ -1,40 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SCMS Dashboard</title>
-    <link rel="stylesheet" href="/assets/css/main.css" />
-  </head>
-  <body class="bg-slate-50 text-slate-900">
-    <div id="app" class="min-h-screen">
-      <header class="px-6 py-4 shadow bg-white flex items-center justify-between">
-        <div class="font-semibold text-lg">SCMS</div>
-        <div class="text-sm text-slate-600">Vanilla JS + Alpine.js</div>
-      </header>
-      <main class="p-6" x-data="dashboardState()">
-        <section class="grid gap-4 md:grid-cols-4">
-          <article class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-sm font-semibold mb-2">Backend Status</h2>
-            <p class="text-sm" x-text="health.status"></p>
-          </article>
-          <article class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-sm font-semibold mb-2">Database</h2>
-            <p class="text-sm">
-              <span :class="dbStatus.connected ? 'text-green-600' : 'text-red-600'" x-text="dbStatus.message"></span>
-            </p>
-          </article>
-          <article class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-sm font-semibold mb-2">Environment</h2>
-            <p class="text-sm" x-text="health.service"></p>
-          </article>
-          <article class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-sm font-semibold mb-2">Timestamp</h2>
-            <p class="text-sm" x-text="health.ts"></p>
-          </article>
-        </section>
-      </main>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Education Center Management System</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div class="min-h-screen flex items-center justify-center px-4">
+        <div class="text-center animate-fade-in">
+            <div class="mx-auto h-20 w-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl mb-6">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Welcome to ECMS</h1>
+            <p class="text-gray-600 mb-8">Education Center Management System</p>
+            <a href="/pages/public/login.html" class="inline-block btn-primary">
+                Get Started
+            </a>
+        </div>
     </div>
-    <script type="module" src="/assets/js/main.js"></script>
-  </body>
+
+    <script>
+        // Auto-redirect to login if not authenticated
+        setTimeout(() => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/pages/public/login.html';
+            }
+        }, 2000);
+    </script>
+</body>
 </html>

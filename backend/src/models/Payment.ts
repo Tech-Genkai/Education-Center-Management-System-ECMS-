@@ -10,9 +10,7 @@ const PaymentSchema = new Schema(
     paidAt: Date,
     status: { type: String, enum: ['initiated', 'success', 'failed', 'refunded'], default: 'initiated' },
     receiptUrl: String,
-    metadata: Object,
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    metadata: Object
   },
   { timestamps: true }
 );

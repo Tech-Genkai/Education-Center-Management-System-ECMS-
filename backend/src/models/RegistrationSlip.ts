@@ -10,11 +10,13 @@ const RegistrationSlipSchema = new Schema(
     feeDue: { type: Number, default: 0 },
     status: { type: String, enum: ['draft', 'issued', 'cancelled'], default: 'issued' },
     issuedAt: { type: Date, default: Date.now },
-    createdBy: { type: Types.ObjectId, ref: 'User' },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    createdBy: { type: Types.ObjectId, ref: 'User' }
   },
   { timestamps: true }
 );
+
+RegistrationSlipSchema.index({ studentId: 1, academicYear: 1 });
+RegistrationSlipSchema.index({ registrationNumber: 1 }, { unique: true });
+RegistrationSlipSchema.index({ status: 1 });
 
 export const RegistrationSlip = model('RegistrationSlip', RegistrationSlipSchema);

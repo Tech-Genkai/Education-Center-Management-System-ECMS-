@@ -8,9 +8,7 @@ const ClassSectionSchema = new Schema(
     academicYear: String,
     classTeacherId: { type: Types.ObjectId, ref: 'Teacher' },
     capacity: Number,
-    isActive: { type: Boolean, default: true },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    isActive: { type: Boolean, default: true }
   },
   { timestamps: true }
 );

@@ -8,9 +8,7 @@ const SubjectSchema = new Schema(
     credits: Number,
     teacherId: { type: Types.ObjectId, ref: 'Teacher' },
     classId: { type: Types.ObjectId, ref: 'Class' },
-    isActive: { type: Boolean, default: true },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    isActive: { type: Boolean, default: true }
   },
   { timestamps: true }
 );

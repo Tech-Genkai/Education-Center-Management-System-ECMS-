@@ -11,9 +11,7 @@ const EventSchema = new Schema(
     capacity: Number,
     requiresConsent: { type: Boolean, default: false },
     attachments: [String],
-    createdBy: { type: Types.ObjectId, ref: 'User' },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    createdBy: { type: Types.ObjectId, ref: 'User' }
   },
   { timestamps: true }
 );

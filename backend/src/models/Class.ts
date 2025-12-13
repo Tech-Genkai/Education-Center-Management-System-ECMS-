@@ -9,9 +9,7 @@ const ClassSchema = new Schema(
     classTeacherId: { type: Types.ObjectId, ref: 'Teacher' },
     capacity: Number,
     subjects: [{ type: Types.ObjectId, ref: 'Subject' }],
-    isActive: { type: Boolean, default: true },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    isActive: { type: Boolean, default: true }
   },
   { timestamps: true }
 );

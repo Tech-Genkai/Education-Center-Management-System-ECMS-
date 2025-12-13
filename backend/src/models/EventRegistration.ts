@@ -7,9 +7,7 @@ const EventRegistrationSchema = new Schema(
     registrantId: { type: Types.ObjectId, required: true },
     status: { type: String, enum: ['registered', 'waitlisted', 'cancelled', 'attended'], default: 'registered' },
     consentStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-    checkInAt: { type: Date },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    checkInAt: { type: Date }
   },
   { timestamps: true }
 );

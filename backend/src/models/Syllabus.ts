@@ -15,9 +15,7 @@ const SyllabusSchema = new Schema(
       }
     ],
     attachments: [String],
-    createdBy: { type: Types.ObjectId, ref: 'Teacher' },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    createdBy: { type: Types.ObjectId, ref: 'Teacher' }
   },
   { timestamps: true }
 );

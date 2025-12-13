@@ -12,9 +12,7 @@ const GrievanceSchema = new Schema(
     status: { type: String, enum: ['open', 'in_progress', 'resolved', 'closed'], default: 'open' },
     slaDueAt: Date,
     resolutionSummary: String,
-    satisfactionScore: Number,
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    satisfactionScore: Number
   },
   { timestamps: true }
 );

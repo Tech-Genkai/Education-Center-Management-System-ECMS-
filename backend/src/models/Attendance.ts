@@ -9,11 +9,11 @@ const AttendanceSchema = new Schema(
     status: { type: String, enum: ['present', 'absent', 'late', 'excused', 'leave'], required: true },
     remarks: String,
     markedBy: { type: Types.ObjectId, ref: 'Teacher' },
-    academicYear: String,
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    academicYear: String
   },
   { timestamps: true }
 );
+
+AttendanceSchema.index({ studentId: 1, classId: 1, subjectId: 1, date: 1 }, { unique: true });
 
 export const Attendance = model('Attendance', AttendanceSchema);

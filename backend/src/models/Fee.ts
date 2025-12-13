@@ -9,13 +9,13 @@ const FeeSchema = new Schema(
     amountPaid: { type: Number, default: 0 },
     dueDate: Date,
     status: { type: String, enum: ['pending', 'partial', 'paid', 'overdue'], default: 'pending' },
-    invoiceNumber: { type: String, unique: true },
+    invoiceNumber: { type: String },
     paymentPlanId: { type: Types.ObjectId, ref: 'PaymentPlan' },
-    automatedReminderCount: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    automatedReminderCount: { type: Number, default: 0 }
   },
   { timestamps: true }
 );
+
+FeeSchema.index({ invoiceNumber: 1 }, { unique: true, sparse: true });
 
 export const Fee = model('Fee', FeeSchema);

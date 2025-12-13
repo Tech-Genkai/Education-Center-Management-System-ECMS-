@@ -2,18 +2,21 @@
   "name": "scms-backend",
   "version": "0.1.0",
   "type": "module",
+  "ts-node": {
+    "experimentalSpecifierResolution": "node"
+  },
   "main": "dist/server.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec ts-node src/server.ts",
+    "dev": "nodemon --watch src --exec ts-node-esm src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "lint": "eslint 'src/**/*.{ts,js}'",
-    "test": "jest --runInBand"
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand"
   },
   "dependencies": {
-    "@scms/shared": "file:../shared",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/sdk-node": "^0.53.0",
+    "@scms/shared": "file:../shared",
     "argon2": "^0.31.2",
     "bcrypt": "^5.1.1",
     "bullmq": "^4.12.2",
@@ -24,8 +27,9 @@
     "express-rate-limit": "^6.10.0",
     "express-validator": "^7.0.1",
     "helmet": "^7.0.0",
+    "image-size": "^1.0.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.0",
+    "mongoose": "^8.20.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.5",
     "openapi-types": "^12.1.3",

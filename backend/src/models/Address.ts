@@ -6,9 +6,7 @@ const AddressSchema = new Schema(
     city: String,
     state: String,
     country: String,
-    zipCode: String,
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    zipCode: String
   },
   { timestamps: true }
 );

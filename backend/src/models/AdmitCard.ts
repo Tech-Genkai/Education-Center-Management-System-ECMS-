@@ -19,9 +19,7 @@ const AdmitCardSchema = new Schema(
     reportingTime: String,
     status: { type: String, enum: ['issued', 'revoked'], default: 'issued' },
     downloadUrl: String,
-    createdBy: { type: Types.ObjectId, ref: 'User' },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    createdBy: { type: Types.ObjectId, ref: 'User' }
   },
   { timestamps: true }
 );

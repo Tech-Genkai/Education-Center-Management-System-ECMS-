@@ -12,9 +12,7 @@ const AssignmentSchema = new Schema(
     rubric: Object,
     dueDate: Date,
     totalMarks: Number,
-    plagiarismCheck: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    plagiarismCheck: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

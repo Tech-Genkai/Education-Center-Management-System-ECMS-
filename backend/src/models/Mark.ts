@@ -14,9 +14,7 @@ const MarkSchema = new Schema(
     remarks: String,
     enteredBy: { type: Types.ObjectId, ref: 'Teacher' },
     examDate: Date,
-    academicYear: String,
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    academicYear: String
   },
   { timestamps: true }
 );

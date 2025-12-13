@@ -8,9 +8,7 @@ const PaymentPlanSchema = new Schema(
     amount: { type: Number, required: true },
     discountPercent: { type: Number, default: 0 },
     autoDebit: { type: Boolean, default: false },
-    gracePeriodDays: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    gracePeriodDays: { type: Number, default: 0 }
   },
   { timestamps: true }
 );

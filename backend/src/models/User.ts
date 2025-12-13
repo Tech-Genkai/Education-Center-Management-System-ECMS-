@@ -1,18 +1,56 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
+import bcrypt from 'bcrypt';
+import { EMAIL_REGEX, PHONE_REGEX } from '../utils/validation.ts';
 
-const UserSchema = new Schema(
+const SALT_ROUNDS = Number(process.env.BCRYPT_ROUNDS) || 12;
+
+export interface IUser extends Document {
+  email: string;
+  instituteEmail: string;
+  phone: string;
+  password: string;
+  role: 'student' | 'teacher' | 'superadmin';
+  isActive: boolean;
+  lastLogin?: Date;
+  comparePassword(candidate: string): Promise<boolean>;
+}
+
+const UserSchema = new Schema<IUser>(
   {
-    email: { type: String, required: true, unique: true, index: true },
-    instituteEmail: { type: String, required: true, unique: true , index: true},
-    phone: { type: String, required: true },
-    password: { type: String, required: true },
-    role: { type: String, enum: ['student', 'teacher', 'superadmin',], required: true },
+    email: { type: String, required: true, unique: true, index: true, trim: true, lowercase: true, match: EMAIL_REGEX },
+    instituteEmail: { type: String, required: true, unique: true , index: true, trim: true, lowercase: true, match: EMAIL_REGEX },
+    phone: { type: String, required: true, trim: true, match: PHONE_REGEX },
+    password: { type: String, required: true, minlength: 8 },
+    role: { type: String, enum: ['student', 'teacher', 'superadmin'], required: true },
     isActive: { type: Boolean, default: true },
-    lastLogin: { type: Date },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    lastLogin: { type: Date }
   },
   { timestamps: true }
 );
 
-export const User = model('User', UserSchema);
+UserSchema.pre('save', async function (next) {
+  try {
+    if (!this.isModified('password')) return next();
+    const hash = await bcrypt.hash(this.password, SALT_ROUNDS);
+    this.password = hash;
+    return next();
+  } catch (err) {
+    return next(err as Error);
+  }
+});
+
+UserSchema.methods.comparePassword = async function (candidate: string): Promise<boolean> {
+  return bcrypt.compare(candidate, this.password);
+};
+
+UserSchema.set('toJSON', {
+  transform: (_doc, ret) => {
+    delete ret.password;
+    return ret;
+  }
+});
+
+UserSchema.index({ role: 1, isActive: 1 });
+UserSchema.index({ email: 1, instituteEmail: 1 });
+
+export const User = model<IUser>('User', UserSchema);
