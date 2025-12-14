@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>500 - Server Error | ECMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script src="/static/js/dark-mode.js"></script>
 </head>
-<body class="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 min-h-screen">
+<body class="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300 min-h-screen">
+    <button id="theme-toggle" class="absolute top-4 right-4 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700">
+        <svg id="theme-icon" class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Icon will be updated by JavaScript -->
+        </svg>
+    </button>
     <div class="min-h-screen flex items-center justify-center px-4 py-12">
         <div class="max-w-2xl w-full">
             <!-- Error Illustration -->
@@ -19,7 +30,7 @@
             </div>
 
             <!-- Error Content Card -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12 text-center">
                 <!-- 500 Badge -->
                 <div class="inline-block mb-6">
                     <span class="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
@@ -28,18 +39,18 @@
                 </div>
 
                 <!-- Error Message -->
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                     Internal Server Error
                 </h1>
-                <p class="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
                     Something went wrong on our end. Our team has been notified and we're working to fix it.
                 </p>
 
                 <% if (process.env.NODE_ENV === 'development' && error) { %>
                 <!-- Development Error Details -->
-                <div class="mb-8 p-4 bg-red-50 rounded-lg border border-red-200 text-left max-w-2xl mx-auto">
-                    <p class="text-sm font-semibold text-red-800 mb-2">Error Details (Development Mode):</p>
-                    <pre class="text-xs text-red-700 overflow-x-auto"><%= error.stack || error.message || error %></pre>
+                <div class="mb-8 p-4 bg-red-50 dark:bg-red-900/30 rounded-lg border border-red-200 dark:border-red-800 text-left max-w-2xl mx-auto">
+                    <p class="text-sm font-semibold text-red-800 dark:text-red-300 mb-2">Error Details (Development Mode):</p>
+                    <pre class="text-xs text-red-700 dark:text-red-400 overflow-x-auto"><%= error.stack || error.message || error %></pre>
                 </div>
                 <% } %>
 
@@ -51,7 +62,7 @@
                         </svg>
                         Go to Home
                     </a>
-                    <button onclick="location.reload()" class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition duration-150">
+                    <button onclick="location.reload()" class="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
@@ -60,42 +71,42 @@
                 </div>
 
                 <!-- Additional Help -->
-                <div class="mt-12 pt-8 border-t border-gray-200">
-                    <p class="text-sm text-gray-500 mb-4">What you can do:</p>
+                <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">What you can do:</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-                        <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="text-blue-600 mb-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                 </svg>
                             </div>
-                            <h3 class="text-sm font-semibold text-gray-900 mb-1">Refresh the page</h3>
-                            <p class="text-xs text-gray-600">Sometimes a simple refresh fixes the issue</p>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Refresh the page</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Sometimes a simple refresh fixes the issue</p>
                         </div>
-                        <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="text-green-600 mb-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                            <h3 class="text-sm font-semibold text-gray-900 mb-1">Wait a moment</h3>
-                            <p class="text-xs text-gray-600">We might be performing maintenance</p>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Wait a moment</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">We might be performing maintenance</p>
                         </div>
-                        <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="text-purple-600 mb-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                                 </svg>
                             </div>
-                            <h3 class="text-sm font-semibold text-gray-900 mb-1">Go back</h3>
-                            <p class="text-xs text-gray-600">Return to the previous page</p>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Go back</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Return to the previous page</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Status Check -->
                 <div class="mt-8">
-                    <a href="/healthz" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                    <a href="/healthz" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
                         Check System Status →
                     </a>
                 </div>
@@ -103,7 +114,7 @@
 
             <!-- Footer -->
             <div class="text-center mt-8">
-                <p class="text-sm text-gray-500">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
                     Education Center Management System (ECMS)
                 </p>
             </div>

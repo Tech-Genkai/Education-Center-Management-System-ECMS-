@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Page Not Found | ECMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script src="/static/js/dark-mode.js"></script>
 </head>
-<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300 min-h-screen">
+    <button id="theme-toggle" class="absolute top-4 right-4 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700">
+        <svg id="theme-icon" class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Icon will be updated by JavaScript -->
+        </svg>
+    </button>
     <div class="min-h-screen flex items-center justify-center px-4 py-12">
         <div class="max-w-2xl w-full">
             <!-- Error Illustration -->
@@ -19,7 +30,7 @@
             </div>
 
             <!-- Error Content Card -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12 text-center">
                 <!-- 404 Badge -->
                 <div class="inline-block mb-6">
                     <span class="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -28,10 +39,10 @@
                 </div>
 
                 <!-- Error Message -->
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                     Oops! Page Not Found
                 </h1>
-                <p class="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
                     The page you're looking for doesn't exist or has been moved. Let's get you back on track!
                 </p>
 
@@ -43,7 +54,7 @@
                         </svg>
                         Go to Home
                     </a>
-                    <button onclick="history.back()" class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition duration-150">
+                    <button onclick="history.back()" class="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                         </svg>
@@ -52,21 +63,21 @@
                 </div>
 
                 <!-- Additional Help -->
-                <div class="mt-12 pt-8 border-t border-gray-200">
-                    <p class="text-sm text-gray-500 mb-4">Need help? Try these:</p>
+                <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Need help? Try these:</p>
                     <div class="flex flex-wrap gap-3 justify-center">
-                        <a href="/login" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Login</a>
-                        <span class="text-gray-300">•</span>
-                        <a href="/docs" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Documentation</a>
-                        <span class="text-gray-300">•</span>
-                        <a href="/healthz" class="text-sm text-blue-600 hover:text-blue-800 font-medium">System Status</a>
+                        <a href="/login" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">Login</a>
+                        <span class="text-gray-300 dark:text-gray-600">•</span>
+                        <a href="/docs" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">Documentation</a>
+                        <span class="text-gray-300 dark:text-gray-600">•</span>
+                        <a href="/healthz" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">System Status</a>
                     </div>
                 </div>
             </div>
 
             <!-- Footer -->
             <div class="text-center mt-8">
-                <p class="text-sm text-gray-500">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
                     Education Center Management System (ECMS)
                 </p>
             </div>

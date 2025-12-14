@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>403 - Forbidden | ECMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script src="/static/js/dark-mode.js"></script>
 </head>
-<body class="bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 min-h-screen">
+<body class="bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300 min-h-screen">
+    <button id="theme-toggle" class="absolute top-4 right-4 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700">
+        <svg id="theme-icon" class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Icon will be updated by JavaScript -->
+        </svg>
+    </button>
     <div class="min-h-screen flex items-center justify-center px-4 py-12">
         <div class="max-w-2xl w-full">
             <!-- Error Illustration -->
@@ -19,7 +30,7 @@
             </div>
 
             <!-- Error Content Card -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12 text-center">
                 <!-- 403 Badge -->
                 <div class="inline-block mb-6">
                     <span class="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
@@ -28,10 +39,10 @@
                 </div>
 
                 <!-- Error Message -->
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                     Access Forbidden
                 </h1>
-                <p class="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
                     You don't have permission to access this resource. This area is restricted to authorized users only.
                 </p>
 
@@ -43,7 +54,7 @@
                         </svg>
                         Go to Home
                     </a>
-                    <button onclick="history.back()" class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition duration-150">
+                    <button onclick="history.back()" class="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                         </svg>
@@ -52,43 +63,43 @@
                 </div>
 
                 <!-- Additional Help -->
-                <div class="mt-12 pt-8 border-t border-gray-200">
-                    <p class="text-sm text-gray-500 mb-4">Why am I seeing this?</p>
+                <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Why am I seeing this?</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-                        <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="text-yellow-600 mb-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                            <h3 class="text-sm font-semibold text-gray-900 mb-1">Wrong role</h3>
-                            <p class="text-xs text-gray-600">Your account role doesn't have access</p>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Wrong role</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Your account role doesn't have access</p>
                         </div>
-                        <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="text-orange-600 mb-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
                             </div>
-                            <h3 class="text-sm font-semibold text-gray-900 mb-1">Restricted area</h3>
-                            <p class="text-xs text-gray-600">This section is for specific users only</p>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Restricted area</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">This section is for specific users only</p>
                         </div>
-                        <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="text-red-600 mb-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
                                 </svg>
                             </div>
-                            <h3 class="text-sm font-semibold text-gray-900 mb-1">Access denied</h3>
-                            <p class="text-xs text-gray-600">Contact admin for permission</p>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Access denied</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Contact admin for permission</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Role Information -->
-                <div class="mt-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <p class="text-xs font-semibold text-yellow-800 mb-2">Access Levels:</p>
-                    <div class="text-xs text-yellow-700 space-y-1 text-left">
+                <div class="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <p class="text-xs font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Access Levels:</p>
+                    <div class="text-xs text-yellow-700 dark:text-yellow-400 space-y-1 text-left">
                         <p><strong>🎓 Student:</strong> Access to personal dashboard, assignments, and grades</p>
                         <p><strong>👨‍🏫 Teacher:</strong> Access to class management, grading, and attendance</p>
                         <p><strong>⚙️ Admin:</strong> Full system access, user management, and reports</p>
@@ -97,15 +108,15 @@
 
                 <!-- Help Link -->
                 <div class="mt-8">
-                    <p class="text-sm text-gray-600">
-                        Need access? <a href="/login" class="text-yellow-600 hover:text-yellow-800 font-medium">Sign in</a> with the appropriate account or contact your administrator.
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Need access? <a href="/login" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 font-medium">Sign in</a> with the appropriate account or contact your administrator.
                     </p>
                 </div>
             </div>
 
             <!-- Footer -->
             <div class="text-center mt-8">
-                <p class="text-sm text-gray-500">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
                     Education Center Management System (ECMS)
                 </p>
             </div>
