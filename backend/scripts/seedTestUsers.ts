@@ -4,6 +4,7 @@ import { connectDatabase, disconnectDatabase } from '../src/config/database.ts';
 import { User } from '../src/models/User.ts';
 import { Student } from '../src/models/Student.ts';
 import { Teacher } from '../src/models/Teacher.ts';
+import { SuperAdmin } from '../src/models/SuperAdmin.ts';
 import { Parent } from '../src/models/Parent.ts';
 
 async function createOrUpdateUser({ email, instituteEmail, phone, password, role }: { email: string; instituteEmail: string; phone: string; password: string; role: 'student' | 'teacher' | 'superadmin'; }) {
@@ -78,6 +79,25 @@ async function seed() {
       email: teacherUser.email,
       instituteEmail: teacherUser.instituteEmail,
       phone: teacherUser.phone,
+      status: 'active'
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  await SuperAdmin.findOneAndUpdate(
+    { userId: adminUser._id },
+    {
+      userId: adminUser._id,
+      adminId: 'A-1001',
+      firstName: 'Test',
+      lastName: 'Admin',
+      email: adminUser.email,
+      instituteEmail: adminUser.instituteEmail,
+      phone: adminUser.phone,
+      designation: 'System Administrator',
+      department: 'IT & Administration',
+      permissions: ['user_management', 'student_management', 'teacher_management', 'system_settings', 'reports', 'financial_management'],
+      accessLevel: 'full',
       status: 'active'
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }

@@ -8,7 +8,7 @@ const router = express.Router();
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  rememberMe: z.boolean().optional()
+  rememberMe: z.string().optional().transform(val => val === 'true' || val === 'on')
 });
 
 /**

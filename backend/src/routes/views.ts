@@ -1,5 +1,9 @@
 import { Router, type Request, type Response } from 'express';
 import { requireAuth, requireRole } from '../middleware/session.ts';
+import { SuperAdmin } from '../models/SuperAdmin.ts';
+import { User } from '../models/User.ts';
+import { Student } from '../models/Student.ts';
+import { Teacher } from '../models/Teacher.ts';
 
 const router = Router();
 
@@ -138,20 +142,35 @@ router.get('/teacher/dashboard', requireAuth, requireRole('teacher'), async (req
 // Admin Dashboard
 router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (req: Request, res: Response) => {
   try {
-    // Mock data - replace with actual database queries
+    // Fetch real SuperAdmin profile
+    const adminProfile = await SuperAdmin.findOne({ userId: req.session.userId });
+    
+    // Fetch real statistics from database
+    const totalStudents = await Student.countDocuments();
+    const activeStudents = await Student.countDocuments({ status: 'active' });
+    const totalTeachers = await Teacher.countDocuments();
+    const activeTeachers = await Teacher.countDocuments({ status: 'active' });
+    const totalUsers = await User.countDocuments();
+    
     const dashboardData = {
       user: {
-        name: req.session.email?.split('@')[0] || 'Admin',
+        name: adminProfile ? `${adminProfile.firstName} ${adminProfile.lastName}` : req.session.email?.split('@')[0] || 'Admin',
+        designation: adminProfile?.designation || 'Administrator',
+        department: adminProfile?.department || 'Administration',
+        email: adminProfile?.email || req.session.email,
+        lastLogin: adminProfile?.lastLoginAt ? new Date(adminProfile.lastLoginAt).toLocaleString() : 'N/A',
+        accessLevel: adminProfile?.accessLevel || 'full',
+        permissions: adminProfile?.permissions || []
       },
       stats: {
-        totalStudents: 1250,
-        studentGrowth: 12,
-        totalTeachers: 48,
-        activeTeachers: 42,
-        activeClasses: 32,
-        totalSections: 96,
-        revenue: '125,430',
-        revenueGrowth: 8
+        totalStudents,
+        studentGrowth: 12, // TODO: Calculate from historical data
+        totalTeachers,
+        activeTeachers,
+        activeClasses: 32, // TODO: Calculate from Class model
+        totalSections: 96, // TODO: Calculate from ClassSection model
+        revenue: '125,430', // TODO: Calculate from Payment model
+        revenueGrowth: 8 // TODO: Calculate from historical payment data
       },
       chartData: {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],

@@ -9,6 +9,7 @@ import { json, urlencoded } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import profileRouter from './routes/profile.ts';
+import superAdminRouter from './routes/superAdmin.ts';
 import { startProfileUploadCleanupJob } from './jobs/cron/cleanupProfileUploads.ts';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi.ts';
@@ -91,6 +92,7 @@ app.get('/docs.json', (_req, res) => res.json(openapiSpec));
 
 // API routes (keep for backward compatibility)
 app.use('/api/profile', profileRouter);
+app.use('/api/superadmins', superAdminRouter);
 
 app.get('/healthz', async (_req, res) => {
   const dbStatus = getDatabaseStatus();
