@@ -2,6 +2,7 @@ export * from './User';
 export * from './Address';
 export * from './Student';
 export * from './Teacher';
+export * from './SuperAdmin';
 export * from './Class';
 export * from './Subject';
 export * from './Attendance';
