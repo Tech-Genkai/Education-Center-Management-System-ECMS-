@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - ECMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="h-8 w-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </div>
+                        <span class="ml-2 text-xl font-bold text-gray-900">ECMS</span>
+                    </div>
+                    <div class="ml-10">
+                        <span class="text-gray-600 font-medium">Student Dashboard</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-700">Welcome, <strong><%= user.name %></strong></span>
+                    <form method="POST" action="/logout" class="inline">
+                        <button type="submit" class="text-sm text-red-600 hover:text-red-800 font-medium">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Welcome back, <%= user.name %>!</h1>
+            <p class="text-gray-600 mt-1">Here's what's happening with your classes today.</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Classes</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.totalClasses %></p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Attendance</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.attendance %>%</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Assignments</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.pendingAssignments %></p>
+                        <p class="text-xs text-gray-500 mt-1">Pending</p>
+                    </div>
+                    <div class="p-3 bg-yellow-100 rounded-lg">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Average Grade</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.averageGrade %>%</p>
+                    </div>
+                    <div class="p-3 bg-purple-100 rounded-lg">
+                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Upcoming Assignments -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Upcoming Assignments</h2>
+                        <a href="#" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View All</a>
+                    </div>
+                    <div class="space-y-4">
+                        <% assignments.forEach(assignment => { %>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900"><%= assignment.title %></h3>
+                                <p class="text-sm text-gray-600 mt-1"><%= assignment.subject %></p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-medium text-gray-900">Due: <%= assignment.dueDate %></span>
+                                <p class="text-xs text-<%= assignment.priorityColor %>-600 mt-1"><%= assignment.priority %></p>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                </div>
+
+                <!-- Recent Grades -->
+                <div class="bg-white rounded-xl shadow-md p-6 mt-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Recent Grades</h2>
+                        <a href="#" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View All</a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700">Subject</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700">Assessment</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700">Grade</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% grades.forEach(grade => { %>
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-3 px-4 text-sm text-gray-900"><%= grade.subject %></td>
+                                    <td class="py-3 px-4 text-sm text-gray-600"><%= grade.assessment %></td>
+                                    <td class="py-3 px-4 text-center">
+                                        <span class="font-semibold text-<%= grade.gradeColor %>-600"><%= grade.grade %>%</span>
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-<%= grade.statusColor %>-100 text-<%= grade.statusColor %>-700"><%= grade.status %></span>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Today's Schedule -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Today's Schedule</h2>
+                    <div class="space-y-4">
+                        <% schedule.forEach(item => { %>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-<%= item.color %>-500 rounded-full mt-2"></div>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-gray-900"><%= item.subject %></p>
+                                <p class="text-xs text-gray-600"><%= item.time %></p>
+                                <p class="text-xs text-gray-500"><%= item.room %></p>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+                    <div class="space-y-2">
+                        <a href="#" class="block w-full text-left px-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition font-medium text-sm">
+                            📝 Submit Assignment
+                        </a>
+                        <a href="#" class="block w-full text-left px-4 py-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition font-medium text-sm">
+                            📊 View Attendance
+                        </a>
+                        <a href="#" class="block w-full text-left px-4 py-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition font-medium text-sm">
+                            📅 Class Schedule
+                        </a>
+                        <a href="#" class="block w-full text-left px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition font-medium text-sm">
+                            📚 Study Materials
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Announcements -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Announcements</h2>
+                    <div class="space-y-4">
+                        <% announcements.forEach(announcement => { %>
+                        <div class="border-l-4 border-<%= announcement.color %>-500 pl-4">
+                            <p class="text-sm font-semibold text-gray-900"><%= announcement.title %></p>
+                            <p class="text-xs text-gray-600 mt-1"><%= announcement.date %></p>
+                        </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

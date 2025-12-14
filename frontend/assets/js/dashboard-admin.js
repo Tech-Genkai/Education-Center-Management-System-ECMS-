@@ -94,9 +94,22 @@ function adminDashboard() {
         },
 
         async init() {
+            // Check authentication first
+            if (!this.checkAuth()) {
+                return;
+            }
             await this.loadUserData();
             await this.loadDashboardData();
             this.initCharts();
+        },
+
+        checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/pages/public/login.html';
+                return false;
+            }
+            return true;
         },
 
         async loadUserData() {
@@ -201,6 +214,8 @@ function adminDashboard() {
         logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('token');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('userEmail');
                 window.location.href = '/pages/public/login.html';
             }
         }

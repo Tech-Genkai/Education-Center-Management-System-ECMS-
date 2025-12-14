@@ -23,13 +23,22 @@
     </div>
 
     <script>
-        // Auto-redirect to login if not authenticated
-        setTimeout(() => {
+        // Auto-redirect based on authentication status
+        window.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/pages/public/login.html';
+            const role = localStorage.getItem('userRole');
+            
+            if (token && role) {
+                // User is logged in, redirect to their dashboard
+                let dashboardRole = role === 'superadmin' ? 'admin' : role;
+                window.location.href = `/pages/${dashboardRole}/dashboard.html`;
+            } else {
+                // User is not logged in, redirect to login page
+                setTimeout(() => {
+                    window.location.href = '/pages/public/login.html';
+                }, 2000);
             }
-        }, 2000);
+        });
     </script>
 </body>
 </html>
