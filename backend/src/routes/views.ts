@@ -4,6 +4,7 @@ import { SuperAdmin } from '../models/SuperAdmin.ts';
 import { User } from '../models/User.ts';
 import { Student } from '../models/Student.ts';
 import { Teacher } from '../models/Teacher.ts';
+import { UserProfile } from '../models/UserProfile.ts';
 
 const router = Router();
 
@@ -144,6 +145,7 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
   try {
     // Fetch real SuperAdmin profile
     const adminProfile = await SuperAdmin.findOne({ userId: req.session.userId });
+    const userProfile = await UserProfile.findOne({ userId: req.session.userId });
     
     // Fetch real statistics from database
     const totalStudents = await Student.countDocuments();
@@ -155,9 +157,18 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
     const dashboardData = {
       user: {
         name: adminProfile ? `${adminProfile.firstName} ${adminProfile.lastName}` : req.session.email?.split('@')[0] || 'Admin',
+        firstName: adminProfile?.firstName || '',
+        lastName: adminProfile?.lastName || '',
         designation: adminProfile?.designation || 'Administrator',
         department: adminProfile?.department || 'Administration',
         email: adminProfile?.email || req.session.email,
+        phone: adminProfile?.phone || '',
+        dateOfBirth: adminProfile?.dateOfBirth ? new Date(adminProfile.dateOfBirth).toISOString().split('T')[0] : '',
+        gender: adminProfile?.gender || '',
+        bloodGroup: userProfile?.bloodGroup || '',
+        address: userProfile?.address || '',
+        emergencyContact: userProfile?.emergencyContact || '',
+        profilePicture: userProfile?.profilePicture?.url || '/static/images/profile/default/default-avatar.png',
         lastLogin: adminProfile?.lastLoginAt ? new Date(adminProfile.lastLoginAt).toLocaleString() : 'N/A',
         accessLevel: adminProfile?.accessLevel || 'full',
         permissions: adminProfile?.permissions || []

@@ -267,6 +267,139 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
+// Update profile (for session-based auth from dashboard)
+router.put('/', async (req: Request, res: Response) => {
+  try {
+    // Get userId from session
+    const session = (req as any).session;
+    if (!session || !session.userId) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+
+    const userId = session.userId;
+    const { firstName, lastName, phone, dateOfBirth, gender, designation, department, address, bloodGroup, emergencyContact } = req.body;
+
+    // Import SuperAdmin model
+    const { SuperAdmin } = await import('../models/SuperAdmin.ts');
+    
+    // Update SuperAdmin profile
+    const adminProfile = await SuperAdmin.findOne({ userId });
+    if (adminProfile) {
+      if (firstName) adminProfile.firstName = firstName;
+      if (lastName) adminProfile.lastName = lastName;
+      if (phone) adminProfile.phone = phone;
+      if (dateOfBirth) adminProfile.dateOfBirth = new Date(dateOfBirth);
+      if (gender) adminProfile.gender = gender;
+      if (designation) adminProfile.designation = designation;
+      if (department) adminProfile.department = department;
+      await adminProfile.save();
+    }
+
+    // Update UserProfile
+    const profileData: any = {};
+    if (firstName || lastName) {
+      profileData.displayName = `${firstName || ''} ${lastName || ''}`.trim();
+    }
+    if (phone) profileData.phone = phone;
+    if (dateOfBirth) profileData.dateOfBirth = new Date(dateOfBirth);
+    if (gender) profileData.gender = gender;
+
+    const profile = await UserProfile.findOneAndUpdate(
+      { userId },
+      { $set: profileData },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    return res.status(200).json({ 
+      message: 'Profile updated successfully',
+      profile 
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    return res.status(500).json({ message: 'Failed to update profile', error: (error as Error).message });
+  }
+});
+
+// Upload profile picture (session-based)
+router.post('/picture', upload.single('profileImage'), async (req: Request, res: Response) => {
+  try {
+    const session = (req as any).session;
+    if (!session || !session.userId) {
+      if (req.file?.path) fs.unlink(req.file.path, () => undefined);
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'Image file is required' });
+    }
+
+    const userId = session.userId;
+    const limits = getImageLimitsForRole(session.role);
+
+    // Validate dimensions
+    const dimensions = sizeOf(req.file.path);
+    if (!dimensions.width || !dimensions.height) {
+      fs.unlink(req.file.path, () => undefined);
+      return res.status(400).json({ message: 'Could not read image dimensions' });
+    }
+
+    if (dimensions.width < limits.minWidth || dimensions.height < limits.minHeight) {
+      fs.unlink(req.file.path, () => undefined);
+      return res.status(400).json({ 
+        message: `Image too small. Minimum ${limits.minWidth}x${limits.minHeight}px` 
+      });
+    }
+
+    if (dimensions.width > limits.maxWidth || dimensions.height > limits.maxHeight) {
+      fs.unlink(req.file.path, () => undefined);
+      return res.status(400).json({ 
+        message: `Image too large. Maximum ${limits.maxWidth}x${limits.maxHeight}px` 
+      });
+    }
+
+    const storagePath = `${PROFILE_IMAGE_UPLOAD_DIR}/${req.file.filename}`;
+    const url = `/static/${storagePath}`;
+
+    // Delete old profile picture if exists
+    const existing = await UserProfile.findOne({ userId });
+    if (existing) {
+      const currentPath = existing.profilePicture?.storagePath;
+      if (currentPath && currentPath !== PROFILE_IMAGE_DEFAULT_STORAGE_PATH) {
+        const absPath = path.resolve(__dirname, '../../public', currentPath);
+        if (fs.existsSync(absPath)) {
+          fs.unlink(absPath, () => undefined);
+        }
+      }
+    }
+
+    // Update profile with new picture
+    const profile = await UserProfile.findOneAndUpdate(
+      { userId },
+      {
+        $set: {
+          avatarUrl: url,
+          'profilePicture.url': url,
+          'profilePicture.storagePath': storagePath,
+          'profilePicture.isDefault': false,
+          'profilePicture.uploadedAt': new Date()
+        }
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    return res.status(200).json({
+      message: 'Profile picture uploaded successfully',
+      url,
+      storagePath,
+      profile
+    });
+  } catch (error) {
+    if (req.file?.path) fs.unlink(req.file.path, () => undefined);
+    console.error('Upload error:', error);
+    return res.status(500).json({ message: 'Failed to upload profile picture', error: (error as Error).message });
+  }
+});
+
 // Multer error handler
 router.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof multer.MulterError) {
@@ -279,3 +412,4 @@ router.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 export default router;
+

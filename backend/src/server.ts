@@ -10,6 +10,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import profileRouter from './routes/profile.ts';
 import superAdminRouter from './routes/superAdmin.ts';
+import studentsRouter from './routes/students.ts';
+import teachersRouter from './routes/teachers.ts';
 import { startProfileUploadCleanupJob } from './jobs/cron/cleanupProfileUploads.ts';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi.ts';
@@ -90,9 +92,12 @@ app.use('/', viewRoutes);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));
 app.get('/docs.json', (_req, res) => res.json(openapiSpec));
 
-// API routes (keep for backward compatibility)
+// API routes
+app.use('/api/auth', authRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/superadmins', superAdminRouter);
+app.use('/api/students', studentsRouter);
+app.use('/api/teachers', teachersRouter);
 
 app.get('/healthz', async (_req, res) => {
   const dbStatus = getDatabaseStatus();
@@ -105,7 +110,6 @@ app.get('/healthz', async (_req, res) => {
     ts: new Date().toISOString()
   });
 });
-  app.use('/api/auth', authRouter);
 
 // 404 handler - must be after all routes
 app.use((req, res, next) => {
