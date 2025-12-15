@@ -46,7 +46,7 @@
     "pdfkit": "^0.13.0",
     "pino": "^9.0.0",
     "redis": "^4.6.7",
-    "socket.io": "^4.7.5",
+    "socket.io": "^4.8.1",
     "swagger-ui-express": "^5.0.0",
     "winston": "^3.11.0",
     "zod": "^3.22.4"

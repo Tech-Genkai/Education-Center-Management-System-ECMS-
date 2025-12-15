@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -22,6 +24,13 @@ import { attachUserToLocals } from './middleware/session.ts';
 import { connectDatabase, getDatabaseStatus, pingDatabase } from './config/database.ts';
 
 const app = express();
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: true,
+    credentials: true
+  }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -191,16 +200,26 @@ if (process.env.NODE_ENV !== 'test') {
     }
   });
   
-  app.listen(port, () => {
+  // Socket.IO connection handling
+  io.on('connection', (socket) => {
+    console.log('🔌 Client connected:', socket.id);
+    
+    socket.on('disconnect', () => {
+      console.log('🔌 Client disconnected:', socket.id);
+    });
+  });
+
+  httpServer.listen(port, () => {
     console.log('\n┌─────────────────────────────────────────┐');
     console.log('│   🎓 ECMS Backend Server Running       │');
     console.log('├─────────────────────────────────────────┤');
     console.log(`│   📡 Port: ${port.toString().padEnd(29)}│`);
     console.log(`│   🌍 URL: http://localhost:${port.toString().padEnd(14)}│`);
     console.log(`│   📂 Environment: ${(process.env.NODE_ENV || 'development').padEnd(19)}│`);
+    console.log(`│   🔌 Socket.IO: Enabled                 │`);
     console.log('└─────────────────────────────────────────┘\n');
     console.log('💡 Press Ctrl+C to stop the server\n');
   });
 }
 
-export { app };
+export { app, io, httpServer };

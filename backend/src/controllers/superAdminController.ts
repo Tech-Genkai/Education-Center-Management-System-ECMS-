@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { SuperAdmin } from '../models/SuperAdmin.ts';
 import { User } from '../models/User.ts';
 import { Types } from 'mongoose';
+import { io } from '../server.ts';
 
 // Validation schemas
 const createSuperAdminSchema = z.object({
@@ -81,6 +82,9 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
 
     const superAdmin = new SuperAdmin(data);
     await superAdmin.save();
+
+    // Emit Socket.IO event for real-time updates
+    io.emit('admin:created', { admin: superAdmin });
 
     return res.status(201).json({
       message: 'SuperAdmin profile created successfully',

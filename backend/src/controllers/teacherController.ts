@@ -4,6 +4,7 @@ import { Teacher } from '../models/Teacher.ts';
 import { User } from '../models/User.ts';
 import { Types } from 'mongoose';
 import bcrypt from 'bcrypt';
+import { io } from '../server.ts';
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_ROUNDS) || 12;
 
@@ -172,6 +173,9 @@ export const createTeacher = async (req: Request, res: Response) => {
     });
     await teacher.save();
 
+    // Emit Socket.IO event for real-time updates
+    io.emit('teacher:created', { teacher });
+
     return res.status(201).json({
       message: 'Teacher created successfully',
       teacher,
@@ -224,6 +228,9 @@ export const updateTeacher = async (req: Request, res: Response) => {
       }
     }
 
+    // Emit Socket.IO event for real-time updates
+    io.emit('teacher:updated', { teacher });
+
     return res.status(200).json({
       message: 'Teacher updated successfully',
       teacher
@@ -253,6 +260,10 @@ export const deleteTeacher = async (req: Request, res: Response) => {
       // Permanent deletion
       await User.findByIdAndDelete(teacher.userId);
       await Teacher.findByIdAndDelete(req.params.id);
+      
+      // Emit Socket.IO event
+      io.emit('teacher:deleted', { id: req.params.id, hard: true });
+      
       return res.status(200).json({ message: 'Teacher permanently deleted' });
     } else {
       // Soft delete - mark as inactive
@@ -264,6 +275,9 @@ export const deleteTeacher = async (req: Request, res: Response) => {
         user.isActive = false;
         await user.save();
       }
+
+      // Emit Socket.IO event
+      io.emit('teacher:deleted', { id: req.params.id, teacher, hard: false });
 
       return res.status(200).json({ message: 'Teacher deactivated successfully' });
     }
