@@ -162,21 +162,44 @@ const port = process.env.PORT || 5000;
 
 // Only start the server when executed directly (not during tests)
 if (process.env.NODE_ENV !== 'test') {
+  console.log('\n🚀 Starting ECMS Backend Server...\n');
+  
   // Connect to database using required env URI (no local fallback)
-  connectDatabase(process.env.MONGODB_URI || process.env.MONGODB_URL, 'ecms-api').catch((err) => {
-    console.error('Database connection failed during startup:', err);
-  });
+  connectDatabase(process.env.MONGODB_URI || process.env.MONGODB_URL, 'ecms-api')
+    .then(() => {
+      console.log('✅ MongoDB connected successfully');
+    })
+    .catch((err) => {
+      console.error('❌ Database connection failed:', err.message);
+    });
+  
   const retentionDaysEnv = Number(process.env.PROFILE_UPLOAD_RETENTION_DAYS);
   const intervalMsEnv = Number(process.env.PROFILE_UPLOAD_CLEANUP_INTERVAL_MS);
+  
   startProfileUploadCleanupJob({
     retentionDays: Number.isFinite(retentionDaysEnv) ? retentionDaysEnv : undefined,
     intervalMs: Number.isFinite(intervalMsEnv) ? intervalMsEnv : undefined,
-    logger: console
+    logger: {
+      log: (msg: string, data?: any) => {
+        if (data && data.deleted > 0) {
+          console.log(`🧹 Profile cleanup: ${data.deleted} old files removed`);
+        }
+      },
+      error: console.error,
+      warn: console.warn,
+      info: console.info
+    }
   });
   
   app.listen(port, () => {
-    // Basic startup log; replace with structured logger later
-    console.log(`API listening on port ${port}`);
+    console.log('\n┌─────────────────────────────────────────┐');
+    console.log('│   🎓 ECMS Backend Server Running       │');
+    console.log('├─────────────────────────────────────────┤');
+    console.log(`│   📡 Port: ${port.toString().padEnd(29)}│`);
+    console.log(`│   🌍 URL: http://localhost:${port.toString().padEnd(14)}│`);
+    console.log(`│   📂 Environment: ${(process.env.NODE_ENV || 'development').padEnd(19)}│`);
+    console.log('└─────────────────────────────────────────┘\n');
+    console.log('💡 Press Ctrl+C to stop the server\n');
   });
 }
 

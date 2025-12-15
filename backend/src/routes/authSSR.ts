@@ -1,4 +1,5 @@
 import express, { type Request, type Response } from 'express';
+import { body, validationResult } from 'express-validator';
 import { z } from 'zod';
 import { User } from '../models/User.ts';
 import { requireAuth, redirectIfAuth } from '../middleware/session.ts';
@@ -26,18 +27,21 @@ router.get('/login', redirectIfAuth, (req: Request, res: Response) => {
 /**
  * POST /login - Handle login form submission
  */
-router.post('/login', async (req: Request, res: Response) => {
-  const parsed = loginSchema.safeParse(req.body);
+router.post('/login', [
+  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+], async (req: Request, res: Response) => {
+  const errors = validationResult(req);
   
-  if (!parsed.success) {
+  if (!errors.isEmpty()) {
     return res.render('login', {
       title: 'Login - ECMS',
-      error: 'Invalid email or password',
+      error: errors.array()[0].msg,
       savedEmail: req.body.email || ''
     });
   }
 
-  const { email, password, rememberMe } = parsed.data;
+  const { email, password, rememberMe } = req.body;
 
   try {
     const user = await User.findOne({ email: email.toLowerCase().trim(), isActive: true });

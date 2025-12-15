@@ -83,4 +83,65 @@ router.put('/:id/mfa', toggleMFA);
  */
 router.put('/:id/last-login', updateLastLogin);
 
+/**
+ * @route   PATCH /api/superadmins/:id/toggle-status
+ * @desc    Toggle admin active/inactive status
+ * @access  Private (superadmin only)
+ */
+router.patch('/:id/toggle-status', async (req, res, next) => {
+  try {
+    const { NotFoundError } = await import('../middleware/errorHandler.ts');
+    const { SuperAdmin } = await import('../models/SuperAdmin.ts');
+    const { User } = await import('../models/User.ts');
+    
+    const admin = await SuperAdmin.findById(req.params.id);
+    if (!admin) throw new NotFoundError('Admin', req.params.id);
+    
+    const newStatus = admin.status === 'active' ? 'inactive' : 'active';
+    admin.status = newStatus;
+    await admin.save();
+    
+    const user = await User.findById(admin.userId);
+    if (user) {
+      user.isActive = newStatus === 'active';
+      await user.save();
+    }
+    
+    res.json({ message: `Admin ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`, admin });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @route   POST /api/superadmins/:id/reset-password
+ * @desc    Reset admin password
+ * @access  Private (superadmin only)
+ */
+router.post('/:id/reset-password', async (req, res, next) => {
+  try {
+    const { NotFoundError, ValidationError } = await import('../middleware/errorHandler.ts');
+    const { SuperAdmin } = await import('../models/SuperAdmin.ts');
+    const { User } = await import('../models/User.ts');
+    
+    const admin = await SuperAdmin.findById(req.params.id);
+    if (!admin) throw new NotFoundError('Admin', req.params.id);
+    
+    const { password } = req.body;
+    if (!password || password.length < 8) {
+      throw new ValidationError('Password must be at least 8 characters long');
+    }
+    
+    const user = await User.findById(admin.userId);
+    if (!user) throw new NotFoundError('User account for admin');
+    
+    user.password = password;
+    await user.save();
+    
+    res.json({ message: 'Password reset successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

@@ -30,7 +30,7 @@ const SuperAdminSchema = new Schema(
 );
 
 SuperAdminSchema.index({ status: 1 });
-SuperAdminSchema.index({ email: 1 });
+// Note: email already has an index via unique: true option
 SuperAdminSchema.index({ permissions: 1 });
 
 export const SuperAdmin = model('SuperAdmin', SuperAdminSchema);

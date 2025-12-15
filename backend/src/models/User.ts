@@ -51,6 +51,6 @@ UserSchema.set('toJSON', {
 });
 
 UserSchema.index({ role: 1, isActive: 1 });
-UserSchema.index({ email: 1, instituteEmail: 1 });
+// Note: email and instituteEmail already have indexes via unique: true option
 
 export const User = model<IUser>('User', UserSchema);
