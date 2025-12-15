@@ -6,18 +6,20 @@ import { Types } from 'mongoose';
 import { io } from '../server.ts';
 
 // Validation schemas
+// Validation schemas
 const createSuperAdminSchema = z.object({
-  userId: z.string().refine((val) => Types.ObjectId.isValid(val), {
-    message: 'Invalid userId format'
-  }),
-  adminId: z.string().min(1).max(50),
+  // User fields
   firstName: z.string().min(1).max(100),
   lastName: z.string().min(1).max(100),
+  email: z.string().email(),
+  phone: z.string().min(10).optional(),
+  password: z.string().min(8).optional(),
+  instituteEmail: z.string().email().optional(),
+  
+  // SuperAdmin Profile fields
+  adminId: z.string().min(1).max(50),
   dateOfBirth: z.string().optional(),
   gender: z.enum(['male', 'female', 'other']).optional(),
-  email: z.string().email(),
-  instituteEmail: z.string().email().optional(),
-  phone: z.string().optional(),
   addressId: z.string().optional().refine((val) => !val || Types.ObjectId.isValid(val), {
     message: 'Invalid addressId format'
   }),
@@ -29,7 +31,7 @@ const createSuperAdminSchema = z.object({
   sessionTimeout: z.number().min(300).max(86400).optional()
 });
 
-const updateSuperAdminSchema = createSuperAdminSchema.partial().omit({ userId: true, adminId: true });
+const updateSuperAdminSchema = createSuperAdminSchema.partial().omit({ adminId: true, email: true, password: true });
 
 const updatePermissionsSchema = z.object({
   permissions: z.array(z.string()).min(1)
@@ -45,12 +47,14 @@ const toggleMFASchema = z.object({
 });
 
 /**
- * Create a new SuperAdmin profile
+ * Create a new SuperAdmin profile and User account
  */
 export const createSuperAdmin = async (req: Request, res: Response) => {
+  console.log('DEBUG: createSuperAdmin called with body:', req.body);
   try {
     const parsed = createSuperAdminSchema.safeParse(req.body);
     if (!parsed.success) {
+      console.error('DEBUG: Validation failed:', parsed.error.errors);
       return res.status(400).json({
         message: 'Validation failed',
         errors: parsed.error.errors
@@ -59,19 +63,12 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
 
     const data = parsed.data;
 
-    // Check if user exists and has superadmin role
-    const user = await User.findById(data.userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    if (user.role !== 'superadmin') {
-      return res.status(400).json({ message: 'User must have superadmin role' });
-    }
-
-    // Check if SuperAdmin profile already exists for this user
-    const existingAdmin = await SuperAdmin.findOne({ userId: data.userId });
-    if (existingAdmin) {
-      return res.status(400).json({ message: 'SuperAdmin profile already exists for this user' });
+    // Check if user with email exists
+    const existingUser = await User.findOne({ email: data.email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ 
+        message: 'User with this email already exists' 
+      });
     }
 
     // Check if adminId is unique
@@ -80,15 +77,45 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'AdminId already exists' });
     }
 
-    const superAdmin = new SuperAdmin(data);
+    // Create user account
+    const password = data.password || `Admin@${Math.random().toString(36).slice(-8)}`;
+    const user = new User({
+      email: data.email.toLowerCase(),
+      instituteEmail: data.instituteEmail?.toLowerCase() || data.email.toLowerCase(), // Fallback to email if not provided
+      phone: data.phone,
+      password: password,
+      role: 'superadmin',
+      isActive: true
+    });
+    await user.save();
+
+    // Create SuperAdmin profile
+    const superAdmin = new SuperAdmin({
+      userId: user._id,
+      adminId: data.adminId,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      // email/phone kept in User model but can be mirrored if schema requires it (based on previous edits, we removed them from model)
+      designation: data.designation,
+      department: data.department,
+      dateOfBirth: data.dateOfBirth,
+      gender: data.gender,
+      permissions: data.permissions || [],
+      accessLevel: data.accessLevel || 'full',
+      status: 'active'
+    });
     await superAdmin.save();
 
     // Emit Socket.IO event for real-time updates
     io.emit('admin:created', { admin: superAdmin });
 
     return res.status(201).json({
-      message: 'SuperAdmin profile created successfully',
-      superAdmin
+      message: 'SuperAdmin created successfully',
+      superAdmin,
+      credentials: {
+        email: data.email,
+        password: password
+      }
     });
   } catch (error: any) {
     console.error('Error creating SuperAdmin:', error);
@@ -118,7 +145,6 @@ export const getSuperAdmins = async (req: Request, res: Response) => {
       filter.$or = [
         { firstName: { $regex: search, $options: 'i' } },
         { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
         { adminId: { $regex: search, $options: 'i' } }
       ];
     }

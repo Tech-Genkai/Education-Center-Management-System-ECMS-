@@ -1,6 +1,6 @@
 import { Schema, model, Types } from 'mongoose';
 import { PROFILE_IMAGE_DEFAULT_URL } from '../constants/media.ts';
-import { EMAIL_REGEX, NAME_MAX_LENGTH, PHONE_REGEX } from '../utils/validation.ts';
+import { NAME_MAX_LENGTH } from '../utils/validation.ts';
 
 const TeacherSchema = new Schema(
   {
@@ -10,9 +10,6 @@ const TeacherSchema = new Schema(
     lastName: { type: String, trim: true, maxlength: NAME_MAX_LENGTH },
     dateOfBirth: Date,
     gender: { type: String, enum: ['male', 'female', 'other', 'unspecified'], default: 'unspecified' },
-    email: { type: String, required: true, unique: true, index: true, trim: true, lowercase: true, match: EMAIL_REGEX },
-    instituteEmail: { type: String, required: true, unique: true , index: true, trim: true, lowercase: true, match: EMAIL_REGEX },
-    phone: { type: String, required: true, trim: true, match: PHONE_REGEX },
     addressId: { type: Types.ObjectId, ref: 'Address' },
     qualification: String,
     experience: Number,

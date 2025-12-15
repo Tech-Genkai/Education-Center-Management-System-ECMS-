@@ -52,12 +52,14 @@ export const getStudents = async (req: Request, res: Response) => {
       query.$or = [
         { firstName: { $regex: search, $options: 'i' } },
         { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
         { studentId: { $regex: search, $options: 'i' } }
       ];
+      // Note: Searching by email is temporarily disabled in this view or requires aggregation lookup
+      // Future TODO: Aggregation pipeline to search users by email and filter students
     }
 
     const students = await Student.find(query)
+      .populate('userId', 'email phone instituteEmail')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -118,21 +120,19 @@ export const createStudent = async (req: Request, res: Response) => {
 
     const data = parsed.data;
 
-    // Check if student email already exists
-    const existingStudent = await Student.findOne({ 
-      $or: [{ email: data.email }, { studentId: data.studentId }]
-    });
-    if (existingStudent) {
-      return res.status(400).json({ 
-        message: 'Student with this email or student ID already exists' 
-      });
-    }
-
     // Check if user with email exists
     const existingUser = await User.findOne({ email: data.email.toLowerCase() });
     if (existingUser) {
       return res.status(400).json({ 
         message: 'User with this email already exists' 
+      });
+    }
+
+    // Check if student ID already exists
+    const existingStudentId = await Student.findOne({ studentId: data.studentId });
+    if (existingStudentId) {
+      return res.status(400).json({ 
+        message: 'Student ID already exists' 
       });
     }
 
@@ -154,9 +154,9 @@ export const createStudent = async (req: Request, res: Response) => {
       studentId: data.studentId,
       firstName: data.firstName,
       lastName: data.lastName,
-      email: data.email.toLowerCase(),
-      instituteEmail: data.instituteEmail.toLowerCase(),
-      phone: data.phone,
+      // email types are now in User model
+      // instituteEmail: data.instituteEmail.toLowerCase(),
+      // phone: data.phone,
       dateOfBirth: data.dateOfBirth,
       gender: data.gender || 'unspecified',
       currentClass: data.currentClass,

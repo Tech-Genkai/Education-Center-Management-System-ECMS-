@@ -14,6 +14,8 @@ import profileRouter from './routes/profile.ts';
 import superAdminRouter from './routes/superAdmin.ts';
 import studentsRouter from './routes/students.ts';
 import teachersRouter from './routes/teachers.ts';
+import classesRouter from './routes/classes.ts';
+import subjectsRouter from './routes/subjects.ts';
 import { startProfileUploadCleanupJob } from './jobs/cron/cleanupProfileUploads.ts';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi.ts';
@@ -86,9 +88,9 @@ app.use(
   })
 );
 
-// Serve frontend assets (CSS, JS)
-const frontendAssetsPath = path.resolve(__dirname, '../../frontend/assets');
-app.use('/assets', express.static(frontendAssetsPath));
+// Frontend assets route removed as frontend is archived
+// const frontendAssetsPath = path.resolve(__dirname, '../../frontend/assets');
+// app.use('/assets', express.static(frontendAssetsPath));
 
 // Attach session user to locals for all templates
 app.use(attachUserToLocals);
@@ -107,6 +109,8 @@ app.use('/api/profile', profileRouter);
 app.use('/api/superadmins', superAdminRouter);
 app.use('/api/students', studentsRouter);
 app.use('/api/teachers', teachersRouter);
+app.use('/api/classes', classesRouter);
+app.use('/api/subjects', subjectsRouter);
 
 app.get('/healthz', async (_req, res) => {
   const dbStatus = getDatabaseStatus();
@@ -189,14 +193,12 @@ if (process.env.NODE_ENV !== 'test') {
     retentionDays: Number.isFinite(retentionDaysEnv) ? retentionDaysEnv : undefined,
     intervalMs: Number.isFinite(intervalMsEnv) ? intervalMsEnv : undefined,
     logger: {
-      log: (msg: string, data?: any) => {
-        if (data && data.deleted > 0) {
-          console.log(`🧹 Profile cleanup: ${data.deleted} old files removed`);
-        }
-      },
       error: console.error,
-      warn: console.warn,
-      info: console.info
+      info: (message?: any, ...optionalParams: any[]) => {
+        if (typeof message === 'object' && message?.msg === 'profile-upload-cleanup' && message.deleted > 0) {
+          console.log(`🧹 Profile cleanup: ${message.deleted} old files removed`);
+        }
+      }
     }
   });
   

@@ -48,6 +48,7 @@ export function getDatabaseStatus() {
 
 export async function pingDatabase(timeoutMs = 2000) {
   if (mongoose.connection.readyState !== 1) return false;
+  if (!mongoose.connection.db) return false;
   const ping = mongoose.connection.db.admin().ping().then(() => true).catch(() => false);
   const timeout = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), timeoutMs));
   return Promise.race([ping, timeout]);

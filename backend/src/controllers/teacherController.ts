@@ -53,12 +53,13 @@ export const getTeachers = async (req: Request, res: Response) => {
       query.$or = [
         { firstName: { $regex: search, $options: 'i' } },
         { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
         { teacherId: { $regex: search, $options: 'i' } }
       ];
+      // Search by email is not available directly on Teacher model
     }
 
     const teachers = await Teacher.find(query)
+      .populate('userId', 'email phone instituteEmail')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -119,21 +120,19 @@ export const createTeacher = async (req: Request, res: Response) => {
 
     const data = parsed.data;
 
-    // Check if teacher email or teacherId already exists
-    const existingTeacher = await Teacher.findOne({ 
-      $or: [{ email: data.email }, { teacherId: data.teacherId }]
-    });
-    if (existingTeacher) {
-      return res.status(400).json({ 
-        message: 'Teacher with this email or teacher ID already exists' 
-      });
-    }
-
     // Check if user with email exists
     const existingUser = await User.findOne({ email: data.email.toLowerCase() });
     if (existingUser) {
       return res.status(400).json({ 
         message: 'User with this email already exists' 
+      });
+    }
+
+    // Check if teacher ID already exists
+    const existingTeacherId = await Teacher.findOne({ teacherId: data.teacherId });
+    if (existingTeacherId) {
+      return res.status(400).json({ 
+        message: 'Teacher ID already exists' 
       });
     }
 
@@ -155,9 +154,9 @@ export const createTeacher = async (req: Request, res: Response) => {
       teacherId: data.teacherId,
       firstName: data.firstName,
       lastName: data.lastName,
-      email: data.email.toLowerCase(),
-      instituteEmail: data.instituteEmail.toLowerCase(),
-      phone: data.phone,
+      // email types are now in User model
+      // instituteEmail: data.instituteEmail.toLowerCase(),
+      // phone: data.phone,
       dateOfBirth: data.dateOfBirth,
       gender: data.gender || 'unspecified',
       department: data.department,

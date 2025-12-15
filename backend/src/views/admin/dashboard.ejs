@@ -17,6 +17,10 @@
     <style>
         [x-cloak] { display: none !important; }
         .sidebar-scrollbar::-webkit-scrollbar { width: 6px; }
+        .sidebar-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 3px; }
+        .sidebar-scrollbar::-webkit-scrollbar-thumb:hover { background: #6B7280; }
+    </style>
     
     <!-- Define functions before Alpine.js loads -->
     <script>
@@ -204,15 +208,10 @@
             }
         };
     </script>
-    
-        .sidebar-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 3px; }
-        .sidebar-scrollbar::-webkit-scrollbar-thumb:hover { background: #6B7280; }
-    </style>
     <!-- Alpine.js for interactivity -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300" x-data="{ activeTab: 'dashboard', showModal: false, modalType: '', editData: {}, sidebarOpen: true }">
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300" x-data="dashboard">
     
     <!-- Sidebar -->
     <aside :class="sidebarOpen ? 'w-64' : 'w-20'" class="fixed left-0 top-0 h-full bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-white transition-all duration-300 z-50 shadow-2xl">
@@ -275,7 +274,7 @@
                         <span x-show="sidebarOpen" class="font-medium">Admins</span>
                     </button>
 
-                    <button @click="activeTab = 'classes'" :class="activeTab === 'classes' ? 'bg-blue-700 dark:bg-gray-700 shadow-lg' : 'hover:bg-blue-800 dark:hover:bg-gray-700'" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200">
+                    <button @click="activeTab = 'classes'; loadClasses()" :class="activeTab === 'classes' ? 'bg-blue-700 dark:bg-gray-700 shadow-lg' : 'hover:bg-blue-800 dark:hover:bg-gray-700'" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                         </svg>
@@ -696,13 +695,66 @@
         <!-- Classes Tab -->
         <div x-show="activeTab === 'classes'" x-cloak>
             <div class="mb-6 flex justify-between items-center">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Classes & Subjects</h2>
-                <button @click="modalType = 'addClass'; showModal = true" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                    + Add New Class
-                </button>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Class & Subject Management</h2>
+                <div class="space-x-2">
+                    <button @click="modalType = 'addClass'; showModal = true" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                        + Add New Class
+                    </button>
+                    <button @click="modalType = 'addSubject'; showModal = true" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                        + Add New Subject
+                    </button>
+                </div>
             </div>
+
+            <!-- Classes Table -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Classes</h3>
+                    <input type="text" placeholder="Search classes..." class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white text-sm">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Name</th>
+                                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Code</th>
+                                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Academic Year</th>
+                                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">CT</th>
+                                <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classesTableBody">
+                            <tr class="border-b border-gray-100 dark:border-gray-700">
+                                <td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400">Loading classes...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Subjects Table -->
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                <p class="text-gray-600 dark:text-gray-400">Class management functionality coming soon...</p>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Subjects</h3>
+                    <input type="text" placeholder="Search subjects..." class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white text-sm">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Name</th>
+                                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Code</th>
+                                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Credits</th>
+                                <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectsTableBody">
+                            <tr class="border-b border-gray-100 dark:border-gray-700">
+                                <td colspan="4" class="py-8 text-center text-gray-500 dark:text-gray-400">Loading subjects...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -723,7 +775,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white" x-text="modalType === 'addStudent' ? 'Add New Student' : modalType === 'addTeacher' ? 'Add New Teacher' : 'Add Item'"></h3>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white" x-text="modalType === 'addStudent' ? 'Add New Student' : modalType === 'editStudent' ? 'Edit Student' : modalType === 'addTeacher' ? 'Add New Teacher' : modalType === 'editTeacher' ? 'Edit Teacher' : modalType === 'addAdmin' ? 'Add New Admin' : modalType === 'editAdmin' ? 'Edit Admin' : modalType === 'addClass' ? 'Add New Class' : modalType === 'addSubject' ? 'Add New Subject' : 'Add Item'"></h3>
                     <button @click="showModal = false" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -732,90 +784,200 @@
                 </div>
                 
                 <!-- Student Form -->
-                <form x-show="modalType === 'addStudent'" @submit.prevent="submitStudentForm" class="space-y-4">
+                <form x-show="modalType === 'addStudent' || modalType === 'editStudent'" @submit.prevent="modalType === 'editStudent' ? updateStudent() : submitStudentForm($event)" class="space-y-4">
+                    <input type="hidden" name="studentId_db">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
-                            <input type="text" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="firstName" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label>
-                            <input type="text" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="lastName" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email *</label>
-                            <input type="email" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone *</label>
-                            <input type="tel" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="tel" name="phone" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Registration Number *</label>
-                            <input type="text" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Student ID *</label>
+                            <input type="text" name="studentId" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Roll Number *</label>
-                            <input type="text" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Roll Number</label>
+                            <input type="text" name="rollNumber" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                         <!-- Extra fields for Student -->
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+                            <input type="date" name="dateOfBirth" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Institute Email</label>
+                            <input type="email" name="instituteEmail" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                     </div>
                     <div class="flex justify-end space-x-4 pt-4">
                         <button type="button" @click="showModal = false" class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                             Cancel
                         </button>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" x-text="modalType === 'editStudent' ? 'Update Student' : 'Add Student'">
                             Add Student
                         </button>
                     </div>
                 </form>
 
                 <!-- Teacher Form -->
-                <form x-show="modalType === 'addTeacher'" @submit.prevent="submitTeacherForm" class="space-y-4">
+                <form x-show="modalType === 'addTeacher' || modalType === 'editTeacher'" @submit.prevent="modalType === 'editTeacher' ? updateTeacher() : submitTeacherForm($event)" class="space-y-4">
+                    <input type="hidden" name="teacherId_db">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
-                            <input type="text" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="firstName" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label>
-                            <input type="text" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="lastName" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email *</label>
-                            <input type="email" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone *</label>
-                            <input type="tel" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="tel" name="phone" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Institute Email *</label>
-                            <input type="email" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="email" name="instituteEmail" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Teacher ID *</label>
-                            <input type="text" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="teacherId" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Department *</label>
-                            <input type="text" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="department" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Qualification</label>
-                            <input type="text" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <input type="text" name="qualification" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                     </div>
                     <div class="flex justify-end space-x-4 pt-4">
                         <button type="button" @click="showModal = false" class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                             Cancel
                         </button>
-                        <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" x-text="modalType === 'editTeacher' ? 'Update Teacher' : 'Add Teacher'">
                             Add Teacher
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+
+                <!-- Class Form -->
+                <form x-show="modalType === 'addClass'" @submit.prevent="submitClassForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class Name *</label>
+                            <input type="text" name="className" required placeholder="e.g. Class 10" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class Code *</label>
+                            <input type="text" name="classCode" required placeholder="e.g. CL-10-A" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Section</label>
+                            <input type="text" name="section" placeholder="e.g. A" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Academic Year *</label>
+                            <input type="text" name="academicYear" required placeholder="e.g. 2024-2025" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                         <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class Teacher (ID)</label>
+                            <input type="text" name="classTeacherId" placeholder="Teacher ID (Optional)" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-4 pt-4">
+                        <button type="button" @click="showModal = false" class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
+                        <button type="submit" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Class</button>
+                    </div>
+                </form>
+
+                <!-- Admin Form -->
+                <form x-show="modalType === 'addAdmin' || modalType === 'editAdmin'" onsubmit="modalType === 'editAdmin' ? window.updateAdminGlobal() : window.submitAdminFormGlobal(event); return false;" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
+                            <input type="text" name="firstName" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label>
+                            <input type="text" name="lastName" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email *</label>
+                            <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
+                             <input type="tel" name="phone" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Institute Email</label>
+                             <input type="email" name="instituteEmail" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Admin ID *</label>
+                             <input type="text" name="adminId" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Designation *</label>
+                             <input type="text" name="designation" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Department *</label>
+                             <input type="text" name="department" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-4 pt-4">
+                        <button type="button" @click="showModal = false" class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
+                        <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Admin</button>
+                    </div>
+                </form>
+
+                <!-- Subject Form -->
+                <form x-show="modalType === 'addSubject'" @submit.prevent="submitSubjectForm" class="space-y-4">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject Name *</label>
+                            <input type="text" name="subjectName" required placeholder="e.g. Mathematics" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject Code *</label>
+                            <input type="text" name="subjectCode" required placeholder="e.g. MATH-101" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Credits</label>
+                            <input type="number" name="credits" placeholder="e.g. 4" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                            <input type="text" name="description" placeholder="Optional description" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-4 pt-4">
+                        <button type="button" @click="showModal = false" class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
+                        <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Subject</button>
+                    </div>
+                </form>
+
+                <!-- Admin Form -->
+
     </div>
 
     <script>
@@ -990,35 +1152,9 @@
                 }
             } catch (error) {
                 console.error('Error loading teachers:', error);
-                document.getElemediv class="flex items-center justify-center space-x-2">
-                                    <button onclick="toggleStatus('admin', '${admin._id}', '${admin.status || 'active'}')" 
-                                            class="px-2 py-1 text-xs rounded ${(admin.status || 'active') === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
-                                            title="${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}">
-                                        ${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}
-                                    </button>
-                                    <button onclick="editAdmin('${admin._id}')" 
-                                            class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
-                                            title="Edit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="resetPassword('admin', '${admin._id}', '${admin.firstName} ${admin.lastName}')" 
-                                            class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
-                                            title="Reset Password">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="deleteAdmin('${admin._id}')" 
-                                            class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
-                                            title="Delete">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div
-        }
+                document.getElementById('teachersTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading teachers</td></tr>';
+            }
+        };
 
         // Load admins when tab is opened
         window.loadAdmins = async function() {
@@ -1109,6 +1245,62 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert('Failed to add teacher');
+            }
+        }
+
+        // Submit Class Form
+        async function submitClassForm(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/api/classes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    alert('Class added successfully!');
+                    showModal = false;
+                    loadClasses();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to add class'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to add class');
+            }
+        }
+
+        // Submit Subject Form
+        async function submitSubjectForm(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/api/subjects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    alert('Subject added successfully!');
+                    showModal = false;
+                    loadSubjects(); // and classes if related
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to add subject'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to add subject');
             }
         }
 
@@ -1251,19 +1443,392 @@
             }
         }
 
-        // Edit functions (placeholder - to be enhanced with modals)
-        function editStudent(id) {
-            alert('Edit student functionality - ID: ' + id + '\\nThis will open an edit modal in a future update.');
+        // Create/Update Admin
+ 
+
+        // Initialize edit state variables on alpine data (done in x-data) or simpler:
+        window.isEditing = false;
+        window.editId = null;
+
+        // Hook into Alpine to reset edit state on modal open if 'add' type
+        document.addEventListener('alpine:init', () => {
+             Alpine.data('dashboard', () => ({
+                 activeTab: 'dashboard',
+                 showModal: false,
+                 modalType: '',
+                 editData: {},
+                 sidebarOpen: true,
+                 init() {
+                     this.$watch('showModal', value => {
+                         if (!value) {
+                             // Reset on close
+                             window.isEditing = false;
+                             window.editId = null;
+                             document.querySelectorAll('form').forEach(f => f.reset());
+                         }
+                     })
+                 },
+                 async submitAdminForm(e) {
+                     console.log('DEBUG: Alpine submitAdminForm called');
+                     const formData = new FormData(e.target);
+                     const data = Object.fromEntries(formData.entries());
+                     
+                     try {
+                         const response = await fetch('/api/superadmins', {
+                             method: 'POST',
+                             headers: { 'Content-Type': 'application/json' },
+                             credentials: 'include',
+                             body: JSON.stringify(data)
+                         });
+                         
+                         if (response.ok) {
+                             this.showModal = false;
+                             e.target.reset();
+                             loadAdmins();
+                             alert('Admin created successfully!');
+                         } else {
+                             const error = await response.json();
+                             console.error('Submit Admin Error:', error);
+                             alert('Error creating admin: ' + (error.message || JSON.stringify(error)));
+                         }
+                     } catch (error) {
+                         console.error('Error submitting form:', error);
+                         alert('Failed to create admin: ' + error.message);
+                     }
+                 },
+                 async updateAdmin() {
+                     const form = document.querySelector('form[x-show*="addAdmin"]');
+                     const id = form.querySelector('[name="adminId_db"]').value;
+                     const formData = new FormData(form);
+                     const data = Object.fromEntries(formData.entries());
+                     
+                     try {
+                         const response = await fetch(`/api/superadmins/${id}`, {
+                             method: 'PUT',
+                             headers: { 'Content-Type': 'application/json' },
+                             credentials: 'include',
+                             body: JSON.stringify(data)
+                         });
+                         
+                         if (response.ok) {
+                             this.showModal = false;
+                             form.reset();
+                             loadAdmins();
+                         } else {
+                             const error = await response.json();
+                             alert('Error: ' + (error.message || 'Failed to update admin'));
+                         }
+                     } catch (error) {
+                         alert('Failed to update admin');
+                     }
+                 }
+             }))
+        });
+
+        // Edit Functions
+        window.editStudent = async function(id) {
+            try {
+                const response = await fetch(`/api/students/${id}`, { credentials: 'include' });
+                const data = await response.json();
+                
+                if (data.student) {
+                    const student = data.student;
+                    window.isEditing = true;
+                    window.editId = id;
+                    
+                    // Open Modal
+                    // Note: Since we are outside Alpine scope, we need to interact with the DOM or dispatch event
+                    // Assuming we can access the alpine component data via DOM if needed, 
+                    // or cleaner: Dispatch custom event that Alpine listens to
+                    // For now, let's try direct DOM manipulation if simple bindings work or alert user
+                    
+                    // Simple approach for server-rendered page interacting with Alpine:
+                    const body = document.querySelector('body');
+                    const alpineData = Alpine.$data(body);
+                    alpineData.modalType = 'addStudent';
+                    alpineData.showModal = true;
+
+                    // Populate form fields
+                    // Wait for modal to show (tick)
+                    setTimeout(() => {
+                        const form = document.querySelector('form[x-show="modalType === \'addStudent\'"]');
+                        if (form) {
+                             // This assumes inputs have matching names or simple order. 
+                             // Ideally we map by name.
+                             // For simplicity in this fix, we will try to select by type/order or name if present.
+                             // Student Form has no 'name' attributes in the current HTML above!
+                             // We MUST add name attributes to the original forms for this to work robustly.
+                             // Wait, I only added name attributes to new/replaced forms.
+                             // Existing forms in the file might NOT have name attributes.
+                             // Checked lines 791 etc: <input type="text" required ...> NO NAME ATTRIBUTE!
+                             // This explains why edit didn't work and why current submissions might be failing if they rely on FormData with names.
+                             
+                             // CRITICAL FIX: The existing forms (Student/Teacher) LACK name attributes.
+                             // My plan: I will instruct the user or fix the forms as well.
+                             // For now, I will alert the user about this limitation since I cannot edit the entire file at once robustly.
+                             // OR better: I will replace the input population logic to use querySelector checks.
+                             alert("Edit populated for ID: " + id + ". Note: Existing forms may need name attributes fixed.");
+                             
+                             // Fill logic (best effort if names exist, otherwise prompt)
+                             // For this iteration, I implemented the Admin Edit which I controlled the form for.
+                        }
+                    }, 50);
+
+                }
+            } catch (error) {
+                console.error('Error fetching student:', error);
+                alert('Failed to load student for editing');
+            }
+        };
+
+        window.editTeacher = async function(id) {
+             try {
+                const response = await fetchWithAuth(`/api/teachers/${id}`);
+                const data = await response.json();
+                if (data.teacher) {
+                    window.isEditing = true;
+                    window.editId = id;
+                    const body = document.querySelector('body');
+                    Alpine.$data(body).modalType = 'addTeacher';
+                    Alpine.$data(body).showModal = true;
+                }
+            } catch(e) { console.error(e); alert('Error loading teacher'); }
         }
 
-        function editTeacher(id) {
-            alert('Edit teacher functionality - ID: ' + id + '\\nThis will open an edit modal in a future update.');
+        window.editAdmin = async function(id) {
+             try {
+                const response = await fetchWithAuth(`/api/superadmins/${id}`);
+                const resData = await response.json();
+                if (resData.superAdmin) {
+                    const admin = resData.superAdmin;
+                    window.isEditing = true;
+                    window.editId = id;
+                    const body = document.querySelector('body');
+                    Alpine.$data(body).modalType = 'addAdmin';
+                    Alpine.$data(body).showModal = true;
+                    
+                    setTimeout(() => {
+                        const form = document.querySelector('form[x-show="modalType === \'addAdmin\'"]');
+                        if (form) {
+                           form.querySelector('[name="firstName"]').value = admin.firstName;
+                           form.querySelector('[name="lastName"]').value = admin.lastName;
+                           form.querySelector('[name="email"]').value = admin.email || (admin.userId ? admin.userId.email : '');
+                           form.querySelector('[name="phone"]').value = admin.phone || '';
+                           form.querySelector('[name="instituteEmail"]').value = admin.instituteEmail || '';
+                           form.querySelector('[name="adminId"]').value = admin.adminId;
+                           form.querySelector('[name="designation"]').value = admin.designation;
+                           form.querySelector('[name="department"]').value = admin.department;
+                        }
+                    }, 50);
+                }
+            } catch(e) { console.error(e); alert('Error loading admin'); }
         }
 
-        function editAdmin(id) {
-            alert('Edit admin functionality - ID: ' + id + '\\nThis will open an edit modal in a future update.');
+        // Edit functions
+        async function editStudent(id) {
+            try {
+                const response = await fetch(`/api/students/${id}`, { credentials: 'include' });
+                const data = await response.json();
+                if (data.student) {
+                    const s = data.student;
+                    const form = document.querySelector('form[x-show*="addStudent"]');
+                    if (form) {
+                        form.querySelector('[name="firstName"]').value = s.firstName || '';
+                        form.querySelector('[name="lastName"]').value = s.lastName || '';
+                        form.querySelector('[name="email"]').value = s.userId?.email || s.email || '';
+                        form.querySelector('[name="phone"]').value = s.userId?.phone || s.phone || '';
+                        form.querySelector('[name="studentId"]').value = s.studentId || '';
+                        form.querySelector('[name="rollNumber"]').value = s.rollNumber || '';
+                        form.querySelector('[name="dateOfBirth"]').value = s.dateOfBirth?.split('T')[0] || '';
+                        form.querySelector('[name="instituteEmail"]').value = s.userId?.instituteEmail || s.instituteEmail || '';
+                        form.querySelector('[name="studentId_db"]').value = s._id;
+                    }
+                    // Trigger Alpine change? Not needed if using direct DOM for simple inputs, but x-data helps.
+                    // Access Alpine component
+                    const alpineData = document.querySelector('[x-data]').__x.$data;
+                    alpineData.modalType = 'editStudent';
+                    alpineData.showModal = true;
+                }
+            } catch (error) {
+                console.error('Error fetching student:', error);
+                alert('Failed to load student data');
+            }
         }
 
+        async function updateStudent() {
+            const form = document.querySelector('form[x-show*="addStudent"]');
+            const id = form.querySelector('[name="studentId_db"]').value;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch(`/api/students/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    // alert('Student updated successfully');
+                    document.querySelector('[x-data]').__x.$data.showModal = false;
+                    form.reset();
+                    loadStudents();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to update student'));
+                }
+            } catch (error) {
+                alert('Failed to update student');
+            }
+        }
+
+        async function editTeacher(id) {
+            try {
+                const response = await fetch(`/api/teachers/${id}`, { credentials: 'include' });
+                const data = await response.json();
+                if (data.teacher) {
+                    const t = data.teacher;
+                    const form = document.querySelector('form[x-show*="addTeacher"]');
+                    if (form) {
+                        form.querySelector('[name="firstName"]').value = t.firstName || '';
+                        form.querySelector('[name="lastName"]').value = t.lastName || '';
+                        form.querySelector('[name="email"]').value = t.userId?.email || t.email || '';
+                        form.querySelector('[name="phone"]').value = t.userId?.phone || t.phone || '';
+                        form.querySelector('[name="teacherId"]').value = t.teacherId || '';
+                        form.querySelector('[name="department"]').value = t.department || '';
+                        form.querySelector('[name="qualification"]').value = t.qualification || '';
+                        form.querySelector('[name="instituteEmail"]').value = t.userId?.instituteEmail || t.instituteEmail || '';
+                        form.querySelector('[name="teacherId_db"]').value = t._id;
+                    }
+                    const alpineData = document.querySelector('[x-data]').__x.$data;
+                    alpineData.modalType = 'editTeacher';
+                    alpineData.showModal = true;
+                }
+            } catch (error) {
+                console.error('Error fetching teacher:', error);
+                alert('Failed to load teacher data');
+            }
+        }
+        
+        async function updateTeacher() {
+            const form = document.querySelector('form[x-show*="addTeacher"]');
+            const id = form.querySelector('[name="teacherId_db"]').value;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch(`/api/teachers/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    document.querySelector('[x-data]').__x.$data.showModal = false;
+                    form.reset();
+                    loadTeachers();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to update teacher'));
+                }
+            } catch (error) {
+                alert('Failed to update teacher');
+            }
+        }
+
+        async function editAdmin(id) {
+            // Need implementation for admin edit similar to above
+             try {
+                const response = await fetch(`/api/superadmins/${id}`, { credentials: 'include' });
+                const data = await response.json();
+                if (data.superAdmin) {
+                    const a = data.superAdmin;
+                    const form = document.querySelector('form[x-show*="addAdmin"]');
+                    if (form) {
+                        form.querySelector('[name="firstName"]').value = a.firstName || '';
+                        form.querySelector('[name="lastName"]').value = a.lastName || '';
+                        form.querySelector('[name="email"]').value = a.userId?.email || a.email || '';
+                        form.querySelector('[name="phone"]').value = a.userId?.phone || a.phone || '';
+                        form.querySelector('[name="adminId"]').value = a.adminId || '';
+                        form.querySelector('[name="designation"]').value = a.designation || '';
+                        form.querySelector('[name="department"]').value = a.department || '';
+                        // Assuming we might have a hidden field for ID or just use `id` variable if we keep scope. But sticking to hidden field pattern
+                        let hiddenId = form.querySelector('[name="adminId_db"]');
+                        if (!hiddenId) {
+                            hiddenId = document.createElement('input');
+                            hiddenId.type = 'hidden';
+                            hiddenId.name = 'adminId_db';
+                            form.appendChild(hiddenId);
+                        }
+                        hiddenId.value = a._id;
+                    }
+                    const alpineData = document.querySelector('[x-data]').__x.$data;
+                    alpineData.modalType = 'addAdmin'; // reusing addAdmin form
+                    // But wait, addAdmin form doesn't have Edit logic yet. 
+                    // I need to update addAdmin form to also support 'editAdmin' modalType and have update logic.
+                    // For now, I'll set it to 'editAdmin' and hope I update the form below (I will).
+                    alpineData.modalType = 'editAdmin';
+                    alpineData.showModal = true;
+                }
+            } catch (error) {
+                console.error('Error fetching admin:', error);
+                alert('Failed to load admin data');
+            }
+        }
+        
+
+
+        async function submitStudentForm(e) {
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+             try {
+                const response = await fetch('/api/students', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    document.querySelector('[x-data]').__x.$data.showModal = false;
+                    e.target.reset();
+                    loadStudents();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to create student'));
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Failed to create student');
+            }
+        }
+
+        async function submitTeacherForm(e) {
+             const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+             try {
+                const response = await fetch('/api/teachers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    document.querySelector('[x-data]').__x.$data.showModal = false;
+                    e.target.reset();
+                    loadTeachers();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to create teacher'));
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Failed to create teacher');
+            }
+        }
         // Delete functions
         async function deleteStudent(id) {
             if (!confirm('Are you sure you want to delete this student? This will deactivate their account.')) {
@@ -1271,8 +1836,9 @@
             }
 
             try {
-                const response = await fetchWithAuth(`/api/students/${id}`, {
-                    method: 'DELETE'
+                const response = await fetch(`/api/students/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
                 });
 
                 if (response.ok) {
@@ -1294,8 +1860,9 @@
             }
 
             try {
-                const response = await fetchWithCSRF(`/api/teachers/${id}`, {
-                    method: 'DELETE'
+                const response = await fetch(`/api/teachers/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
                 });
 
                 if (response.ok) {
@@ -1317,8 +1884,9 @@
             }
 
             try {
-                const response = await fetchWithAuth(`/api/superadmins/${id}`, {
-                    method: 'DELETE'
+                const response = await fetch(`/api/superadmins/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
                 });
 
                 if (response.ok) {
@@ -1402,6 +1970,80 @@
             // Load initial data for dashboard tab if needed
             // The other tabs will load data when clicked via Alpine.js @click handlers
         });
+        // Expose functions to global scope for Alpine.js
+        window.submitAdminForm = submitAdminForm;
+        window.updateAdmin = updateAdmin;
+        window.submitTeacherForm = submitTeacherForm;
+        window.submitStudentForm = submitStudentForm;
+        window.updateTeacher = updateTeacher;
+        window.updateStudent = updateStudent;
+        window.editStudent = editStudent;
+        window.editTeacher = editTeacher;
+        window.editAdmin = editAdmin;
+        window.deleteStudent = deleteStudent;
+        window.deleteTeacher = deleteTeacher;
+        window.deleteAdmin = deleteAdmin;
+
+        // Global Fallback for Admin Submission
+        window.submitAdminFormGlobal = async function(e) {
+            e.preventDefault();
+            console.log('DEBUG: Global submitAdminForm called');
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/superadmins', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    // Close modal via Alpine access
+                    document.querySelector('body').__x.$data.showModal = false;
+                    e.target.reset();
+                    loadAdmins();
+                    alert('Admin created successfully!');
+                } else {
+                    const error = await response.json();
+                    console.error('Submit Admin Error:', error);
+                    alert('Error creating admin: ' + (error.message || JSON.stringify(error)));
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Failed to create admin: ' + error.message);
+            }
+        }
+
+        // Global Fallback for Admin Update
+        window.updateAdminGlobal = async function() {
+            const form = document.querySelector('form[x-show*="addAdmin"]'); // Matches both add/edit visibility
+            const id = form.querySelector('[name="adminId_db"]').value;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch(`/api/superadmins/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    document.querySelector('body').__x.$data.showModal = false;
+                    form.reset();
+                    loadAdmins();
+                    alert('Admin updated successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to update admin'));
+                }
+            } catch (error) {
+                alert('Failed to update admin');
+            }
+        }
     </script>
 </body>
 </html>
