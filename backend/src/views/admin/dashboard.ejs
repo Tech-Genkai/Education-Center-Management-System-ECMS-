@@ -208,8 +208,80 @@
             }
         };
     </script>
+    
     <!-- Alpine.js for interactivity -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script>
+        // Define Alpine.data before Alpine initializes
+        document.addEventListener('alpine:init', () => {
+            console.log('Alpine init event fired');
+            Alpine.data('dashboard', () => ({
+                activeTab: 'dashboard',
+                showModal: false,
+                modalType: '',
+                editData: {},
+                sidebarOpen: true,
+                init() {
+                    console.log('Dashboard component initialized, activeTab:', this.activeTab);
+                },
+                async submitAdminForm(e) {
+                    console.log('DEBUG: Alpine submitAdminForm called');
+                    const formData = new FormData(e.target);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    try {
+                        const response = await fetch('/api/superadmins', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            this.showModal = false;
+                            e.target.reset();
+                            loadAdmins();
+                            alert('Admin created successfully!');
+                        } else {
+                            const error = await response.json();
+                            console.error('Submit Admin Error:', error);
+                            alert('Error creating admin: ' + (error.message || JSON.stringify(error)));
+                        }
+                    } catch (error) {
+                        console.error('Error submitting form:', error);
+                        alert('Failed to create admin: ' + error.message);
+                    }
+                },
+                async updateAdmin() {
+                    const form = document.querySelector('form[x-show*="addAdmin"]');
+                    const id = form.querySelector('[name="adminId_db"]').value;
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    try {
+                        const response = await fetch(`/api/superadmins/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            this.showModal = false;
+                            form.reset();
+                            loadAdmins();
+                        } else {
+                            const error = await response.json();
+                            alert('Error: ' + (error.message || 'Failed to update admin'));
+                        }
+                    } catch (error) {
+                        alert('Failed to update admin');
+                    }
+                }
+            }))
+        });
+    </script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300" x-data="dashboard">
     
@@ -339,8 +411,6 @@
                     </div>
                 </div>
             </div>
-        </header>
-
         </header>
 
         <!-- Main Content Area -->
@@ -975,9 +1045,8 @@
                         <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Subject</button>
                     </div>
                 </form>
-
-                <!-- Admin Form -->
-
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1450,80 +1519,62 @@
         window.isEditing = false;
         window.editId = null;
 
-        // Hook into Alpine to reset edit state on modal open if 'add' type
-        document.addEventListener('alpine:init', () => {
-             Alpine.data('dashboard', () => ({
-                 activeTab: 'dashboard',
-                 showModal: false,
-                 modalType: '',
-                 editData: {},
-                 sidebarOpen: true,
-                 init() {
-                     this.$watch('showModal', value => {
-                         if (!value) {
-                             // Reset on close
-                             window.isEditing = false;
-                             window.editId = null;
-                             document.querySelectorAll('form').forEach(f => f.reset());
-                         }
-                     })
-                 },
-                 async submitAdminForm(e) {
-                     console.log('DEBUG: Alpine submitAdminForm called');
-                     const formData = new FormData(e.target);
-                     const data = Object.fromEntries(formData.entries());
-                     
-                     try {
-                         const response = await fetch('/api/superadmins', {
-                             method: 'POST',
-                             headers: { 'Content-Type': 'application/json' },
-                             credentials: 'include',
-                             body: JSON.stringify(data)
-                         });
-                         
-                         if (response.ok) {
-                             this.showModal = false;
-                             e.target.reset();
-                             loadAdmins();
-                             alert('Admin created successfully!');
-                         } else {
-                             const error = await response.json();
-                             console.error('Submit Admin Error:', error);
-                             alert('Error creating admin: ' + (error.message || JSON.stringify(error)));
-                         }
-                     } catch (error) {
-                         console.error('Error submitting form:', error);
-                         alert('Failed to create admin: ' + error.message);
-                     }
-                 },
-                 async updateAdmin() {
-                     const form = document.querySelector('form[x-show*="addAdmin"]');
-                     const id = form.querySelector('[name="adminId_db"]').value;
-                     const formData = new FormData(form);
-                     const data = Object.fromEntries(formData.entries());
-                     
-                     try {
-                         const response = await fetch(`/api/superadmins/${id}`, {
-                             method: 'PUT',
-                             headers: { 'Content-Type': 'application/json' },
-                             credentials: 'include',
-                             body: JSON.stringify(data)
-                         });
-                         
-                         if (response.ok) {
-                             this.showModal = false;
-                             form.reset();
-                             loadAdmins();
-                         } else {
-                             const error = await response.json();
-                             alert('Error: ' + (error.message || 'Failed to update admin'));
-                         }
-                     } catch (error) {
-                         alert('Failed to update admin');
-                     }
-                 }
-             }))
-        });
+        // Form submission functions (needed for forms that don't use Alpine methods)
+        window.submitStudentForm = async function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/api/students', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    document.querySelector('body').__x.$data.showModal = false;
+                    event.target.reset();
+                    loadStudents();
+                    alert('Student created successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to create student'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to create student');
+            }
+        };
+
+        window.submitTeacherForm = async function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/api/teachers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    document.querySelector('body').__x.$data.showModal = false;
+                    event.target.reset();
+                    loadTeachers();
+                    alert('Teacher created successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to create teacher'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to create teacher');
+            }
+        };
 
         // Edit Functions
         window.editStudent = async function(id) {
