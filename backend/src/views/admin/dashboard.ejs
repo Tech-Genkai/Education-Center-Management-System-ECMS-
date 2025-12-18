@@ -36,37 +36,37 @@
                 if (data.students && data.students.length > 0) {
                     tbody.innerHTML = data.students.map(student => `
                         <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">\${student.studentId || 'N/A'}</td>
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">\${student.firstName} \${student.lastName}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">\${student.email}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">\${student.currentClass || 'N/A'}</td>
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.studentId || 'N/A'}</td>
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.firstName} ${student.lastName}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${student.email}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${student.currentClass || 'N/A'}</td>
                             <td class="py-3 px-4 text-center">
-                                <span class="px-2 py-1 text-xs rounded-full \${student.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
-                                    \${student.status}
+                                <span class="px-2 py-1 text-xs rounded-full ${student.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
+                                    ${student.status}
                                 </span>
                             </td>
                             <td class="py-3 px-4 text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <button onclick="toggleStatus('student', '\${student._id}', '\${student.status}')" 
-                                            class="px-2 py-1 text-xs rounded \${student.status === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
-                                            title="\${student.status === 'active' ? 'Deactivate' : 'Activate'}">
-                                        \${student.status === 'active' ? 'Deactivate' : 'Activate'}
+                                    <button onclick="toggleStatus('student', '${student._id}', '${student.status}')" 
+                                            class="px-2 py-1 text-xs rounded ${student.status === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
+                                            title="${student.status === 'active' ? 'Deactivate' : 'Activate'}">
+                                        ${student.status === 'active' ? 'Deactivate' : 'Activate'}
                                     </button>
-                                    <button onclick="editStudent('\${student._id}')" 
+                                    <button onclick="editStudent('${student._id}')" 
                                             class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
                                             title="Edit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="resetPassword('student', '\${student._id}', '\${student.firstName} \${student.lastName}')" 
+                                    <button onclick="resetPassword('student', '${student._id}', '${student.firstName} ${student.lastName}')" 
                                             class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
                                             title="Reset Password">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="deleteStudent('\${student._id}')" 
+                                    <button onclick="deleteStudent('${student._id}')" 
                                             class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
                                             title="Delete">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,37 +97,37 @@
                 if (data.teachers && data.teachers.length > 0) {
                     tbody.innerHTML = data.teachers.map(teacher => `
                         <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">\${teacher.teacherId || 'N/A'}</td>
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">\${teacher.firstName} \${teacher.lastName}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">\${teacher.email}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">\${teacher.department || 'N/A'}</td>
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.teacherId || 'N/A'}</td>
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.firstName} ${teacher.lastName}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${teacher.email}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${teacher.department || 'N/A'}</td>
                             <td class="py-3 px-4 text-center">
-                                <span class="px-2 py-1 text-xs rounded-full \${teacher.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
-                                    \${teacher.status}
+                                <span class="px-2 py-1 text-xs rounded-full ${teacher.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
+                                    ${teacher.status}
                                 </span>
                             </td>
                             <td class="py-3 px-4 text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <button onclick="toggleStatus('teacher', '\${teacher._id}', '\${teacher.status}')" 
-                                            class="px-2 py-1 text-xs rounded \${teacher.status === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
-                                            title="\${teacher.status === 'active' ? 'Deactivate' : 'Activate'}">
-                                        \${teacher.status === 'active' ? 'Deactivate' : 'Activate'}
+                                    <button onclick="toggleStatus('teacher', '${teacher._id}', '${teacher.status}')" 
+                                            class="px-2 py-1 text-xs rounded ${teacher.status === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
+                                            title="${teacher.status === 'active' ? 'Deactivate' : 'Activate'}">
+                                        ${teacher.status === 'active' ? 'Deactivate' : 'Activate'}
                                     </button>
-                                    <button onclick="editTeacher('\${teacher._id}')" 
+                                    <button onclick="editTeacher('${teacher._id}')" 
                                             class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
                                             title="Edit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="resetPassword('teacher', '\${teacher._id}', '\${teacher.firstName} \${teacher.lastName}')" 
+                                    <button onclick="resetPassword('teacher', '${teacher._id}', '${teacher.firstName} ${teacher.lastName}')" 
                                             class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
                                             title="Reset Password">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="deleteTeacher('\${teacher._id}')" 
+                                    <button onclick="deleteTeacher('${teacher._id}')" 
                                             class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
                                             title="Delete">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,37 +158,37 @@
                 if (data.admins && data.admins.length > 0) {
                     tbody.innerHTML = data.admins.map(admin => `
                         <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">\${admin.adminId || 'N/A'}</td>
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">\${admin.firstName} \${admin.lastName}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">\${admin.email}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">\${admin.designation || 'N/A'}</td>
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.adminId || 'N/A'}</td>
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.firstName} ${admin.lastName}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${admin.email}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${admin.designation || 'N/A'}</td>
                             <td class="py-3 px-4 text-center">
-                                <span class="px-2 py-1 text-xs rounded-full \${admin.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
-                                    \${admin.status || 'active'}
+                                <span class="px-2 py-1 text-xs rounded-full ${admin.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
+                                    ${admin.status || 'active'}
                                 </span>
                             </td>
                             <td class="py-3 px-4 text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <button onclick="toggleStatus('admin', '\${admin._id}', '\${admin.status || 'active'}')" 
-                                            class="px-2 py-1 text-xs rounded \${(admin.status || 'active') === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
-                                            title="\${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}">
-                                        \${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}
+                                    <button onclick="toggleStatus('admin', '${admin._id}', '${admin.status || 'active'}')" 
+                                            class="px-2 py-1 text-xs rounded ${(admin.status || 'active') === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
+                                            title="${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}">
+                                        ${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}
                                     </button>
-                                    <button onclick="editAdmin('\${admin._id}')" 
+                                    <button onclick="editAdmin('${admin._id}')" 
                                             class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
                                             title="Edit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="resetPassword('admin', '\${admin._id}', '\${admin.firstName} \${admin.lastName}')" 
+                                    <button onclick="resetPassword('admin', '${admin._id}', '${admin.firstName} ${admin.lastName}')" 
                                             class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
                                             title="Reset Password">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="deleteAdmin('\${admin._id}')" 
+                                    <button onclick="deleteAdmin('${admin._id}')" 
                                             class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
                                             title="Delete">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
