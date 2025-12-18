@@ -41,6 +41,9 @@ const __dirname = path.dirname(__filename);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Trust proxy - required for rate limiting to work correctly behind proxies
+app.set('trust proxy', 1);
+
 // Session configuration
 app.use(
   session({
