@@ -34,11 +34,13 @@
                 const tbody = document.getElementById('studentsTableBody');
                 
                 if (data.students && data.students.length > 0) {
-                    tbody.innerHTML = data.students.map(student => `
+                    tbody.innerHTML = data.students.map(student => {
+                        const email = (student.userId && student.userId.email) || 'N/A';
+                        return `
                         <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.studentId || 'N/A'}</td>
                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.firstName} ${student.lastName}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${student.email}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${email}</td>
                             <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${student.currentClass || 'N/A'}</td>
                             <td class="py-3 px-4 text-center">
                                 <span class="px-2 py-1 text-xs rounded-full ${student.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
@@ -59,7 +61,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="resetPassword('student', '${student._id}', '${student.firstName} ${student.lastName}')" 
+                                    <button onclick="window.resetPassword('student', '${student._id}', '${student.firstName} ${student.lastName}', '${email}')" 
                                             class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
                                             title="Reset Password">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +78,8 @@
                                 </div>
                             </td>
                         </tr>
-                    `).join('');
+                    `;
+                    }).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No students found</td></tr>';
                 }
@@ -95,11 +98,13 @@
                 const tbody = document.getElementById('teachersTableBody');
                 
                 if (data.teachers && data.teachers.length > 0) {
-                    tbody.innerHTML = data.teachers.map(teacher => `
+                    tbody.innerHTML = data.teachers.map(teacher => {
+                        const email = (teacher.userId && teacher.userId.email) || 'N/A';
+                        return `
                         <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.teacherId || 'N/A'}</td>
                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.firstName} ${teacher.lastName}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${teacher.email}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${email}</td>
                             <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${teacher.department || 'N/A'}</td>
                             <td class="py-3 px-4 text-center">
                                 <span class="px-2 py-1 text-xs rounded-full ${teacher.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
@@ -120,7 +125,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="resetPassword('teacher', '${teacher._id}', '${teacher.firstName} ${teacher.lastName}')" 
+                                    <button onclick="window.resetPassword('teacher', '${teacher._id}', '${teacher.firstName} ${teacher.lastName}', '${email}')" 
                                             class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
                                             title="Reset Password">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,7 +142,8 @@
                                 </div>
                             </td>
                         </tr>
-                    `).join('');
+                    `;
+                    }).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No teachers found</td></tr>';
                 }
@@ -156,11 +162,13 @@
                 const tbody = document.getElementById('adminsTableBody');
                 
                 if (data.superAdmins && data.superAdmins.length > 0) {
-                    tbody.innerHTML = data.superAdmins.map(admin => `
+                    tbody.innerHTML = data.superAdmins.map(admin => {
+                        const email = (admin.userId && admin.userId.email) || 'N/A';
+                        return `
                         <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.adminId || 'N/A'}</td>
                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.firstName} ${admin.lastName}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${admin.email}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${email}</td>
                             <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${admin.designation || 'N/A'}</td>
                             <td class="py-3 px-4 text-center">
                                 <span class="px-2 py-1 text-xs rounded-full ${admin.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
@@ -181,7 +189,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="resetPassword('admin', '${admin._id}', '${admin.firstName} ${admin.lastName}')" 
+                                    <button onclick="window.resetPassword('admin', '${admin._id}', '${admin.firstName} ${admin.lastName}', '${email}')" 
                                             class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
                                             title="Reset Password">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,7 +206,8 @@
                                 </div>
                             </td>
                         </tr>
-                    `).join('');
+                    `;
+                    }).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No admins found</td></tr>';
                 }
@@ -446,21 +455,21 @@
                         <span x-show="sidebarOpen" class="font-medium">My Profile</span>
                     </button>
 
-                    <button @click="activeTab = 'students'; loadStudents()" :class="activeTab === 'students' ? 'bg-blue-700 dark:bg-gray-700 shadow-lg' : 'hover:bg-blue-800 dark:hover:bg-gray-700'" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200">
+                    <button @click="activeTab = 'students'; window.loadStudents()" :class="activeTab === 'students' ? 'bg-blue-700 dark:bg-gray-700 shadow-lg' : 'hover:bg-blue-800 dark:hover:bg-gray-700'" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
                         <span x-show="sidebarOpen" class="font-medium">Students</span>
                     </button>
 
-                    <button @click="activeTab = 'teachers'; loadTeachers()" :class="activeTab === 'teachers' ? 'bg-blue-700 dark:bg-gray-700 shadow-lg' : 'hover:bg-blue-800 dark:hover:bg-gray-700'" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200">
+                    <button @click="activeTab = 'teachers'; window.loadTeachers()" :class="activeTab === 'teachers' ? 'bg-blue-700 dark:bg-gray-700 shadow-lg' : 'hover:bg-blue-800 dark:hover:bg-gray-700'" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                         <span x-show="sidebarOpen" class="font-medium">Teachers</span>
                     </button>
 
-                    <button @click="activeTab = 'admins'; loadAdmins()" :class="activeTab === 'admins' ? 'bg-blue-700 dark:bg-gray-700 shadow-lg' : 'hover:bg-blue-800 dark:hover:bg-gray-700'" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200">
+                    <button @click="activeTab = 'admins'; window.loadAdmins()" :class="activeTab === 'admins' ? 'bg-blue-700 dark:bg-gray-700 shadow-lg' : 'hover:bg-blue-800 dark:hover:bg-gray-700'" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                         </svg>
@@ -1217,172 +1226,6 @@
         });
 
         // Load students when tab is opened
-        window.loadStudents = async function() {
-            console.log('Loading students...');
-            try {
-                const response = await fetch('/api/students', {
-                    credentials: 'include'
-                });
-                console.log('Students response status:', response.status);
-                const data = await response.json();
-                console.log('Students data:', data);
-                const tbody = document.getElementById('studentsTableBody');
-                
-                if (data.students && data.students.length > 0) {
-                    tbody.innerHTML = data.students.map(student => `
-                        <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.studentId || 'N/A'}</td>
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.firstName} ${student.lastName}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${student.email}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${student.currentClass || 'N/A'}</td>
-                            <td class="py-3 px-4 text-center">
-                                <span class="px-2 py-1 text-xs rounded-full ${student.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
-                                    ${student.status}
-                                </span>
-                            </td>
-                            <td class="py-3 px-4 text-center">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <button onclick="toggleStatus('student', '${student._id}', '${student.status}')" 
-                                            class="px-2 py-1 text-xs rounded ${student.status === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
-                                            title="${student.status === 'active' ? 'Deactivate' : 'Activate'}">
-                                        ${student.status === 'active' ? 'Deactivate' : 'Activate'}
-                                    </button>
-                                    <button onclick="editStudent('${student._id}')" 
-                                            class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
-                                            title="Edit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="resetPassword('student', '${student._id}', '${student.firstName} ${student.lastName}')" 
-                                            class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
-                                            title="Reset Password">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="deleteStudent('${student._id}')" 
-                                            class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
-                                            title="Delete">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No students found</td></tr>';
-                }
-            } catch (error) {
-                console.error('Error loading students:', error);
-                document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading students</td></tr>';
-            }
-        }
-
-        // Load teachers when tab is opened
-        window.loadTeachers = async function() {
-            console.log('Loading teachers...');
-            try {
-                const response = await fetch('/api/teachers', {
-                    credentials: 'include'
-                });
-                console.log('Teachers response status:', response.status);
-                const data = await response.json();
-                console.log('Teachers data:', data);
-                const tbody = document.getElementById('teachersTableBody');
-                
-                if (data.teachers && data.teachers.length > 0) {
-                    tbody.innerHTML = data.teachers.map(teacher => `
-                        <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.teacherId || 'N/A'}</td>
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.firstName} ${teacher.lastName}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${teacher.email}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${teacher.department || 'N/A'}</td>
-                            <td class="py-3 px-4 text-center">
-                                <span class="px-2 py-1 text-xs rounded-full ${teacher.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
-                                    ${teacher.status}
-                                </span>
-                            </td>
-                            <td class="py-3 px-4 text-center">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <button onclick="toggleStatus('teacher', '${teacher._id}', '${teacher.status}')" 
-                                            class="px-2 py-1 text-xs rounded ${teacher.status === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
-                                            title="${teacher.status === 'active' ? 'Deactivate' : 'Activate'}">
-                                        ${teacher.status === 'active' ? 'Deactivate' : 'Activate'}
-                                    </button>
-                                    <button onclick="editTeacher('${teacher._id}')" 
-                                            class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
-                                            title="Edit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="resetPassword('teacher', '${teacher._id}', '${teacher.firstName} ${teacher.lastName}')" 
-                                            class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
-                                            title="Reset Password">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="deleteTeacher('${teacher._id}')" 
-                                            class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
-                                            title="Delete">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No teachers found</td></tr>';
-                }
-            } catch (error) {
-                console.error('Error loading teachers:', error);
-                document.getElementById('teachersTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading teachers</td></tr>';
-            }
-        };
-
-        // Load admins when tab is opened
-        window.loadAdmins = async function() {
-            try {
-                const response = await fetch('/api/superadmins', {
-                    credentials: 'include'
-                });
-                const data = await response.json();
-                const tbody = document.getElementById('adminsTableBody');
-                
-                if (data.admins && data.admins.length > 0) {
-                    tbody.innerHTML = data.admins.map(admin => `
-                        <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.adminId || 'N/A'}</td>
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.firstName} ${admin.lastName}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${admin.email}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${admin.designation || 'N/A'}</td>
-                            <td class="py-3 px-4 text-center">
-                                <span class="px-2 py-1 text-xs rounded-full ${admin.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
-                                    ${admin.status || 'active'}
-                                </span>
-                            </td>
-                            <td class="py-3 px-4 text-center">
-                                <button onclick="editAdmin('${admin._id}')" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium mr-3">Edit</button>
-                                <button onclick="deleteAdmin('${admin._id}')" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium">Delete</button>
-                            </td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No admins found</td></tr>';
-                }
-            } catch (error) {
-                console.error('Error loading admins:', error);
-                document.getElementById('adminsTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading admins</td></tr>';
-            }
-        }
-
-        // Submit Student Form
         async function submitStudentForm(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
@@ -1596,10 +1439,53 @@
         }
 
         // Reset user password
-        async function resetPassword(userType, userId, userName) {
-            const newPassword = prompt(`Enter new password for ${userName} (minimum 8 characters):`);
+        window.resetPassword = async function(userType, userId, userName, userEmail) {
+            console.log('resetPassword called with:', { userType, userId, userName, userEmail });
             
-            if (!newPassword) {
+            // Show the password reset modal
+            const modal = document.getElementById('resetPasswordModal');
+            console.log('Modal element:', modal);
+            
+            if (modal) {
+                modal.classList.remove('hidden');
+                console.log('Modal classes after remove hidden:', modal.className);
+            } else {
+                console.error('Modal element not found!');
+                return;
+            }
+            
+            const nameElement = document.getElementById('resetUserName');
+            const emailElement = document.getElementById('resetUserEmail');
+            
+            if (nameElement) nameElement.textContent = userName;
+            if (emailElement) emailElement.textContent = userEmail;
+            
+            // Store data for modal actions
+            window.currentResetData = { userType, userId, userName, userEmail };
+            console.log('Current reset data stored:', window.currentResetData);
+        }
+
+        // Close reset password modal
+        window.closeResetModal = function() {
+            document.getElementById('resetPasswordModal').classList.add('hidden');
+            document.getElementById('manualPasswordInput').value = '';
+            document.getElementById('manualPasswordConfirm').value = '';
+            window.currentResetData = null;
+        }
+
+        // Manual password reset
+        window.manualPasswordReset = async function() {
+            const newPassword = document.getElementById('manualPasswordInput').value;
+            const confirmPassword = document.getElementById('manualPasswordConfirm').value;
+            const { userType, userId, userName } = window.currentResetData;
+
+            if (!newPassword || !confirmPassword) {
+                alert('Please enter both password fields');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match');
                 return;
             }
 
@@ -1608,7 +1494,7 @@
                 return;
             }
 
-            if (!confirm(`Are you sure you want to reset password for ${userName}?`)) {
+            if (!confirm(`Are you sure you want to manually reset password for ${userName}?`)) {
                 return;
             }
 
@@ -1623,6 +1509,7 @@
 
                 if (response.ok) {
                     alert('Password reset successfully!');
+                    closeResetModal();
                 } else {
                     const error = await response.json();
                     alert('Error: ' + (error.message || 'Failed to reset password'));
@@ -1630,6 +1517,36 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert('Failed to reset password');
+            }
+        }
+
+        // Send OTP email
+        window.sendResetOTPEmail = async function() {
+            const { userType, userId, userName, userEmail } = window.currentResetData;
+
+            if (!confirm(`Send password reset OTP to ${userEmail}?`)) {
+                return;
+            }
+
+            try {
+                const endpoint = userType === 'student' ? '/api/students' : 
+                                userType === 'teacher' ? '/api/teachers' : '/api/superadmins';
+                
+                const response = await fetchWithAuth(`${endpoint}/${userId}/send-reset-email`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Password reset OTP sent successfully to ${data.email}!\\n\\nThe user can now use the "Forgot Password" link on the login page to reset their password.`);
+                    closeResetModal();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to send reset email'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to send reset email');
             }
         }
 
@@ -2217,5 +2134,108 @@
             }
         }
     </script>
+
+    <!-- Password Reset Modal -->
+    <div id="resetPasswordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                        </svg>
+                        Reset Password
+                    </h3>
+                    <button onclick="closeResetModal()" class="text-white hover:text-gray-200 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6">
+                <!-- User Info -->
+                <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">User</p>
+                    <p class="font-semibold text-gray-900 dark:text-white" id="resetUserName"></p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" id="resetUserEmail"></p>
+                </div>
+
+                <!-- Option 1: Manual Password Reset -->
+                <div class="mb-6 p-4 bg-white dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
+                    <div class="flex items-start mb-3">
+                        <svg class="w-6 h-6 text-blue-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Manual Reset</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Set a new password directly</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3 ml-9">
+                        <div>
+                            <input type="password" id="manualPasswordInput" placeholder="New password (min 8 characters)" 
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white text-sm">
+                        </div>
+                        <div>
+                            <input type="password" id="manualPasswordConfirm" placeholder="Confirm new password" 
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white text-sm">
+                        </div>
+                        <button onclick="manualPasswordReset()" 
+                            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Reset Password Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="relative mb-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">OR</span>
+                    </div>
+                </div>
+
+                <!-- Option 2: Send OTP Email -->
+                <div class="p-4 bg-white dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-colors">
+                    <div class="flex items-start mb-3">
+                        <svg class="w-6 h-6 text-green-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Send OTP Email</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Send a one-time password to their email. User can reset password using the "Forgot Password" link.</p>
+                        </div>
+                    </div>
+                    <div class="ml-9">
+                        <button onclick="sendResetOTPEmail()" 
+                            class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                            Send OTP Email
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cancel Button -->
+                <div class="mt-6">
+                    <button onclick="closeResetModal()" 
+                        class="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium py-2 px-4 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

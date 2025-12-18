@@ -144,4 +144,48 @@ router.post('/:id/reset-password', async (req, res, next) => {
   }
 });
 
+/**
+ * @route   POST /api/superadmins/:id/send-reset-email
+ * @desc    Send password reset email with OTP to admin
+ * @access  Private (superadmin only)
+ */
+router.post('/:id/send-reset-email', async (req, res, next) => {
+  try {
+    const { NotFoundError } = await import('../middleware/errorHandler.ts');
+    const { SuperAdmin } = await import('../models/SuperAdmin.ts');
+    const { User } = await import('../models/User.ts');
+    const { PasswordReset } = await import('../models/PasswordReset.ts');
+    const crypto = await import('crypto');
+    const { emailService } = await import('../services/emailService.ts');
+    
+    const admin = await SuperAdmin.findById(req.params.id);
+    if (!admin) throw new NotFoundError('Admin', req.params.id);
+    
+    const user = await User.findById(admin.userId);
+    if (!user) throw new NotFoundError('User account for admin');
+    
+    // Generate OTP and reset token
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetToken = crypto.default.randomBytes(32).toString('hex');
+    
+    // Store in database
+    await PasswordReset.create({
+      userId: user._id,
+      email: user.email,
+      otp,
+      resetToken,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      isUsed: false,
+      attempts: 0
+    });
+    
+    // Send email
+    await emailService.sendOTPEmail(user.email, otp);
+    
+    res.json({ message: 'Password reset email sent successfully', email: user.email });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
