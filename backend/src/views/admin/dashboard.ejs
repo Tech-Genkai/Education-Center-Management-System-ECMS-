@@ -278,6 +278,127 @@
                     } catch (error) {
                         alert('Failed to update admin');
                     }
+                },
+                async submitStudentForm(e) {
+                    const formData = new FormData(e.target);
+                    const data = Object.fromEntries(formData.entries());
+                    // Remove empty strings to avoid validation issues
+                    Object.keys(data).forEach(key => {
+                        if (data[key] === '' || data[key] === undefined) {
+                            delete data[key];
+                        }
+                    });
+                    console.log('Submitting student data:', data);
+                    try {
+                        const response = await fetch('/api/students', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            this.showModal = false;
+                            e.target.reset();
+                            loadStudents();
+                            alert('Student created successfully!');
+                        } else {
+                            const error = await response.json();
+                            console.error('Server error response:', error);
+                            console.error('Full error details:', JSON.stringify(error, null, 2));
+                            const errorMsg = error.errors ? error.errors.map(e => `${e.path ? e.path.join('.') : 'field'}: ${e.message}`).join(', ') : error.message;
+                            alert('Error: ' + (errorMsg || 'Failed to create student'));
+                        }
+                    } catch (error) {
+                        console.error('Error submitting form:', error);
+                        alert('Failed to create student');
+                    }
+                },
+                async submitTeacherForm(e) {
+                    const formData = new FormData(e.target);
+                    const data = Object.fromEntries(formData.entries());
+                    // Remove empty strings to avoid validation issues
+                    Object.keys(data).forEach(key => {
+                        if (data[key] === '' || data[key] === undefined) {
+                            delete data[key];
+                        }
+                    });
+                    try {
+                        const response = await fetch('/api/teachers', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            this.showModal = false;
+                            e.target.reset();
+                            loadTeachers();
+                            alert('Teacher created successfully!');
+                        } else {
+                            const error = await response.json();
+                            const errorMsg = error.errors ? error.errors.map(e => e.message).join(', ') : error.message;
+                            alert('Error: ' + (errorMsg || 'Failed to create teacher'));
+                        }
+                    } catch (error) {
+                        console.error('Error submitting form:', error);
+                        alert('Failed to create teacher');
+                    }
+                },
+                async updateStudent() {
+                    const form = document.querySelector('form[x-show*="addStudent"]');
+                    const id = form.querySelector('[name="studentId_db"]').value;
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    try {
+                        const response = await fetch(`/api/students/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            this.showModal = false;
+                            form.reset();
+                            loadStudents();
+                            alert('Student updated successfully!');
+                        } else {
+                            const error = await response.json();
+                            alert('Error: ' + (error.message || 'Failed to update student'));
+                        }
+                    } catch (error) {
+                        alert('Failed to update student');
+                    }
+                },
+                async updateTeacher() {
+                    const form = document.querySelector('form[x-show*="addTeacher"]');
+                    const id = form.querySelector('[name="teacherId_db"]').value;
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    try {
+                        const response = await fetch(`/api/teachers/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            this.showModal = false;
+                            form.reset();
+                            loadTeachers();
+                            alert('Teacher updated successfully!');
+                        } else {
+                            const error = await response.json();
+                            alert('Error: ' + (error.message || 'Failed to update teacher'));
+                        }
+                    } catch (error) {
+                        alert('Failed to update teacher');
+                    }
                 }
             }))
         });
@@ -878,8 +999,8 @@
                             <input type="text" name="studentId" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Roll Number</label>
-                            <input type="text" name="rollNumber" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Roll Number *</label>
+                            <input type="text" name="rollNumber" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                          <!-- Extra fields for Student -->
                          <div>
@@ -922,8 +1043,8 @@
                             <input type="tel" name="phone" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Institute Email *</label>
-                            <input type="email" name="instituteEmail" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Institute Email</label>
+                            <input type="email" name="instituteEmail" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Teacher ID *</label>

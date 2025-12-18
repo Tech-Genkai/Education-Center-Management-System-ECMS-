@@ -13,7 +13,7 @@ const createTeacherSchema = z.object({
   firstName: z.string().min(1).max(100),
   lastName: z.string().min(1).max(100),
   email: z.string().email(),
-  instituteEmail: z.string().email(),
+  instituteEmail: z.string().email().optional(),
   phone: z.string().min(10),
   teacherId: z.string().min(1).max(50),
   dateOfBirth: z.string().optional(),
@@ -140,7 +140,7 @@ export const createTeacher = async (req: Request, res: Response) => {
     const password = data.password || `Teacher@${Math.random().toString(36).slice(-8)}`;
     const user = new User({
       email: data.email.toLowerCase(),
-      instituteEmail: data.instituteEmail.toLowerCase(),
+      instituteEmail: data.instituteEmail ? data.instituteEmail.toLowerCase() : undefined,
       phone: data.phone,
       password: password,
       role: 'teacher',
