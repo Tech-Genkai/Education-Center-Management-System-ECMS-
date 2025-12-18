@@ -97,6 +97,9 @@ router.post('/login', [
 /**
  * GET /logout - Handle logout
  */
+/**
+ * GET /logout - Handle logout
+ */
 router.get('/logout', (req: Request, res: Response) => {
   req.session.destroy((err) => {
     if (err) {
@@ -115,6 +118,48 @@ router.post('/logout', (req: Request, res: Response) => {
       console.error('Session destroy error:', err);
     }
     res.redirect('/login');
+  });
+});
+
+/**
+ * GET /forgot-password - Show forgot password page
+ */
+router.get('/forgot-password', redirectIfAuth, (req: Request, res: Response) => {
+  res.render('forgot-password', {
+    appName: process.env.APP_NAME || 'ECMS Portal',
+    success: null
+  });
+});
+
+/**
+ * GET /verify-otp - Show OTP verification page
+ */
+router.get('/verify-otp', redirectIfAuth, (req: Request, res: Response) => {
+  const email = req.query.email as string;
+  
+  if (!email) {
+    return res.redirect('/forgot-password');
+  }
+  
+  res.render('verify-otp', {
+    appName: process.env.APP_NAME || 'ECMS Portal',
+    email
+  });
+});
+
+/**
+ * GET /reset-password - Show reset password page
+ */
+router.get('/reset-password', redirectIfAuth, (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  
+  if (!token) {
+    return res.redirect('/forgot-password');
+  }
+  
+  res.render('reset-password', {
+    appName: process.env.APP_NAME || 'ECMS Portal',
+    token
   });
 });
 

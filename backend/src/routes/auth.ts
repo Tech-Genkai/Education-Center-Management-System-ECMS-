@@ -2,6 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.ts';
+import { forgotPassword, verifyOTP, resetPassword } from '../controllers/passwordResetController.ts';
 
 const router = express.Router();
 
@@ -56,5 +57,10 @@ router.post('/login', async (req, res) => {
     return res.status(500).json({ message: 'Authentication failed' });
   }
 });
+
+// Password reset routes
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-otp', verifyOTP);
+router.post('/reset-password', resetPassword);
 
 export default router;

@@ -7,7 +7,6 @@
     "noEmit": true,
     "isolatedModules": true,
     "outDir": "dist",
-    "rootDir": "src",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -16,6 +15,6 @@
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": false
   },
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*", "tests/**/*", "scripts/**/*"],
   "exclude": ["node_modules", "dist"]
 }
