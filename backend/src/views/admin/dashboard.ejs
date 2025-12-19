@@ -217,6 +217,113 @@
                 document.getElementById('adminsTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading admins</td></tr>';
             }
         };
+
+        // Profile Picture Upload Functions
+        window.selectedFile = null;
+        window.originalImageSrc = null;
+        
+        window.handleProfilePictureChange = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Please select a valid image file (JPG, PNG, or WEBP)');
+                event.target.value = '';
+                return;
+            }
+            
+            // Validate file size (2MB max)
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSize) {
+                alert('File size must be less than 2MB');
+                event.target.value = '';
+                return;
+            }
+            
+            window.selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profilePicturePreview').src = e.target.result;
+                document.getElementById('uploadControls').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.cancelProfilePictureUpload = function() {
+            window.selectedFile = null;
+            if (window.originalImageSrc) {
+                document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+            }
+            document.getElementById('uploadControls').classList.add('hidden');
+            document.getElementById('profilePictureInput').value = '';
+        };
+
+        window.uploadProfilePicture = async function() {
+            if (!window.selectedFile) return;
+            
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadSpinner = document.getElementById('uploadSpinner');
+            const uploadControls = document.getElementById('uploadControls');
+            
+            const userId = '<%= user._id %>';
+            const formData = new FormData();
+            formData.append('image', window.selectedFile);
+            formData.append('userId', userId);
+            
+            try {
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<span class="flex items-center justify-center"><svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Uploading...</span>';
+                uploadSpinner.classList.remove('hidden');
+                
+                const response = await fetch('/api/profile/avatar', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    alert('Profile picture updated successfully!');
+                    
+                    window.originalImageSrc = data.url;
+                    document.getElementById('profilePicturePreview').src = data.url;
+                    
+                    const sidebarImg = document.querySelector('aside img[alt="Admin"]');
+                    if (sidebarImg) {
+                        sidebarImg.src = data.url;
+                    }
+                    
+                    uploadControls.classList.add('hidden');
+                    window.selectedFile = null;
+                    document.getElementById('profilePictureInput').value = '';
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to upload picture'));
+                    
+                    if (window.originalImageSrc) {
+                        document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to upload picture. Please try again.');
+                
+                if (window.originalImageSrc) {
+                    document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+                }
+            } finally {
+                uploadSpinner.classList.add('hidden');
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<span class="flex items-center justify-center"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>Upload Photo</span>';
+            }
+        };
+
+        // Initialize originalImageSrc when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            window.originalImageSrc = '<%= user.profilePicture || "/static/images/profile/default/avatar.png" %>';
+        });
     </script>
     
     <!-- Alpine.js for interactivity -->
@@ -668,19 +775,36 @@
                             <div class="flex flex-col items-center">
                                 <div class="relative mb-4">
                                     <img id="profilePicturePreview" src="<%= user.profilePicture || '/static/images/profile/default/avatar.png' %>" alt="Profile" class="w-40 h-40 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600">
-                                    <button type="button" onclick="document.getElementById('profilePictureInput').click()" class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg">
+                                    <div id="uploadSpinner" class="hidden absolute inset-0 bg-gray-900 bg-opacity-50 rounded-full flex items-center justify-center">
+                                        <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
+                                    <button type="button" onclick="document.getElementById('profilePictureInput').click()" class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition-all hover:scale-110">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         </svg>
                                     </button>
-                                    <input type="file" id="profilePictureInput" accept="image/*" class="hidden" onchange="handleProfilePictureChange(event)">
+                                    <input type="file" id="profilePictureInput" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="handleProfilePictureChange(event)">
                                 </div>
                                 <p class="text-sm text-gray-600 dark:text-gray-400 text-center mb-2"><%= user.name %></p>
                                 <p class="text-xs text-gray-500 dark:text-gray-500 text-center"><%= user.email %></p>
-                                <button type="button" onclick="uploadProfilePicture()" id="uploadBtn" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm hidden">
-                                    Upload Photo
-                                </button>
+                                <div id="uploadControls" class="hidden mt-4 space-y-2 w-full">
+                                    <button type="button" onclick="uploadProfilePicture()" id="uploadBtn" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-colors">
+                                        <span class="flex items-center justify-center">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                            </svg>
+                                            Upload Photo
+                                        </span>
+                                    </button>
+                                    <button type="button" onclick="cancelProfilePictureUpload()" class="w-full px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 text-sm transition-colors">
+                                        Cancel
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">JPG, PNG or WEBP (Max 2MB)</p>
                             </div>
                         </div>
 
@@ -1338,48 +1462,7 @@
             }
         }
 
-        // Profile Picture Preview
-        let selectedFile = null;
-        function handleProfilePictureChange(event) {
-            const file = event.target.files[0];
-            if (file) {
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('profilePicturePreview').src = e.target.result;
-                    document.getElementById('uploadBtn').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Upload Profile Picture
-        async function uploadProfilePicture() {
-            if (!selectedFile) return;
-            
-            const formData = new FormData();
-            formData.append('profileImage', selectedFile);
-            
-            try {
-                const response = await fetch('/api/profile/picture', {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    alert('Profile picture updated successfully!');
-                    document.getElementById('uploadBtn').classList.add('hidden');
-                    selectedFile = null;
-                } else {
-                    const error = await response.json();
-                    alert('Error: ' + (error.message || 'Failed to upload picture'));
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to upload picture');
-            }
-        }
+        // Profile form submission handled by functions defined in head
 
         // Profile Form Submission
         document.getElementById('profileForm').addEventListener('submit', async function(event) {

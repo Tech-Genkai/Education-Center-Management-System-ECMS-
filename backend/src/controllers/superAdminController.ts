@@ -31,7 +31,9 @@ const createSuperAdminSchema = z.object({
   sessionTimeout: z.number().min(300).max(86400).optional()
 });
 
-const updateSuperAdminSchema = createSuperAdminSchema.partial().omit({ adminId: true, email: true, password: true });
+const updateSuperAdminSchema = createSuperAdminSchema.partial().omit({ adminId: true, email: true, password: true }).extend({
+  profilePicture: z.string().url().optional()
+});
 
 const updatePermissionsSchema = z.object({
   permissions: z.array(z.string()).min(1)
