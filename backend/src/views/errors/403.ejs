@@ -11,9 +11,12 @@
         }
     </script>
     <script src="/static/js/dark-mode.js"></script>
+    <link rel="stylesheet" href="/static/css/shared-styles.css">
 </head>
-<body class="bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300 min-h-screen">
-    <button id="theme-toggle" class="absolute top-4 right-4 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700">
+<body class="min-h-screen transition-colors duration-300">
+    <!-- Particles Background -->
+    <canvas id="particles-canvas"></canvas>
+    <button id="theme-toggle" class="absolute top-4 right-4 p-2 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700">
         <svg id="theme-icon" class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <!-- Icon will be updated by JavaScript -->
         </svg>
@@ -30,7 +33,7 @@
             </div>
 
             <!-- Error Content Card -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12 text-center">
+            <div class="glass rounded-2xl shadow-xl p-8 md:p-12 text-center">
                 <!-- 403 Badge -->
                 <div class="inline-block mb-6">
                     <span class="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
@@ -66,7 +69,7 @@
                 <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Why am I seeing this?</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="p-4 bg-white/40 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-200/50 dark:border-gray-600/50">
                             <div class="text-yellow-600 mb-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -75,7 +78,7 @@
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Wrong role</h3>
                             <p class="text-xs text-gray-600 dark:text-gray-400">Your account role doesn't have access</p>
                         </div>
-                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="p-4 bg-white/40 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-200/50 dark:border-gray-600/50">
                             <div class="text-orange-600 mb-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
@@ -84,7 +87,7 @@
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Restricted area</h3>
                             <p class="text-xs text-gray-600 dark:text-gray-400">This section is for specific users only</p>
                         </div>
-                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="p-4 bg-white/40 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-200/50 dark:border-gray-600/50">
                             <div class="text-red-600 mb-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
@@ -121,6 +124,7 @@
                 </p>
             </div>
         </div>
-    </div>
-</body>
-</html>
+        </div>
+        <script src="/static/js/particles.js"></script>
+    </body>
+    </html>

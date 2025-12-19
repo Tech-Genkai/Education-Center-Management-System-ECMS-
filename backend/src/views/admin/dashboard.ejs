@@ -11,6 +11,7 @@
         }
     </script>
     <script src="/static/js/dark-mode.js"></script>
+    <link rel="stylesheet" href="/static/css/shared-styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- Socket.IO Client -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -413,7 +414,7 @@
         });
     </script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300" x-data="dashboard">
+<body class="min-h-screen transition-colors duration-300" x-data="dashboard">
     
     <!-- Sidebar -->
     <aside :class="sidebarOpen ? 'w-64' : 'w-20'" class="fixed left-0 top-0 h-full bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-white transition-all duration-300 z-50 shadow-2xl">
@@ -512,7 +513,7 @@
     <!-- Main Content -->
     <div :class="sidebarOpen ? 'ml-64' : 'ml-20'" class="transition-all duration-300">
         <!-- Top Bar -->
-        <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+        <header class="glass-header shadow-sm sticky top-0 z-40">
             <div class="px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 max-w-2xl">
@@ -561,7 +562,7 @@
                 <!-- Stats Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                     <!-- Total Students Card -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
+                    <div class="glass-card rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center space-x-2 mb-2">
@@ -584,7 +585,7 @@
                     </div>
 
                     <!-- Total Teachers Card -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition-shadow">
+                    <div class="glass-card rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition-shadow">
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center space-x-2 mb-2">
@@ -602,7 +603,7 @@
                     </div>
 
                     <!-- Active Classes Card -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow">
+                    <div class="glass-card rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow">
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center space-x-2 mb-2">
@@ -623,7 +624,7 @@
                 <!-- Charts and Activity Row -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     <!-- Enrollment Trends Chart -->
-                    <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <div class="lg:col-span-2 glass-card rounded-xl shadow-lg p-6">
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Student Enrollment Trends</h3>
                             <select class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white">
@@ -635,7 +636,7 @@
                     </div>
 
                     <!-- Recent Activity -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <div class="glass-card rounded-xl shadow-lg p-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
                         <div class="space-y-4">
                             <% activities.forEach(activity => { %>
@@ -662,7 +663,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Profile Picture Section -->
                     <div class="lg:col-span-1">
-                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                        <div class="glass-card rounded-xl shadow-md p-6">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Profile Picture</h3>
                             <div class="flex flex-col items-center">
                                 <div class="relative mb-4">
@@ -684,7 +685,7 @@
                         </div>
 
                         <!-- Quick Info -->
-                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mt-6">
+                        <div class="glass-card rounded-xl shadow-md p-6 mt-6">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Info</h3>
                             <div class="space-y-3">
                                 <div class="flex items-center text-sm">
@@ -711,7 +712,7 @@
 
                     <!-- Profile Form Section -->
                     <div class="lg:col-span-2">
-                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                        <div class="glass-card rounded-xl shadow-md p-6">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Personal Information</h3>
                             <form id="profileForm" class="space-y-6">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -798,7 +799,7 @@
                     + Add New Student
                 </button>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <div class="glass-card rounded-xl shadow-md p-6">
                 <div class="mb-4">
                     <input type="text" placeholder="Search students..." class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                 </div>
@@ -832,7 +833,7 @@
                     + Add New Teacher
                 </button>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <div class="glass-card rounded-xl shadow-md p-6">
                 <div class="mb-4">
                     <input type="text" placeholder="Search teachers..." class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                 </div>
@@ -866,7 +867,7 @@
                     + Add New Admin
                 </button>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <div class="glass-card rounded-xl shadow-md p-6">
                 <div class="mb-4">
                     <input type="text" placeholder="Search admins..." class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                 </div>
@@ -907,7 +908,7 @@
             </div>
 
             <!-- Classes Table -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
+            <div class="glass-card rounded-xl shadow-md p-6 mb-8">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Classes</h3>
                     <input type="text" placeholder="Search classes..." class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white text-sm">
@@ -933,7 +934,7 @@
             </div>
 
             <!-- Subjects Table -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <div class="glass-card rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Subjects</h3>
                     <input type="text" placeholder="Search subjects..." class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white text-sm">
@@ -962,7 +963,7 @@
         <div x-show="activeTab === 'settings'" x-cloak>
             <div class="max-w-4xl mx-auto">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">System Settings</h2>
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                <div class="glass-card rounded-xl shadow-md p-6">
                     <p class="text-gray-600 dark:text-gray-400">Settings functionality coming soon...</p>
                 </div>
             </div>

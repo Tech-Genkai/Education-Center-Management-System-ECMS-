@@ -11,23 +11,14 @@
         }
     </script>
     <script src="/static/js/dark-mode.js"></script>
-    <style>
-        /* Glass effect helper */
-        .glass {
-            background: rgba(255, 255, 255, 0.25);
-            -webkit-backdrop-filter: blur(16px);
-            backdrop-filter: blur(16px);
-            border: 1.5px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
-        }
-        .dark .glass {
-            background: rgba(20, 20, 20, 0.35);
-            border-color: rgba(255, 255, 255, 0.06);
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/shared-styles.css">
+    <!-- Background handled by shared-styles.css (same gradient as forgot-password) -->
 </head>
-<body style="background: linear-gradient(135deg, #F7F4EF 0%, #EFE3D2 35%, #F3D8B8 65%, #E6C9A8 100%);" class="min-h-screen transition-colors duration-300">
-    <div class="min-h-screen flex items-center justify-center px-4 py-12 relative">
+<body class="min-h-screen transition-colors duration-300">
+    <!-- Particles Background -->
+    <canvas id="particles-canvas"></canvas>
+    
+    <div class="min-h-screen flex items-center justify-center px-4 py-12 relative content-wrapper">
         <!-- Dark Mode Toggle -->
         <button id="theme-toggle" class="absolute top-4 right-4 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700">
             <svg id="theme-icon" class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +79,7 @@
                                 value="<%= savedEmail %>"
                                 required 
                                 autocomplete="email"
-                                class="appearance-none block w-full pl-10 pr-3 py-3 border border-transparent rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-150 ease-in-out sm:text-sm bg-white/70 backdrop-blur-sm text-gray-900 shadow-sm"
+                                class="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-indigo-500 transition duration-150 ease-in-out sm:text-sm bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm text-gray-900 dark:text-white shadow-sm"
                                 placeholder="you@example.com"
                             >
                         </div>
@@ -111,7 +102,7 @@
                                 name="password" 
                                 required 
                                 autocomplete="current-password"
-                                class="appearance-none block w-full pl-10 pr-12 py-3 border border-transparent rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-150 ease-in-out sm:text-sm bg-white/70 backdrop-blur-sm text-gray-900 shadow-sm"
+                                class="appearance-none block w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-indigo-500 transition duration-150 ease-in-out sm:text-sm bg-white/70 dark:bg-gray-800/50 backdrop-blur-sm text-gray-900 dark:text-white shadow-sm"
                                 placeholder="Enter your password"
                             >
                             <button 
@@ -196,6 +187,9 @@
                 `;
             }
         });
+
+        // particles logic moved to /static/js/particles.js
     </script>
+    <script src="/static/js/particles.js"></script>
 </body>
 </html>
