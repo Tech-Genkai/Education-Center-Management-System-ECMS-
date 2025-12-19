@@ -146,6 +146,7 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
     // Fetch real SuperAdmin profile
     const adminProfile = await SuperAdmin.findOne({ userId: req.session.userId });
     const userProfile = await UserProfile.findOne({ userId: req.session.userId });
+    const userAccount = await User.findById(req.session.userId);
     
     // Fetch real statistics from database
     const totalStudents = await Student.countDocuments();
@@ -154,21 +155,27 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
     const activeTeachers = await Teacher.countDocuments({ status: 'active' });
     const totalUsers = await User.countDocuments();
     
+    // Determine profile picture: prefer UserProfile, fallback to SuperAdmin, then default
+    const profilePictureUrl = userProfile?.profilePicture?.url || 
+                              adminProfile?.profilePicture || 
+                              '/static/images/profile/default/default-avatar.png';
+    
     const dashboardData = {
       user: {
+        _id: req.session.userId,
         name: adminProfile ? `${adminProfile.firstName} ${adminProfile.lastName}` : req.session.email?.split('@')[0] || 'Admin',
         firstName: adminProfile?.firstName || '',
         lastName: adminProfile?.lastName || '',
         designation: adminProfile?.designation || 'Administrator',
         department: adminProfile?.department || 'Administration',
-        email: adminProfile?.email || req.session.email,
-        phone: adminProfile?.phone || '',
+        email: userAccount?.email || req.session.email,
+        phone: userAccount?.phone || '',
         dateOfBirth: adminProfile?.dateOfBirth ? new Date(adminProfile.dateOfBirth).toISOString().split('T')[0] : '',
         gender: adminProfile?.gender || '',
         bloodGroup: userProfile?.bloodGroup || '',
         address: userProfile?.address || '',
         emergencyContact: userProfile?.emergencyContact || '',
-        profilePicture: userProfile?.profilePicture?.url || '/static/images/profile/default/default-avatar.png',
+        profilePicture: profilePictureUrl,
         lastLogin: adminProfile?.lastLoginAt ? new Date(adminProfile.lastLoginAt).toLocaleString() : 'N/A',
         accessLevel: adminProfile?.accessLevel || 'full',
         permissions: adminProfile?.permissions || []

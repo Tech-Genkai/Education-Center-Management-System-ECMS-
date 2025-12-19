@@ -7,7 +7,12 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { Types } from 'mongoose';
 import { UserProfile } from '../models/UserProfile.ts';
+import { SuperAdmin } from '../models/SuperAdmin.ts';
+import { Teacher } from '../models/Teacher.ts';
+import { Student } from '../models/Student.ts';
+import { User } from '../models/User.ts';
 import { authMiddleware } from '../middleware/auth.ts';
+import { requireAuth } from '../middleware/session.ts';
 import {
   PROFILE_IMAGE_DEFAULT_STORAGE_PATH,
   PROFILE_IMAGE_DEFAULT_URL,
@@ -16,6 +21,27 @@ import {
 import sizeOf from 'image-size';
 
 const router = express.Router();
+
+// Hybrid auth middleware that supports both JWT and session
+const hybridAuth = (req: Request, res: Response, next: NextFunction) => {
+  // Check session first (for dashboard)
+  if (req.session && req.session.userId) {
+    (req as any).auth = {
+      userId: req.session.userId,
+      role: req.session.role
+    };
+    return next();
+  }
+  
+  // Fall back to JWT auth (for API)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authMiddleware(req, res, next);
+  }
+  
+  // No valid auth found
+  return res.status(401).json({ message: 'Unauthorized' });
+};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,7 +68,7 @@ const PRIVILEGED_LIMITS = {
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export const getImageLimitsForRole = (role?: string) => {
-  if (role === 'admin' || role === 'teacher') return PRIVILEGED_LIMITS;
+  if (role === 'admin' || role === 'teacher' || role === 'superadmin') return PRIVILEGED_LIMITS;
   return BASE_LIMITS;
 };
 
@@ -81,23 +107,34 @@ const errorResponseSchema = z.object({
   error: z.string().optional()
 });
 
-router.post('/avatar', authMiddleware, upload.single('image'), async (req: Request, res: Response) => {
+router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, res: Response) => {
   try {
+    console.log('📸 Avatar upload request received');
+    console.log('Body userId:', req.body.userId);
+    console.log('Auth context:', (req as any).auth);
+    console.log('File:', req.file ? `${req.file.filename} (${req.file.size} bytes)` : 'No file');
+    
     const { userId } = req.body as { userId?: string };
     const requester = (req as any).auth as { userId?: string; role?: string };
 
     if (!userId || !Types.ObjectId.isValid(userId)) {
       if (req.file?.path) fs.unlink(req.file.path, () => undefined);
+      console.error('❌ Invalid userId:', userId);
       return res.status(400).json({ message: 'userId is required and must be a valid ObjectId' });
     }
 
     if (!req.file) {
+      console.error('❌ No file uploaded');
       return res.status(400).json({ message: 'Image file is required' });
     }
 
-    // Authorization: admin can upload for anyone; users only for themselves
-    if (requester?.role !== 'admin' && requester?.userId !== userId) {
+    // Authorization: admin/superadmin can upload for anyone; users only for themselves
+    const isSuperAdmin = requester?.role === 'superadmin' || requester?.role === 'admin';
+    console.log('🔐 Authorization check:', { isSuperAdmin, requesterRole: requester?.role, requesterId: requester?.userId, targetUserId: userId });
+    
+    if (!isSuperAdmin && requester?.userId !== userId) {
       if (req.file?.path) fs.unlink(req.file.path, () => undefined);
+      console.error('❌ Forbidden: User cannot upload for another user');
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -163,6 +200,35 @@ router.post('/avatar', authMiddleware, upload.single('image'), async (req: Reque
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 
+    // Also update the role-specific profile model (SuperAdmin, Teacher, Student)
+    const user = await User.findById(userId);
+    console.log('👤 User found:', user ? `${user.role}` : 'Not found');
+    
+    if (user) {
+      if (user.role === 'superadmin') {
+        const updated = await SuperAdmin.findOneAndUpdate(
+          { userId },
+          { $set: { profilePicture: publicUrl } },
+          { new: true }
+        );
+        console.log('✅ SuperAdmin profile picture updated:', updated ? 'Success' : 'Failed');
+      } else if (user.role === 'teacher') {
+        await Teacher.findOneAndUpdate(
+          { userId },
+          { $set: { profilePicture: publicUrl } },
+          { new: true }
+        );
+        console.log('✅ Teacher profile picture updated');
+      } else if (user.role === 'student') {
+        await Student.findOneAndUpdate(
+          { userId },
+          { $set: { profilePicture: publicUrl } },
+          { new: true }
+        );
+        console.log('✅ Student profile picture updated');
+      }
+    }
+
     // Cleanup old uploaded image (only if it was not default and path exists)
     if (existing?.profilePicture?.storagePath && existing.profilePicture.isDefault === false) {
       const oldPath = path.resolve(__dirname, '../../public', existing.profilePicture.storagePath);
@@ -180,11 +246,14 @@ router.post('/avatar', authMiddleware, upload.single('image'), async (req: Reque
 
     const parsed = uploadResponseSchema.safeParse(responsePayload);
     if (!parsed.success) {
+      console.error('❌ Response validation failed:', parsed.error);
       return res.status(500).json({ message: 'Response validation failed', error: parsed.error.message });
     }
 
+    console.log('✅ Avatar upload successful:', publicUrl);
     return res.status(200).json(parsed.data);
   } catch (error) {
+    console.error('❌ Avatar upload error:', error);
     if (req.file?.path) fs.unlink(req.file.path, () => undefined);
     const errPayload = { message: 'Failed to upload image', error: (error as Error).message };
     const parsed = errorResponseSchema.safeParse(errPayload);
@@ -193,7 +262,7 @@ router.post('/avatar', authMiddleware, upload.single('image'), async (req: Reque
 });
 
 // Delete avatar (revert to default)
-router.delete('/avatar', authMiddleware, async (req: Request, res: Response) => {
+router.delete('/avatar', hybridAuth, async (req: Request, res: Response) => {
   try {
     const { userId } = req.body as { userId?: string };
     const requester = (req as any).auth as { userId?: string; role?: string };
@@ -202,7 +271,8 @@ router.delete('/avatar', authMiddleware, async (req: Request, res: Response) => 
       return res.status(400).json({ message: 'userId is required and must be a valid ObjectId' });
     }
 
-    if (requester?.role !== 'admin' && requester?.userId !== userId) {
+    const isSuperAdmin = requester?.role === 'superadmin' || requester?.role === 'admin';
+    if (!isSuperAdmin && requester?.userId !== userId) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -235,6 +305,30 @@ router.delete('/avatar', authMiddleware, async (req: Request, res: Response) => 
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 
+    // Also update the role-specific profile model
+    const user = await User.findById(userId);
+    if (user) {
+      if (user.role === 'superadmin') {
+        await SuperAdmin.findOneAndUpdate(
+          { userId },
+          { $set: { profilePicture: PROFILE_IMAGE_DEFAULT_URL } },
+          { new: true }
+        );
+      } else if (user.role === 'teacher') {
+        await Teacher.findOneAndUpdate(
+          { userId },
+          { $set: { profilePicture: PROFILE_IMAGE_DEFAULT_URL } },
+          { new: true }
+        );
+      } else if (user.role === 'student') {
+        await Student.findOneAndUpdate(
+          { userId },
+          { $set: { profilePicture: PROFILE_IMAGE_DEFAULT_URL } },
+          { new: true }
+        );
+      }
+    }
+
     return res.status(200).json({ message: 'Avatar removed, reverted to default', profile });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to delete avatar', error: (error as Error).message });
@@ -242,7 +336,7 @@ router.delete('/avatar', authMiddleware, async (req: Request, res: Response) => 
 });
 
 // Get profile by userId
-router.get('/', authMiddleware, async (req: Request, res: Response) => {
+router.get('/', hybridAuth, async (req: Request, res: Response) => {
   try {
     const { userId } = req.query as { userId?: string };
     const requester = (req as any).auth as { userId?: string; role?: string };
@@ -251,7 +345,8 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'userId is required and must be a valid ObjectId' });
     }
 
-    if (requester?.role !== 'admin' && requester?.userId !== userId) {
+    const isSuperAdmin = requester?.role === 'superadmin' || requester?.role === 'admin';
+    if (!isSuperAdmin && requester?.userId !== userId) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -279,15 +374,18 @@ router.put('/', async (req: Request, res: Response) => {
     const userId = session.userId;
     const { firstName, lastName, phone, dateOfBirth, gender, designation, department, address, bloodGroup, emergencyContact } = req.body;
 
-    // Import SuperAdmin model
-    const { SuperAdmin } = await import('../models/SuperAdmin.ts');
+    // Update User account info
+    const user = await User.findById(userId);
+    if (user) {
+      if (phone) user.phone = phone;
+      await user.save();
+    }
     
     // Update SuperAdmin profile
     const adminProfile = await SuperAdmin.findOne({ userId });
     if (adminProfile) {
       if (firstName) adminProfile.firstName = firstName;
       if (lastName) adminProfile.lastName = lastName;
-      if (phone) adminProfile.phone = phone;
       if (dateOfBirth) adminProfile.dateOfBirth = new Date(dateOfBirth);
       if (gender) adminProfile.gender = gender;
       if (designation) adminProfile.designation = designation;
@@ -303,6 +401,7 @@ router.put('/', async (req: Request, res: Response) => {
     if (phone) profileData.phone = phone;
     if (dateOfBirth) profileData.dateOfBirth = new Date(dateOfBirth);
     if (gender) profileData.gender = gender;
+    if (bloodGroup) profileData.bloodGroup = bloodGroup;
 
     const profile = await UserProfile.findOneAndUpdate(
       { userId },
@@ -312,7 +411,8 @@ router.put('/', async (req: Request, res: Response) => {
 
     return res.status(200).json({ 
       message: 'Profile updated successfully',
-      profile 
+      profile,
+      adminProfile
     });
   } catch (error) {
     console.error('Profile update error:', error);
