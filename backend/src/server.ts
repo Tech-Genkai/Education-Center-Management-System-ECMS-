@@ -215,14 +215,14 @@ if (process.env.NODE_ENV !== 'test') {
   });
 
   httpServer.listen(port, () => {
-    console.log('\n┌─────────────────────────────────────────┐');
-    console.log('│   🎓 ECMS Backend Server Running       │');
-    console.log('├─────────────────────────────────────────┤');
-    console.log(`│   📡 Port: ${port.toString().padEnd(29)}│`);
+    console.log('\n┌──────────────────────────────────────────┐');
+    console.log('│   🎓 ECMS Backend Server Running         │');
+    console.log('├──────────────────────────────────────────┤');
+    console.log(`│   📡 Port: ${port.toString().padEnd(29)} │`);
     console.log(`│   🌍 URL: http://localhost:${port.toString().padEnd(14)}│`);
-    console.log(`│   📂 Environment: ${(process.env.NODE_ENV || 'development').padEnd(19)}│`);
-    console.log(`│   🔌 Socket.IO: Enabled                 │`);
-    console.log('└─────────────────────────────────────────┘\n');
+    console.log(`│   📂 Environment: ${(process.env.NODE_ENV || 'development').padEnd(19)}    │`);
+    console.log(`│   🔌 Socket.IO: Enabled                  │`);
+    console.log('└──────────────────────────────────────────┘\n');
     console.log('💡 Press Ctrl+C to stop the server\n');
   });
 }
