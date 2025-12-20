@@ -1,0 +1,89 @@
+<script>
+    /**
+     * Socket.IO and Initialization
+     * Contains: Socket connection, real-time updates, DOMContentLoaded event, global function exports
+     */
+
+    // Initialize Socket.IO connection
+    const socket = io();
+
+    socket.on('connect', () => {
+        console.log('🔌 Connected to Socket.IO server');
+    });
+
+    socket.on('disconnect', () => {
+        console.log('🔌 Disconnected from Socket.IO server');
+    });
+
+    // Listen for real-time student updates
+    socket.on('student:created', (data) => {
+        console.log('New student created:', data);
+        if (window.location.hash === '#students' || document.getElementById('studentsTableBody')) {
+            loadStudents(); // Reload students table
+        }
+    });
+
+    socket.on('student:updated', (data) => {
+        console.log('Student updated:', data);
+        if (window.location.hash === '#students' || document.getElementById('studentsTableBody')) {
+            loadStudents(); // Reload students table
+        }
+    });
+
+    socket.on('student:deleted', (data) => {
+        console.log('Student deleted:', data);
+        if (window.location.hash === '#students' || document.getElementById('studentsTableBody')) {
+            loadStudents(); // Reload students table
+        }
+    });
+
+    // Listen for real-time teacher updates
+    socket.on('teacher:created', (data) => {
+        console.log('New teacher created:', data);
+        if (window.location.hash === '#teachers' || document.getElementById('teachersTableBody')) {
+            loadTeachers(); // Reload teachers table
+        }
+    });
+
+    socket.on('teacher:updated', (data) => {
+        console.log('Teacher updated:', data);
+        if (window.location.hash === '#teachers' || document.getElementById('teachersTableBody')) {
+            loadTeachers(); // Reload teachers table
+        }
+    });
+
+    socket.on('teacher:deleted', (data) => {
+        console.log('Teacher deleted:', data);
+        if (window.location.hash === '#teachers' || document.getElementById('teachersTableBody')) {
+            loadTeachers(); // Reload teachers table
+        }
+    });
+
+    // Listen for real-time admin updates
+    socket.on('admin:created', (data) => {
+        console.log('New admin created:', data);
+        if (window.location.hash === '#admins' || document.getElementById('adminsTableBody')) {
+            loadAdmins(); // Reload admins table
+        }
+    });
+
+    // Initialize data loading when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load initial data for dashboard tab if needed
+        // The other tabs will load data when clicked via Alpine.js @click handlers
+    });
+
+    // Expose functions to global scope for Alpine.js
+    window.submitAdminForm = submitAdminForm;
+    window.updateAdmin = updateAdmin;
+    window.submitTeacherForm = submitTeacherForm;
+    window.submitStudentForm = submitStudentForm;
+    window.updateTeacher = updateTeacher;
+    window.updateStudent = updateStudent;
+    window.editStudent = editStudent;
+    window.editTeacher = editTeacher;
+    window.editAdmin = editAdmin;
+    window.deleteStudent = deleteStudent;
+    window.deleteTeacher = deleteTeacher;
+    window.deleteAdmin = deleteAdmin;
+</script>

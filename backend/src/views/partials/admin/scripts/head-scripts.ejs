@@ -1,0 +1,297 @@
+<script>
+    /**
+     * Head Scripts
+     * Contains: Alpine.js config, load functions for students/teachers/admins, profile picture functions
+     */
+
+    // Load data functions - must be defined before Alpine initializes
+    window.loadStudents = async function() {
+        try {
+            const response = await fetch('/api/students', {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            const tbody = document.getElementById('studentsTableBody');
+            
+            if (data.students && data.students.length > 0) {
+                tbody.innerHTML = data.students.map(student => {
+                    const email = (student.userId && student.userId.email) || 'N/A';
+                    return `
+                    <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.studentId || 'N/A'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.firstName} ${student.lastName}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${email}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${student.currentClass || 'N/A'}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2 py-1 text-xs rounded-full ${student.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
+                                ${student.status}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <button onclick="toggleStatus('student', '${student._id}', '${student.status}')" 
+                                        class="px-2 py-1 text-xs rounded ${student.status === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
+                                        title="${student.status === 'active' ? 'Deactivate' : 'Activate'}">
+                                    ${student.status === 'active' ? 'Deactivate' : 'Activate'}
+                                </button>
+                                <button onclick="editStudent('${student._id}')" 
+                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
+                                        title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="window.resetPassword('student', '${student._id}', '${student.firstName} ${student.lastName}', '${email}')" 
+                                        class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
+                                        title="Reset Password">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="deleteStudent('${student._id}')" 
+                                        class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
+                                        title="Delete">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                }).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No students found</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error loading students:', error);
+            document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading students</td></tr>';
+        }
+    };
+
+    window.loadTeachers = async function() {
+        try {
+            const response = await fetch('/api/teachers', {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            const tbody = document.getElementById('teachersTableBody');
+            
+            if (data.teachers && data.teachers.length > 0) {
+                tbody.innerHTML = data.teachers.map(teacher => {
+                    const email = (teacher.userId && teacher.userId.email) || 'N/A';
+                    return `
+                    <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.teacherId || 'N/A'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.firstName} ${teacher.lastName}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${email}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${teacher.department || 'N/A'}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2 py-1 text-xs rounded-full ${teacher.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
+                                ${teacher.status}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <button onclick="toggleStatus('teacher', '${teacher._id}', '${teacher.status}')" 
+                                        class="px-2 py-1 text-xs rounded ${teacher.status === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
+                                        title="${teacher.status === 'active' ? 'Deactivate' : 'Activate'}">
+                                    ${teacher.status === 'active' ? 'Deactivate' : 'Activate'}
+                                </button>
+                                <button onclick="editTeacher('${teacher._id}')" 
+                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
+                                        title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="window.resetPassword('teacher', '${teacher._id}', '${teacher.firstName} ${teacher.lastName}', '${email}')" 
+                                        class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
+                                        title="Reset Password">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="deleteTeacher('${teacher._id}')" 
+                                        class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
+                                        title="Delete">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                }).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No teachers found</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error loading teachers:', error);
+            document.getElementById('teachersTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading teachers</td></tr>';
+        }
+    };
+
+    window.loadAdmins = async function() {
+        try {
+            const response = await fetch('/api/superadmins', {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            const tbody = document.getElementById('adminsTableBody');
+            
+            if (data.superAdmins && data.superAdmins.length > 0) {
+                tbody.innerHTML = data.superAdmins.map(admin => {
+                    const email = (admin.userId && admin.userId.email) || 'N/A';
+                    return `
+                    <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.adminId || 'N/A'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.firstName} ${admin.lastName}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${email}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${admin.designation || 'N/A'}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2 py-1 text-xs rounded-full ${admin.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}">
+                                ${admin.status || 'active'}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <button onclick="toggleStatus('admin', '${admin._id}', '${admin.status || 'active'}')" 
+                                        class="px-2 py-1 text-xs rounded ${(admin.status || 'active') === 'active' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
+                                        title="${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}">
+                                    ${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}
+                                </button>
+                                <button onclick="editAdmin('${admin._id}')" 
+                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
+                                        title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="window.resetPassword('admin', '${admin._id}', '${admin.firstName} ${admin.lastName}', '${email}')" 
+                                        class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 text-sm font-medium" 
+                                        title="Reset Password">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="deleteAdmin('${admin._id}')" 
+                                        class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
+                                        title="Delete">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                }).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No admins found</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error loading admins:', error);
+            document.getElementById('adminsTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading admins</td></tr>';
+        }
+    };
+
+    // Profile Picture Upload Functions
+    window.selectedFile = null;
+    window.originalImageSrc = null;
+    
+    window.handleProfilePictureChange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please select a valid image file (JPG, PNG, or WEBP)');
+            event.target.value = '';
+            return;
+        }
+        
+        // Validate file size (2MB max)
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        if (file.size > maxSize) {
+            alert('File size must be less than 2MB');
+            event.target.value = '';
+            return;
+        }
+        
+        window.selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('profilePicturePreview').src = e.target.result;
+            document.getElementById('uploadControls').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.cancelProfilePictureUpload = function() {
+        window.selectedFile = null;
+        if (window.originalImageSrc) {
+            document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+        }
+        document.getElementById('uploadControls').classList.add('hidden');
+        document.getElementById('profilePictureInput').value = '';
+    };
+
+    window.uploadProfilePicture = async function() {
+        if (!window.selectedFile) return;
+        
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadSpinner = document.getElementById('uploadSpinner');
+        const uploadControls = document.getElementById('uploadControls');
+        
+        const userId = '<%= user._id %>';
+        const formData = new FormData();
+        formData.append('image', window.selectedFile);
+        formData.append('userId', userId);
+        
+        try {
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<span class="flex items-center justify-center"><svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Uploading...</span>';
+            uploadSpinner.classList.remove('hidden');
+            
+            const response = await fetch('/api/profile/avatar', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                alert('Profile picture updated successfully!');
+                
+                // Reload page to get updated session data with new profile picture
+                window.location.reload();
+            } else {
+                const error = await response.json();
+                alert('Error: ' + (error.message || 'Failed to upload picture'));
+                
+                if (window.originalImageSrc) {
+                    document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to upload picture. Please try again.');
+            
+            if (window.originalImageSrc) {
+                document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+            }
+        } finally {
+            uploadSpinner.classList.add('hidden');
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '<span class="flex items-center justify-center"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>Upload Photo</span>';
+        }
+    };
+
+    // Initialize originalImageSrc when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        window.originalImageSrc = '<%= user.profilePicture || "/static/images/profile/default/default-profile.png" %>';
+    });
+</script>

@@ -155,10 +155,11 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
     const activeTeachers = await Teacher.countDocuments({ status: 'active' });
     const totalUsers = await User.countDocuments();
     
-    // Determine profile picture: prefer UserProfile, fallback to SuperAdmin, then default
-    const profilePictureUrl = userProfile?.profilePicture?.url || 
+    // Determine profile picture: prefer User model (most up-to-date), then UserProfile, then role-specific, then default
+    const profilePictureUrl = userAccount?.profilePicture ||
+                              userProfile?.profilePicture?.url || 
                               adminProfile?.profilePicture || 
-                              '/static/images/profile/default/default-avatar.png';
+                              '/static/images/profile/default/default-profile.png';
     
     const dashboardData = {
       user: {

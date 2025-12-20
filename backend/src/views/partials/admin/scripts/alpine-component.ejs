@@ -1,0 +1,217 @@
+<script>
+    /**
+     * Alpine.js Dashboard Component Configuration
+     * Contains: Alpine.js reactive component with state management and form handlers
+     */
+
+    document.addEventListener('alpine:init', () => {
+        console.log('Alpine init event fired');
+        
+        Alpine.data('dashboard', () => ({
+            // Component State
+            activeTab: 'dashboard',
+            showModal: false,
+            modalType: '',
+            editData: {},
+            sidebarOpen: true,
+
+            // Initialization
+            init() {
+                console.log('Dashboard component initialized, activeTab:', this.activeTab);
+            },
+
+            // ==========================================
+            // ADMIN FORM HANDLERS
+            // ==========================================
+            async submitAdminForm(e) {
+                console.log('DEBUG: Alpine submitAdminForm called');
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                try {
+                    const response = await fetch('/api/superadmins', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        e.target.reset();
+                        loadAdmins();
+                        alert('Admin created successfully!');
+                    } else {
+                        const error = await response.json();
+                        console.error('Submit Admin Error:', error);
+                        alert('Error creating admin: ' + (error.message || JSON.stringify(error)));
+                    }
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    alert('Failed to create admin: ' + error.message);
+                }
+            },
+
+            async updateAdmin() {
+                const form = document.querySelector('form[x-show*="addAdmin"]');
+                const id = form.querySelector('[name="adminId_db"]').value;
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                
+                try {
+                    const response = await fetch(`/api/superadmins/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        form.reset();
+                        loadAdmins();
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to update admin'));
+                    }
+                } catch (error) {
+                    alert('Failed to update admin');
+                }
+            },
+
+            // ==========================================
+            // STUDENT FORM HANDLERS
+            // ==========================================
+            async submitStudentForm(e) {
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Remove empty strings to avoid validation issues
+                Object.keys(data).forEach(key => {
+                    if (data[key] === '' || data[key] === undefined) {
+                        delete data[key];
+                    }
+                });
+                
+                console.log('Submitting student data:', data);
+                
+                try {
+                    const response = await fetch('/api/students', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        e.target.reset();
+                        loadStudents();
+                        alert('Student created successfully!');
+                    } else {
+                        const error = await response.json();
+                        console.error('Server error response:', error);
+                        const errorMsg = error.errors 
+                            ? error.errors.map(e => `${e.path ? e.path.join('.') : 'field'}: ${e.message}`).join(', ') 
+                            : error.message;
+                        alert('Error: ' + (errorMsg || 'Failed to create student'));
+                    }
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    alert('Failed to create student');
+                }
+            },
+
+            async updateStudent() {
+                const form = document.querySelector('form[x-show*="addStudent"]');
+                const id = form.querySelector('[name="studentId_db"]').value;
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                
+                try {
+                    const response = await fetch(`/api/students/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        form.reset();
+                        loadStudents();
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to update student'));
+                    }
+                } catch (error) {
+                    alert('Failed to update student');
+                }
+            },
+
+            // ==========================================
+            // TEACHER FORM HANDLERS
+            // ==========================================
+            async submitTeacherForm(e) {
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Remove empty strings to avoid validation issues
+                Object.keys(data).forEach(key => {
+                    if (data[key] === '' || data[key] === undefined) {
+                        delete data[key];
+                    }
+                });
+                
+                try {
+                    const response = await fetch('/api/teachers', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        e.target.reset();
+                        loadTeachers();
+                        alert('Teacher created successfully!');
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to create teacher'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to create teacher');
+                }
+            },
+
+            async updateTeacher() {
+                const form = document.querySelector('form[x-show*="addTeacher"]');
+                const id = form.querySelector('[name="teacherId_db"]').value;
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                
+                try {
+                    const response = await fetch(`/api/teachers/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        form.reset();
+                        loadTeachers();
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to update teacher'));
+                    }
+                } catch (error) {
+                    alert('Failed to update teacher');
+                }
+            }
+        }));
+    });
+</script>

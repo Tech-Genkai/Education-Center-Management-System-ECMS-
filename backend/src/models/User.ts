@@ -11,6 +11,7 @@ export interface IUser extends Document {
   password: string;
   role: 'student' | 'teacher' | 'superadmin';
   isActive: boolean;
+  profilePicture?: string;
   lastLogin?: Date;
   comparePassword(candidate: string): Promise<boolean>;
 }
@@ -23,6 +24,7 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, required: true, minlength: 8 },
     role: { type: String, enum: ['student', 'teacher', 'superadmin'], required: true },
     isActive: { type: Boolean, default: true },
+    profilePicture: { type: String, required: false },
     lastLogin: { type: Date }
   },
   { timestamps: true }

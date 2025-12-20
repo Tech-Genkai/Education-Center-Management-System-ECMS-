@@ -205,6 +205,10 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
     console.log('👤 User found:', user ? `${user.role}` : 'Not found');
     
     if (user) {
+      // Update User model with profile picture for session access
+      await User.findByIdAndUpdate(userId, { $set: { profilePicture: publicUrl } });
+      console.log('✅ User profile picture updated');
+      
       if (user.role === 'superadmin') {
         const updated = await SuperAdmin.findOneAndUpdate(
           { userId },
