@@ -6,6 +6,9 @@ const StudentSchema = new Schema(
   {
     userId: { type: Types.ObjectId, ref: "User", required: true },
     studentId: { type: String, required: true, unique: true, trim: true },
+    email: { type: String, trim: true, lowercase: true, unique: true, sparse: true },
+    instituteEmail: { type: String, trim: true, lowercase: true },
+    phone: { type: String, trim: true },
     firstName: { type: String, trim: true, maxlength: NAME_MAX_LENGTH },
     lastName: { type: String, trim: true, maxlength: NAME_MAX_LENGTH },
     dateOfBirth: { type: Date },

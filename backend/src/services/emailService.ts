@@ -294,6 +294,58 @@ class EmailService {
     return this.sendEmail({ to: email, subject, html });
   }
 
+  async sendWelcomeCredentials(email: string, password: string, role: string, userName?: string): Promise<boolean> {
+    const appUrl = process.env.APP_URL || 'http://localhost:5000';
+    const subject = 'Your ECMS account credentials';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1f2937; max-width: 640px; margin: 0 auto; padding: 20px; background: #f9fafb; }
+          .card { background: #ffffff; border-radius: 12px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; }
+          .title { font-size: 22px; font-weight: 700; color: #111827; margin: 0 0 8px 0; }
+          .muted { color: #6b7280; margin: 0 0 16px 0; }
+          .badge { display: inline-block; padding: 6px 12px; background: #eef2ff; color: #4338ca; border-radius: 999px; font-weight: 600; font-size: 12px; letter-spacing: 0.02em; }
+          .panel { background: #f3f4f6; border-radius: 10px; padding: 16px; margin: 18px 0; border: 1px dashed #d1d5db; }
+          .label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+          .value { font-size: 16px; font-weight: 700; color: #111827; word-break: break-all; }
+          .footer { margin-top: 24px; font-size: 12px; color: #9ca3af; text-align: center; }
+          a.button { display: inline-block; margin-top: 16px; padding: 12px 18px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 600; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="badge">${role.toUpperCase()}</div>
+          <h1 class="title">Welcome${userName ? `, ${userName}` : ''}!</h1>
+          <p class="muted">Welcome to ECMS! Your account has been created. Use the credentials below to sign in and then change your password.</p>
+
+          <p class="muted">Quick tips:</p>
+          <ul class="muted" style="padding-left:18px; margin-top:4px;">
+            <li>Sign in and update your password right away.</li>
+            <li>Complete your profile details (phone, address, etc.) after first login.</li>
+          </ul>
+
+          <div class="panel">
+            <div class="label">Login Email</div>
+            <div class="value">${email}</div>
+            <div class="label" style="margin-top:12px;">Temporary Password</div>
+            <div class="value">${password}</div>
+          </div>
+
+          <a class="button" href="${appUrl}/login">Go to Login</a>
+
+          <p class="muted" style="margin-top:18px;">For security, change your password after first login. If you did not expect this account, please contact your administrator.</p>
+          <div class="footer">This is an automated message from ECMS.</div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return this.sendEmail({ to: email, subject, html });
+  }
+
   async verifyConnection(): Promise<boolean> {
     if (!this.isConfigured || !this.transporter) {
       return false;

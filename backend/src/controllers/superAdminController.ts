@@ -4,6 +4,7 @@ import { SuperAdmin } from '../models/SuperAdmin.ts';
 import { User } from '../models/User.ts';
 import { Types } from 'mongoose';
 import { io } from '../server.ts';
+import { emailService } from '../services/emailService.ts';
 
 // Validation schemas
 // Validation schemas
@@ -31,7 +32,7 @@ const createSuperAdminSchema = z.object({
   sessionTimeout: z.number().min(300).max(86400).optional()
 });
 
-const updateSuperAdminSchema = createSuperAdminSchema.partial().omit({ adminId: true, email: true, password: true }).extend({
+const updateSuperAdminSchema = createSuperAdminSchema.partial().omit({ adminId: true, password: true }).extend({
   profilePicture: z.string().url().optional()
 });
 
@@ -95,9 +96,11 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
     const superAdmin = new SuperAdmin({
       userId: user._id,
       adminId: data.adminId,
+      email: data.email.toLowerCase(),
+      instituteEmail: data.instituteEmail?.toLowerCase() || data.email.toLowerCase(),
+      phone: data.phone,
       firstName: data.firstName,
       lastName: data.lastName,
-      // email/phone kept in User model but can be mirrored if schema requires it (based on previous edits, we removed them from model)
       designation: data.designation,
       department: data.department,
       dateOfBirth: data.dateOfBirth,
@@ -110,6 +113,9 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
 
     // Emit Socket.IO event for real-time updates
     io.emit('admin:created', { admin: superAdmin });
+
+    // Send welcome email with credentials (non-blocking)
+    emailService.sendWelcomeCredentials(data.email, password, 'admin', `${data.firstName} ${data.lastName}`.trim()).catch(() => undefined);
 
     return res.status(201).json({
       message: 'SuperAdmin created successfully',
@@ -228,14 +234,26 @@ export const updateSuperAdmin = async (req: Request, res: Response) => {
       });
     }
 
-    const superAdmin = await SuperAdmin.findByIdAndUpdate(
-      id,
-      { $set: parsed.data },
-      { new: true, runValidators: true }
-    );
+    const data = parsed.data;
+    const superAdmin = await SuperAdmin.findById(id);
 
     if (!superAdmin) {
       return res.status(404).json({ message: 'SuperAdmin not found' });
+    }
+
+    Object.assign(superAdmin, data);
+    if (data.email) superAdmin.email = data.email.toLowerCase();
+    if (data.instituteEmail) superAdmin.instituteEmail = data.instituteEmail.toLowerCase();
+    await superAdmin.save();
+
+    if (data.email || data.phone || data.instituteEmail) {
+      const user = await User.findById(superAdmin.userId);
+      if (user) {
+        if (data.email) user.email = data.email.toLowerCase();
+        if (data.instituteEmail) user.instituteEmail = data.instituteEmail.toLowerCase();
+        if (data.phone) user.phone = data.phone;
+        await user.save();
+      }
     }
 
     return res.status(200).json({

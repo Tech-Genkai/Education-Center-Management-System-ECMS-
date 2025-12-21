@@ -6,6 +6,9 @@ const SuperAdminSchema = new Schema(
   {
     userId: { type: Types.ObjectId, ref: 'User', required: true },
     adminId: { type: String, required: true, unique: true, trim: true },
+    email: { type: String, trim: true, lowercase: true, unique: true, sparse: true },
+    instituteEmail: { type: String, trim: true, lowercase: true },
+    phone: { type: String, trim: true },
     firstName: { type: String, required: true, trim: true, maxlength: NAME_MAX_LENGTH },
     lastName: { type: String, required: true, trim: true, maxlength: NAME_MAX_LENGTH },
     dateOfBirth: Date,

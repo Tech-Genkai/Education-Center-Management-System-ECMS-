@@ -5,6 +5,7 @@ import { User } from '../models/User.ts';
 import { Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 import { io } from '../server.ts';
+import { emailService } from '../services/emailService.ts';
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_ROUNDS) || 12;
 
@@ -154,9 +155,9 @@ export const createStudent = async (req: Request, res: Response) => {
       studentId: data.studentId,
       firstName: data.firstName,
       lastName: data.lastName,
-      // email types are now in User model
-      // instituteEmail: data.instituteEmail.toLowerCase(),
-      // phone: data.phone,
+      email: data.email.toLowerCase(),
+      instituteEmail: data.instituteEmail ? data.instituteEmail.toLowerCase() : undefined,
+      phone: data.phone,
       dateOfBirth: data.dateOfBirth,
       gender: data.gender || 'unspecified',
       currentClass: data.currentClass,
@@ -173,6 +174,9 @@ export const createStudent = async (req: Request, res: Response) => {
 
     // Emit Socket.IO event for real-time updates
     io.emit('student:created', { student });
+
+    // Send welcome email with credentials (non-blocking)
+    emailService.sendWelcomeCredentials(data.email, password, 'student', `${data.firstName} ${data.lastName}`.trim()).catch(() => undefined);
 
     return res.status(201).json({
       message: 'Student created successfully',
@@ -213,6 +217,8 @@ export const updateStudent = async (req: Request, res: Response) => {
 
     // Update student
     Object.assign(student, data);
+    if (data.email) student.email = data.email.toLowerCase();
+    if (data.instituteEmail) student.instituteEmail = data.instituteEmail.toLowerCase();
     await student.save();
 
     // Update user if email or phone changed
