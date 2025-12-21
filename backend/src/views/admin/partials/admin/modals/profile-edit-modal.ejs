@@ -1,0 +1,126 @@
+<div id="editProfileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden overflow-y-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[92vh] min-h-[60vh] flex flex-col overflow-hidden min-[400px]:my-6">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Profile</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Update your personal information</p>
+      </div>
+      <button type="button" id="closeProfileModal" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" aria-label="Close">
+        <span class="text-xl">&times;</span>
+      </button>
+    </div>
+
+    <form id="editProfileForm" class="px-6 py-6 space-y-8 overflow-y-auto flex-1 min-h-0">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
+          <input type="text" name="firstName" value="<%= user.firstName || '' %>" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label>
+          <input type="text" name="lastName" value="<%= user.lastName || '' %>" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone *</label>
+          <input type="tel" name="phone" value="<%= user.phone || '' %>" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+          <input type="text" name="dateOfBirth" value="<%= user.dateOfBirth || '' %>" placeholder="dd/mm/yyyy" pattern="^(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[0-2])/[0-9]{4}$" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
+          <select name="gender" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+            <option value="unspecified" <%= (user.gender || 'unspecified') === 'unspecified' ? 'selected' : '' %>>Prefer not to say</option>
+            <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>Male</option>
+            <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>Female</option>
+            <option value="other" <%= user.gender === 'other' ? 'selected' : '' %>>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Designation *</label>
+          <input type="text" name="designation" value="<%= user.designation %>" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Department *</label>
+          <input type="text" name="department" value="<%= user.department %>" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Blood Group</label>
+          <select name="bloodGroup" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+            <option value="">Select Blood Group</option>
+            <option value="A+" <%= user.bloodGroup === 'A+' ? 'selected' : '' %>>A+</option>
+            <option value="A-" <%= user.bloodGroup === 'A-' ? 'selected' : '' %>>A-</option>
+            <option value="B+" <%= user.bloodGroup === 'B+' ? 'selected' : '' %>>B+</option>
+            <option value="B-" <%= user.bloodGroup === 'B-' ? 'selected' : '' %>>B-</option>
+            <option value="O+" <%= user.bloodGroup === 'O+' ? 'selected' : '' %>>O+</option>
+            <option value="O-" <%= user.bloodGroup === 'O-' ? 'selected' : '' %>>O-</option>
+            <option value="AB+" <%= user.bloodGroup === 'AB+' ? 'selected' : '' %>>AB+</option>
+            <option value="AB-" <%= user.bloodGroup === 'AB-' ? 'selected' : '' %>>AB-</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Emergency Contact</label>
+          <input type="tel" name="emergencyContact" value="<%= user.emergencyContact || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+        </div>
+      </div>
+
+      <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <h4 class="text-base font-semibold text-gray-900 dark:text-white">Address</h4>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">House No</label>
+            <input type="text" name="houseNo" value="<%= user.addressParts?.houseNo || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Building Name</label>
+            <input type="text" name="buildingName" value="<%= user.addressParts?.buildingName || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Street / Area / Locality</label>
+            <input type="text" name="street" value="<%= user.addressParts?.street || user.address || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">City / Town</label>
+            <input type="text" name="city" value="<%= user.addressParts?.city || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">District</label>
+            <input type="text" name="district" value="<%= user.addressParts?.district || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">State</label>
+            <input type="text" name="state" value="<%= user.addressParts?.state || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Country</label>
+            <input type="text" name="country" value="<%= user.addressParts?.country || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">PIN Code</label>
+            <input type="text" name="pinCode" value="<%= user.addressParts?.pinCode || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Landmark (Optional)</label>
+            <input type="text" name="landmark" value="<%= user.addressParts?.landmark || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Zip Code (Optional)</label>
+            <input type="text" name="zipCode" value="<%= user.addressParts?.zipCode || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Address (combined)</label>
+          <textarea name="address" rows="3" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"><%= user.address || '' %></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+        <button type="button" id="cancelProfileModal" class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
+        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>

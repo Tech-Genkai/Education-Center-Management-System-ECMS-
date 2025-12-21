@@ -5,6 +5,32 @@ import { User } from '../models/User.ts';
 import { Student } from '../models/Student.ts';
 import { Teacher } from '../models/Teacher.ts';
 import { UserProfile } from '../models/UserProfile.ts';
+import { Address } from '../models/Address.ts';
+
+const formatDateDDMMYYYY = (value?: string | Date | null) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const dd = String(date.getUTCDate()).padStart(2, '0');
+  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const yyyy = date.getUTCFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+};
+
+const formatAddress = (addr?: any) => {
+  if (!addr) return '';
+  const parts = [
+    [addr.houseNo, addr.buildingName].filter(Boolean).join(' ').trim(),
+    addr.street,
+    addr.city,
+    addr.district,
+    addr.state,
+    addr.country,
+    addr.pinCode || addr.zipCode,
+    addr.landmark ? `Landmark: ${addr.landmark}` : null
+  ].filter(Boolean);
+  return parts.join(', ');
+};
 
 const router = Router();
 
@@ -146,6 +172,8 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
     // Fetch real SuperAdmin profile
     const adminProfile = await SuperAdmin.findOne({ userId: req.session.userId });
     const userProfile = await UserProfile.findOne({ userId: req.session.userId });
+    const addressId = adminProfile?.addressId || userProfile?.addressId;
+    const addressDoc = addressId ? await Address.findById(addressId) : null;
     const userAccount = await User.findById(req.session.userId);
     
     // Fetch real statistics from database
@@ -171,10 +199,21 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
         department: adminProfile?.department || 'Administration',
         email: userAccount?.email || req.session.email,
         phone: userAccount?.phone || '',
-        dateOfBirth: adminProfile?.dateOfBirth ? new Date(adminProfile.dateOfBirth).toISOString().split('T')[0] : '',
+        dateOfBirth: formatDateDDMMYYYY(adminProfile?.dateOfBirth),
         gender: adminProfile?.gender || '',
         bloodGroup: userProfile?.bloodGroup || '',
-        address: userProfile?.address || '',
+        address: addressDoc ? formatAddress(addressDoc) : '',
+        addressParts: addressDoc ? {
+          houseNo: addressDoc.houseNo || '',
+          buildingName: addressDoc.buildingName || '',
+          street: addressDoc.street || '',
+          city: addressDoc.city || '',
+          district: addressDoc.district || '',
+          state: addressDoc.state || '',
+          country: addressDoc.country || '',
+          pinCode: addressDoc.pinCode || addressDoc.zipCode || '',
+          landmark: addressDoc.landmark || ''
+        } : {},
         emergencyContact: userProfile?.emergencyContact || '',
         profilePicture: profilePictureUrl,
         lastLogin: adminProfile?.lastLoginAt ? new Date(adminProfile.lastLoginAt).toLocaleString() : 'N/A',

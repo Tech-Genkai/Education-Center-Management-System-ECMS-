@@ -11,6 +11,7 @@ import { SuperAdmin } from '../models/SuperAdmin.ts';
 import { Teacher } from '../models/Teacher.ts';
 import { Student } from '../models/Student.ts';
 import { User } from '../models/User.ts';
+import { Address } from '../models/Address.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { requireAuth } from '../middleware/session.ts';
 import {
@@ -376,7 +377,7 @@ router.put('/', async (req: Request, res: Response) => {
     }
 
     const userId = session.userId;
-    const { firstName, lastName, phone, dateOfBirth, gender, designation, department, address, bloodGroup, emergencyContact } = req.body;
+    const { firstName, lastName, phone, dateOfBirth, gender, designation, department, address, bloodGroup, emergencyContact, houseNo, buildingName, street, city, district, state, country, pinCode, landmark, zipCode } = req.body;
 
     // Update User account info
     const user = await User.findById(userId);
@@ -385,6 +386,19 @@ router.put('/', async (req: Request, res: Response) => {
       await user.save();
     }
     
+    const addressFields = {
+      houseNo,
+      buildingName,
+      street,
+      city,
+      district,
+      state,
+      country,
+      pinCode: pinCode || zipCode,
+      landmark
+    };
+    const hasAddressInput = Object.values(addressFields).some((v) => (typeof v === 'string' ? v.trim() : v));
+
     // Update SuperAdmin profile
     const adminProfile = await SuperAdmin.findOne({ userId });
     if (adminProfile) {
@@ -394,6 +408,17 @@ router.put('/', async (req: Request, res: Response) => {
       if (gender) adminProfile.gender = gender;
       if (designation) adminProfile.designation = designation;
       if (department) adminProfile.department = department;
+
+      if (hasAddressInput) {
+        let addr = adminProfile.addressId ? await Address.findById(adminProfile.addressId) : null;
+        if (!addr) addr = new Address({ userId });
+        Object.entries(addressFields).forEach(([key, value]) => {
+          if (value !== undefined) (addr as any)[key] = (value as string)?.trim() || undefined;
+        });
+        await addr.save();
+        adminProfile.addressId = addr._id;
+      }
+
       await adminProfile.save();
     }
 
@@ -407,11 +432,31 @@ router.put('/', async (req: Request, res: Response) => {
     if (gender) profileData.gender = gender;
     if (bloodGroup) profileData.bloodGroup = bloodGroup;
 
-    const profile = await UserProfile.findOneAndUpdate(
-      { userId },
-      { $set: profileData },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    );
+    let profile = await UserProfile.findOne({ userId });
+    if (profile) {
+      Object.assign(profile, profileData);
+      if (hasAddressInput) {
+        let addr = profile.addressId ? await Address.findById(profile.addressId) : null;
+        if (!addr) addr = new Address({ userId });
+        Object.entries(addressFields).forEach(([key, value]) => {
+          if (value !== undefined) (addr as any)[key] = (value as string)?.trim() || undefined;
+        });
+        await addr.save();
+        profile.addressId = addr._id;
+      }
+      await profile.save();
+    } else {
+      profile = new UserProfile({ userId, ...profileData });
+      if (hasAddressInput) {
+        const addr = new Address({ userId });
+        Object.entries(addressFields).forEach(([key, value]) => {
+          if (value !== undefined) (addr as any)[key] = (value as string)?.trim() || undefined;
+        });
+        await addr.save();
+        profile.addressId = addr._id;
+      }
+      await profile.save();
+    }
 
     return res.status(200).json({ 
       message: 'Profile updated successfully',

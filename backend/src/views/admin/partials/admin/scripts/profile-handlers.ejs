@@ -1,0 +1,107 @@
+<script>
+    /**
+     * Profile Handlers
+     * Contains: Profile form submission handler
+     */
+
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const profileModal = document.getElementById('editProfileModal');
+    const closeProfileModal = document.getElementById('closeProfileModal');
+    const cancelProfileModal = document.getElementById('cancelProfileModal');
+    const editProfileForm = document.getElementById('editProfileForm');
+    const dobInput = editProfileForm ? editProfileForm.querySelector('input[name="dateOfBirth"]') : null;
+
+    const toggleProfileModal = (show) => {
+        if (!profileModal) return;
+        profileModal.classList.toggle('hidden', !show);
+    };
+
+    const formatDobValue = (value) => {
+        if (!value) return '';
+        const digits = value.replace(/\D/g, '').slice(0, 8);
+        if (digits.length === 8) {
+            return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+        }
+        if (digits.length >= 5) {
+            return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+        }
+        if (digits.length >= 3) {
+            return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        }
+        return digits;
+    };
+
+    const attachDobFormatter = () => {
+        if (!dobInput) return;
+        dobInput.addEventListener('input', () => {
+            const formatted = formatDobValue(dobInput.value);
+            dobInput.value = formatted;
+        });
+        dobInput.addEventListener('blur', () => {
+            dobInput.value = formatDobValue(dobInput.value);
+        });
+    };
+
+    const buildAddress = (data) => {
+        const parts = [];
+        const line1 = [data.houseNo, data.buildingName].filter(Boolean).join(' ').trim();
+        if (line1) parts.push(line1);
+        if (data.street) parts.push(data.street);
+        if (data.city) parts.push(data.city);
+        if (data.district) parts.push(data.district);
+        if (data.state) parts.push(data.state);
+        if (data.country) parts.push(data.country);
+        if (data.pinCode) parts.push(data.pinCode);
+        if (data.landmark) parts.push(`Landmark: ${data.landmark}`);
+        return parts.filter(Boolean).join(', ');
+    };
+
+    if (editProfileBtn) {
+        editProfileBtn.addEventListener('click', () => toggleProfileModal(true));
+    }
+    if (closeProfileModal) {
+        closeProfileModal.addEventListener('click', () => toggleProfileModal(false));
+    }
+    if (cancelProfileModal) {
+        cancelProfileModal.addEventListener('click', () => toggleProfileModal(false));
+    }
+
+    if (profileModal) {
+        profileModal.addEventListener('click', (e) => {
+            if (e.target === profileModal) toggleProfileModal(false);
+        });
+    }
+
+    if (editProfileForm) {
+        attachDobFormatter();
+
+        editProfileForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(editProfileForm);
+            const data = window.normalizeDatePayload ? window.normalizeDatePayload(Object.fromEntries(formData.entries())) : Object.fromEntries(formData.entries());
+
+            // Build combined address string and remove component fields
+            data.address = buildAddress(data);
+
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    alert('Profile updated successfully!');
+                    toggleProfileModal(false);
+                    setTimeout(() => location.reload(), 300);
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to update profile'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to update profile');
+            }
+        });
+    }
+</script>

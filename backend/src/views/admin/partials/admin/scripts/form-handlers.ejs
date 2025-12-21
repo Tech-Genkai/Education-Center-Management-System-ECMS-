@@ -6,11 +6,50 @@
      *           editStudent, editTeacher, editAdmin
      */
 
+    const formatISOToDDMMYYYY = (value) => {
+        if (!value) return '';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        const dd = String(date.getUTCDate()).padStart(2, '0');
+        const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const yyyy = date.getUTCFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    };
+
+    const toISOFromDDMMYYYY = (value) => {
+        if (!value) return '';
+        const parts = value.split(/[\/\-]/).map((p) => p.trim());
+        if (parts.length !== 3) return '';
+        const [dd, mm, yyyy] = parts;
+        const day = Number(dd);
+        const month = Number(mm);
+        const year = Number(yyyy);
+        if (!day || !month || !year || month < 1 || month > 12 || day < 1 || day > 31) return '';
+        const iso = new Date(Date.UTC(year, month - 1, day)).toISOString().split('T')[0];
+        return iso;
+    };
+
+    const normalizeDatePayload = (data) => {
+        if (!data || !data.dateOfBirth) return data;
+        const iso = toISOFromDDMMYYYY(data.dateOfBirth);
+        if (iso) {
+            data.dateOfBirth = iso;
+        } else {
+            delete data.dateOfBirth;
+        }
+        return data;
+    };
+
+    // Expose helpers for other scripts (profile handlers reuse these)
+    window.formatISOToDDMMYYYY = formatISOToDDMMYYYY;
+    window.normalizeDatePayload = normalizeDatePayload;
+    window.toISOFromDDMMYYYY = toISOFromDDMMYYYY;
+
     // Submit Student Form
     async function submitStudentForm(event) {
         event.preventDefault();
         const formData = new FormData(event.target);
-        const data = Object.fromEntries(formData.entries());
+        const data = normalizeDatePayload(Object.fromEntries(formData.entries()));
         
         try {
             const response = await fetch('/api/students', {
@@ -165,7 +204,7 @@
                     form.querySelector('[name="phone"]').value = s.userId?.phone || s.phone || '';
                     form.querySelector('[name="studentId"]').value = s.studentId || '';
                     form.querySelector('[name="rollNumber"]').value = s.rollNumber || '';
-                    form.querySelector('[name="dateOfBirth"]').value = s.dateOfBirth?.split('T')[0] || '';
+                    form.querySelector('[name="dateOfBirth"]').value = formatISOToDDMMYYYY(s.dateOfBirth);
                     form.querySelector('[name="instituteEmail"]').value = s.userId?.instituteEmail || s.instituteEmail || '';
                     form.querySelector('[name="studentId_db"]').value = s._id;
                 }
@@ -184,7 +223,7 @@
         const form = document.querySelector('form[x-show*="addStudent"]');
         const id = form.querySelector('[name="studentId_db"]').value;
         const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+        const data = normalizeDatePayload(Object.fromEntries(formData.entries()));
         
         try {
             const response = await fetch(`/api/students/${id}`, {

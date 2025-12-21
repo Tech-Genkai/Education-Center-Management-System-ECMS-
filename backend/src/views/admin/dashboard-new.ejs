@@ -40,7 +40,7 @@
          HEAD SCRIPTS
          Alpine.js config and initial functions
          ======================================== -->
-    <%- include('../partials/admin/scripts/head-scripts') %>
+    <%- include('./partials/admin/scripts/head-scripts') %>
     
     <!-- Alpine.js for Reactive UI -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -51,7 +51,7 @@
     <!-- ========================================
          SIDEBAR NAVIGATION
          ======================================== -->
-    <%- include('../partials/admin/sidebar') %>
+    <%- include('./partials/admin/sidebar') %>
 
     <!-- ========================================
          MAIN CONTENT AREA
@@ -61,7 +61,7 @@
         <!-- ========================================
              HEADER/TOPBAR
              ======================================== -->
-        <%- include('../partials/admin/header') %>
+        <%- include('./partials/admin/header') %>
 
         <!-- ========================================
              MAIN CONTENT TABS
@@ -70,42 +70,42 @@
             
             <!-- Dashboard Overview Tab -->
             <div x-show="activeTab === 'dashboard'" x-cloak>
-                <%- include('../partials/admin/tabs/dashboard-overview') %>
+                <%- include('./partials/admin/tabs/dashboard-overview') %>
             </div>
 
             <!-- Profile Tab -->
             <div x-show="activeTab === 'profile'" x-cloak>
-                <%- include('../partials/admin/tabs/profile') %>
+                <%- include('./partials/admin/tabs/profile') %>
             </div>
 
             <!-- Students Management Tab -->
             <div x-show="activeTab === 'students'" x-cloak>
-                <%- include('../partials/admin/tabs/students') %>
+                <%- include('./partials/admin/tabs/students') %>
             </div>
 
             <!-- Teachers Management Tab -->
             <div x-show="activeTab === 'teachers'" x-cloak>
-                <%- include('../partials/admin/tabs/teachers') %>
+                <%- include('./partials/admin/tabs/teachers') %>
             </div>
 
             <!-- Admins Management Tab -->
             <div x-show="activeTab === 'admins'" x-cloak>
-                <%- include('../partials/admin/tabs/admins') %>
+                <%- include('./partials/admin/tabs/admins') %>
             </div>
 
             <!-- Classes Management Tab -->
             <div x-show="activeTab === 'classes'" x-cloak>
-                <%- include('../partials/admin/tabs/classes') %>
+                <%- include('./partials/admin/tabs/classes') %>
             </div>
 
             <!-- Subjects Management Tab -->
             <div x-show="activeTab === 'subjects'" x-cloak>
-                <%- include('../partials/admin/tabs/subjects') %>
+                <%- include('./partials/admin/tabs/subjects') %>
             </div>
 
             <!-- Settings Tab -->
             <div x-show="activeTab === 'settings'" x-cloak>
-                <%- include('../partials/admin/tabs/settings') %>
+                <%- include('./partials/admin/tabs/settings') %>
             </div>
 
         </main>
@@ -117,22 +117,22 @@
          ======================================== -->
     
     <!-- Student Add/Edit Modal -->
-    <%- include('../partials/admin/modals/student-modal') %>
+    <%- include('./partials/admin/modals/student-modal') %>
 
     <!-- Teacher Add/Edit Modal -->
-    <%- include('../partials/admin/modals/teacher-modal') %>
+    <%- include('./partials/admin/modals/teacher-modal') %>
 
     <!-- Admin Add/Edit Modal -->
-    <%- include('../partials/admin/modals/admin-modal') %>
+    <%- include('./partials/admin/modals/admin-modal') %>
 
     <!-- Class Add Modal -->
-    <%- include('../partials/admin/modals/class-modal') %>
+    <%- include('./partials/admin/modals/class-modal') %>
 
     <!-- Subject Add Modal -->
-    <%- include('../partials/admin/modals/subject-modal') %>
+    <%- include('./partials/admin/modals/subject-modal') %>
 
     <!-- Password Reset Modal -->
-    <%- include('../partials/admin/modals/password-reset-modal') %>
+    <%- include('./partials/admin/modals/password-reset-modal') %>
 
     <!-- ========================================
          JAVASCRIPT FUNCTIONALITY
@@ -140,19 +140,19 @@
          ======================================== -->
     
     <!-- Data Loading Functions -->
-    <%- include('../partials/admin/scripts/data-loaders') %>
+    <%- include('./partials/admin/scripts/data-loaders') %>
 
     <!-- Form Submission Handlers -->
-    <%- include('../partials/admin/scripts/form-handlers') %>
+    <%- include('./partials/admin/scripts/form-handlers') %>
 
     <!-- Profile Management -->
-    <%- include('../partials/admin/scripts/profile-handlers') %>
+    <%- include('./partials/admin/scripts/profile-handlers') %>
 
     <!-- User Management (Delete, Toggle Status, etc.) -->
-    <%- include('../partials/admin/scripts/user-management') %>
+    <%- include('./partials/admin/scripts/user-management') %>
 
     <!-- Socket.IO and Initialization -->
-    <%- include('../partials/admin/scripts/socket-and-init') %>
+    <%- include('./partials/admin/scripts/socket-and-init') %>
 
 </body>
 </html>

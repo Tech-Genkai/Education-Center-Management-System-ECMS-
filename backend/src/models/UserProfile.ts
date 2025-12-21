@@ -18,6 +18,8 @@ const UserProfileSchema = new Schema(
     },
     bio: { type: String, trim: true, maxlength: BIO_MAX_LENGTH },
     phone: { type: String, trim: true, match: PHONE_REGEX },
+    bloodGroup: { type: String, trim: true },
+    emergencyContact: { type: String, trim: true },
     emergencyContacts: [
       {
         name: { type: String, trim: true, maxlength: NAME_MAX_LENGTH },
