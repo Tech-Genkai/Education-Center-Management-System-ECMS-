@@ -328,15 +328,17 @@ export const deleteSuperAdmin = async (req: Request, res: Response) => {
         return res.status(404).json({ message: 'SuperAdmin not found' });
       }
       
-<<<<<<< HEAD
       // Also delete the associated User account
       if (superAdmin.userId) {
         await User.findByIdAndDelete(superAdmin.userId);
       }
-=======
-      // Emit Socket.IO event for real-time updates
-      io.emit('admin:deleted', { adminId: id, hard: true });
->>>>>>> 149c5931210241bed4a4a1a881d32aea3cd7f76a
+      
+      // Emit Socket.IO event for real-time updates (optional)
+      try {
+        io?.emit('admin:deleted', { adminId: id, hard: true });
+      } catch (err) {
+        console.log('Socket.IO not available for real-time updates');
+      }
       
       return res.status(200).json({ message: 'SuperAdmin permanently deleted' });
     } else {
