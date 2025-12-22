@@ -1,0 +1,114 @@
+<script>
+    /**
+     * Delete Handler Functions for Students, Teachers, and Admins
+     * These functions open the glassmorphism delete confirmation modal
+     */
+
+    /**
+     * Delete Student - Opens confirmation modal
+     * @param {string} id - Student ID
+     */
+    window.deleteStudent = async function(id) {
+        try {
+            // Fetch student details
+            const response = await fetch(`/api/students/${id}`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch student details');
+            }
+            
+            const data = await response.json();
+            const student = data.student;
+            
+            if (!student) {
+                throw new Error('Student not found');
+            }
+            
+            // Extract details
+            const fullName = `${student.firstName} ${student.lastName}`;
+            const email = student.userId?.email || student.email || 'N/A';
+            const role = `Student ID: ${student.studentId || 'N/A'}`;
+            
+            // Open delete modal
+            openDeleteModal(id, 'student', fullName, email, role);
+            
+        } catch (error) {
+            console.error('Error fetching student for delete:', error);
+            alert('Failed to load student details: ' + error.message);
+        }
+    };
+
+    /**
+     * Delete Teacher - Opens confirmation modal
+     * @param {string} id - Teacher ID
+     */
+    window.deleteTeacher = async function(id) {
+        try {
+            // Fetch teacher details
+            const response = await fetch(`/api/teachers/${id}`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch teacher details');
+            }
+            
+            const data = await response.json();
+            const teacher = data.teacher;
+            
+            if (!teacher) {
+                throw new Error('Teacher not found');
+            }
+            
+            // Extract details
+            const fullName = `${teacher.firstName} ${teacher.lastName}`;
+            const email = teacher.userId?.email || teacher.email || 'N/A';
+            const role = `${teacher.department || 'Teacher'} • ID: ${teacher.teacherId || 'N/A'}`;
+            
+            // Open delete modal
+            openDeleteModal(id, 'teacher', fullName, email, role);
+            
+        } catch (error) {
+            console.error('Error fetching teacher for delete:', error);
+            alert('Failed to load teacher details: ' + error.message);
+        }
+    };
+
+    /**
+     * Delete Admin - Opens confirmation modal
+     * @param {string} id - Admin ID
+     */
+    window.deleteAdmin = async function(id) {
+        try {
+            // Fetch admin details
+            const response = await fetch(`/api/superadmins/${id}`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch admin details');
+            }
+            
+            const data = await response.json();
+            const admin = data.superAdmin;
+            
+            if (!admin) {
+                throw new Error('Admin not found');
+            }
+            
+            // Extract details
+            const fullName = `${admin.firstName} ${admin.lastName}`;
+            const email = admin.userId?.email || admin.email || 'N/A';
+            const role = `${admin.designation || 'Admin'} • ${admin.department || 'N/A'}`;
+            
+            // Open delete modal
+            openDeleteModal(id, 'admin', fullName, email, role);
+            
+        } catch (error) {
+            console.error('Error fetching admin for delete:', error);
+            alert('Failed to load admin details: ' + error.message);
+        }
+    };
+</script>

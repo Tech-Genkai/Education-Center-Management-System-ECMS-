@@ -4,3 +4,7 @@ coverage/
 .idea/
 .vscode/
 .env
+
+# Accidentally created files
+nodemon
+scms-backend@*

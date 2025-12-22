@@ -280,6 +280,23 @@ export const updateStudent = async (req: Request, res: Response) => {
 export const deleteStudent = async (req: Request, res: Response) => {
   try {
     const hardDelete = req.query.hard === 'true';
+    const { password } = req.body;
+    
+    // Verify password for hard delete
+    if (hardDelete && password) {
+      const adminUser = await User.findById(req.session.userId);
+      if (!adminUser) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      const isPasswordValid = await bcrypt.compare(password, adminUser.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: 'Invalid password' });
+      }
+    } else if (hardDelete && !password) {
+      return res.status(400).json({ message: 'Password is required for permanent deletion' });
+    }
+    
     const student = await Student.findById(req.params.id);
 
     if (!student) {
