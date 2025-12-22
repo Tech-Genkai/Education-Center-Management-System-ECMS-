@@ -1,0 +1,220 @@
+<!-- Custom Notification Component with Glassy Effect -->
+<div id="customNotification" class="fixed top-4 right-4 z-[9999] pointer-events-none">
+    <div id="notificationContent" class="pointer-events-auto transform transition-all duration-300 ease-out translate-x-[400px] opacity-0">
+        <!-- Notification will be inserted here -->
+    </div>
+</div>
+
+<style>
+    /* Glassmorphism Effect for Notifications */
+    .notification-glass {
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.125);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Light Mode */
+    .notification-success-light {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+    
+    .notification-error-light {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .notification-warning-light {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: rgba(245, 158, 11, 0.3);
+    }
+    
+    .notification-info-light {
+        background: rgba(59, 130, 246, 0.15);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Dark Mode */
+    .dark .notification-success-dark {
+        background: rgba(16, 185, 129, 0.25);
+        border-color: rgba(16, 185, 129, 0.4);
+    }
+    
+    .dark .notification-error-dark {
+        background: rgba(239, 68, 68, 0.25);
+        border-color: rgba(239, 68, 68, 0.4);
+    }
+    
+    .dark .notification-warning-dark {
+        background: rgba(245, 158, 11, 0.25);
+        border-color: rgba(245, 158, 11, 0.4);
+    }
+    
+    .dark .notification-info-dark {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Animation */
+    .notification-enter {
+        animation: slideInRight 0.3s ease-out forwards;
+    }
+    
+    .notification-exit {
+        animation: slideOutRight 0.3s ease-in forwards;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+    
+    /* Progress Bar */
+    .notification-progress {
+        height: 3px;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.8));
+        animation: progressBar 3s linear forwards;
+    }
+    
+    @keyframes progressBar {
+        from {
+            width: 100%;
+        }
+        to {
+            width: 0%;
+        }
+    }
+</style>
+
+<script>
+    /**
+     * Custom Notification System with Glassy Effect
+     */
+    window.showNotification = function(message, type = 'success', duration = 3000) {
+        const container = document.getElementById('notificationContent');
+        
+        // Icon mapping
+        const icons = {
+            success: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>`,
+            error: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>`,
+            warning: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>`,
+            info: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>`
+        };
+        
+        // Color classes
+        const colors = {
+            success: 'text-green-600 dark:text-green-400',
+            error: 'text-red-600 dark:text-red-400',
+            warning: 'text-amber-600 dark:text-amber-400',
+            info: 'text-blue-600 dark:text-blue-400'
+        };
+        
+        // Background classes
+        const bgClasses = {
+            success: 'notification-success-light dark:notification-success-dark',
+            error: 'notification-error-light dark:notification-error-dark',
+            warning: 'notification-warning-light dark:notification-warning-dark',
+            info: 'notification-info-light dark:notification-info-dark'
+        };
+        
+        // Create notification HTML
+        const notificationHTML = `
+            <div class="notification-glass ${bgClasses[type]} rounded-xl p-4 min-w-[320px] max-w-md shadow-2xl overflow-hidden">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 ${colors[type]}">
+                        ${icons[type]}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">
+                            ${message}
+                        </p>
+                    </div>
+                    <button onclick="closeNotification()" class="flex-shrink-0 ml-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="notification-progress mt-3 rounded-full"></div>
+            </div>
+        `;
+        
+        // Clear any existing notification
+        container.innerHTML = notificationHTML;
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            container.classList.remove('translate-x-[400px]', 'opacity-0');
+            container.classList.add('translate-x-0', 'opacity-100');
+        });
+        
+        // Auto-hide after duration
+        const timeoutId = setTimeout(() => {
+            closeNotification();
+        }, duration);
+        
+        // Store timeout ID for manual close
+        container.dataset.timeoutId = timeoutId;
+    };
+    
+    window.closeNotification = function() {
+        const container = document.getElementById('notificationContent');
+        
+        // Clear timeout if exists
+        if (container.dataset.timeoutId) {
+            clearTimeout(parseInt(container.dataset.timeoutId));
+            delete container.dataset.timeoutId;
+        }
+        
+        // Trigger exit animation
+        container.classList.remove('translate-x-0', 'opacity-100');
+        container.classList.add('translate-x-[400px]', 'opacity-0');
+        
+        // Clear content after animation
+        setTimeout(() => {
+            container.innerHTML = '';
+        }, 300);
+    };
+    
+    // Override default alert for backward compatibility
+    const originalAlert = window.alert;
+    window.alert = function(message) {
+        // Detect type from message
+        let type = 'info';
+        if (message.toLowerCase().includes('success') || message.toLowerCase().includes('updated') || message.toLowerCase().includes('created') || message.toLowerCase().includes('added')) {
+            type = 'success';
+        } else if (message.toLowerCase().includes('error') || message.toLowerCase().includes('failed')) {
+            type = 'error';
+        } else if (message.toLowerCase().includes('warning')) {
+            type = 'warning';
+        }
+        
+        showNotification(message, type);
+    };
+</script>

@@ -173,8 +173,12 @@ export const createTeacher = async (req: Request, res: Response) => {
     });
     await teacher.save();
 
-    // Emit Socket.IO event for real-time updates
-    io.emit('teacher:created', { teacher });
+    // Emit Socket.IO event for real-time updates (optional)
+    try {
+      io?.emit('teacher:created', { teacher });
+    } catch (err) {
+      console.log('Socket.IO not available for real-time updates');
+    }
 
     // Send welcome email with credentials (non-blocking)
     emailService.sendWelcomeCredentials(data.email, password, 'teacher', `${data.firstName} ${data.lastName}`.trim()).catch(() => undefined);
@@ -223,18 +227,40 @@ export const updateTeacher = async (req: Request, res: Response) => {
     await teacher.save();
 
     // Update user if email or phone changed
-    if (data.email || data.phone || data.instituteEmail) {
-      const user = await User.findById(teacher.userId);
-      if (user) {
-        if (data.email) user.email = data.email.toLowerCase();
-        if (data.instituteEmail) user.instituteEmail = data.instituteEmail.toLowerCase();
-        if (data.phone) user.phone = data.phone;
+    const user = await User.findById(teacher.userId);
+    if (user) {
+      let userUpdated = false;
+      
+      // Only update email if it's different
+      if (data.email && user.email !== data.email.toLowerCase()) {
+        user.email = data.email.toLowerCase();
+        userUpdated = true;
+      }
+      
+      // Only update instituteEmail if it's different
+      if (data.instituteEmail && user.instituteEmail !== data.instituteEmail.toLowerCase()) {
+        user.instituteEmail = data.instituteEmail.toLowerCase();
+        userUpdated = true;
+      }
+      
+      // Only update phone if it's different
+      if (data.phone && user.phone !== data.phone) {
+        user.phone = data.phone;
+        userUpdated = true;
+      }
+      
+      // Only save if something changed
+      if (userUpdated) {
         await user.save();
       }
     }
 
-    // Emit Socket.IO event for real-time updates
-    io.emit('teacher:updated', { teacher });
+    // Emit Socket.IO event for real-time updates (optional)
+    try {
+      io?.emit('teacher:updated', { teacher });
+    } catch (err) {
+      console.log('Socket.IO not available for real-time updates');
+    }
 
     return res.status(200).json({
       message: 'Teacher updated successfully',
@@ -266,8 +292,12 @@ export const deleteTeacher = async (req: Request, res: Response) => {
       await User.findByIdAndDelete(teacher.userId);
       await Teacher.findByIdAndDelete(req.params.id);
       
-      // Emit Socket.IO event
-      io.emit('teacher:deleted', { id: req.params.id, hard: true });
+      // Emit Socket.IO event (optional)
+      try {
+        io?.emit('teacher:deleted', { id: req.params.id, hard: true });
+      } catch (err) {
+        console.log('Socket.IO not available for real-time updates');
+      }
       
       return res.status(200).json({ message: 'Teacher permanently deleted' });
     } else {
@@ -281,8 +311,12 @@ export const deleteTeacher = async (req: Request, res: Response) => {
         await user.save();
       }
 
-      // Emit Socket.IO event
-      io.emit('teacher:deleted', { id: req.params.id, teacher, hard: false });
+      // Emit Socket.IO event (optional)
+      try {
+        io?.emit('teacher:deleted', { id: req.params.id, teacher, hard: false });
+      } catch (err) {
+        console.log('Socket.IO not available for real-time updates');
+      }
 
       return res.status(200).json({ message: 'Teacher deactivated successfully' });
     }
