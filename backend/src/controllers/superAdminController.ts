@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { SuperAdmin } from '../models/SuperAdmin.ts';
 import { User } from '../models/User.ts';
 import { Types } from 'mongoose';
+import bcrypt from 'bcrypt';
 import { io } from '../server.ts';
 import { emailService } from '../services/emailService.ts';
 
@@ -299,9 +300,25 @@ export const deleteSuperAdmin = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { hard } = req.query;
+    const { password } = req.body;
 
     if (!Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid ID format' });
+    }
+
+    // Verify password for hard delete
+    if (hard === 'true' && password) {
+      const adminUser = await User.findById(req.session.userId);
+      if (!adminUser) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      const isPasswordValid = await bcrypt.compare(password, adminUser.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: 'Invalid password' });
+      }
+    } else if (hard === 'true' && !password) {
+      return res.status(400).json({ message: 'Password is required for permanent deletion' });
     }
 
     if (hard === 'true') {
@@ -310,6 +327,12 @@ export const deleteSuperAdmin = async (req: Request, res: Response) => {
       if (!superAdmin) {
         return res.status(404).json({ message: 'SuperAdmin not found' });
       }
+      
+      // Also delete the associated User account
+      if (superAdmin.userId) {
+        await User.findByIdAndDelete(superAdmin.userId);
+      }
+      
       return res.status(200).json({ message: 'SuperAdmin permanently deleted' });
     } else {
       // Soft delete - set status to inactive
