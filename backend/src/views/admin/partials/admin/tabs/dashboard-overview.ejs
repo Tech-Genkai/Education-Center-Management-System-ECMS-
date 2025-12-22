@@ -69,30 +69,30 @@
 
 <!-- Charts and Activity Row -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-    <!-- Enrollment Trends Chart -->
+    <!-- To-Do List -->
     <div class="lg:col-span-2 glass-card rounded-xl shadow-lg p-6">
         <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Student Enrollment Trends</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">To-Do List</h3>
+            <button onclick="addTodo()" class="px-3 py-1 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                + Add Task
+            </button>
         </div>
-        <canvas id="enrollmentChart" height="80"></canvas>
+        <div id="todoList" class="space-y-2 max-h-64 overflow-y-auto">
+            <!-- To-do items will be dynamically added here -->
+            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                <p>No tasks yet. Click "Add Task" to create one.</p>
+            </div>
+        </div>
     </div>
 
-    <!-- Recent Activity -->
+    <!-- Online Users -->
     <div class="glass-card rounded-xl shadow-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
-        <div class="space-y-4">
-            <% activities.forEach(activity => { %>
-            <div class="flex items-start space-x-3">
-                <div class="flex-shrink-0 w-8 h-8 bg-<%= activity.color %>-100 dark:bg-<%= activity.color %>-900/30 rounded-full flex items-center justify-center">
-                    <span class="text-lg"><%= activity.icon %></span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900 dark:text-white"><%= activity.title %></p>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 truncate"><%= activity.description %></p>
-                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-1"><%= activity.time %></p>
-                </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Online Now</h3>
+        <div id="onlineUsers" class="space-y-4">
+            <!-- Online users will be dynamically populated -->
+            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                <p>No users online</p>
             </div>
-            <% }); %>
         </div>
     </div>
 </div>
