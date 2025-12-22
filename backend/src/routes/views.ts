@@ -181,6 +181,8 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
     const activeStudents = await Student.countDocuments({ status: 'active' });
     const totalTeachers = await Teacher.countDocuments();
     const activeTeachers = await Teacher.countDocuments({ status: 'active' });
+    const totalAdmins = await SuperAdmin.countDocuments();
+    const activeAdmins = await SuperAdmin.countDocuments({ status: 'active' });
     const totalUsers = await User.countDocuments();
     
     // Determine profile picture: prefer User model (most up-to-date), then UserProfile, then role-specific, then default
@@ -225,6 +227,8 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
         studentGrowth: 12, // TODO: Calculate from historical data
         totalTeachers,
         activeTeachers,
+        totalAdmins,
+        activeAdmins,
         activeClasses: 32, // TODO: Calculate from Class model
         totalSections: 96, // TODO: Calculate from ClassSection model
         revenue: '125,430', // TODO: Calculate from Payment model
