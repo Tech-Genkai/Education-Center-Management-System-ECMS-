@@ -111,8 +111,12 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
     });
     await superAdmin.save();
 
-    // Emit Socket.IO event for real-time updates
-    io.emit('admin:created', { admin: superAdmin });
+    // Emit Socket.IO event for real-time updates (optional)
+    try {
+      io?.emit('admin:created', { admin: superAdmin });
+    } catch (err) {
+      console.log('Socket.IO not available for real-time updates');
+    }
 
     // Send welcome email with credentials (non-blocking)
     emailService.sendWelcomeCredentials(data.email, password, 'admin', `${data.firstName} ${data.lastName}`.trim()).catch(() => undefined);
@@ -246,12 +250,31 @@ export const updateSuperAdmin = async (req: Request, res: Response) => {
     if (data.instituteEmail) superAdmin.instituteEmail = data.instituteEmail.toLowerCase();
     await superAdmin.save();
 
-    if (data.email || data.phone || data.instituteEmail) {
-      const user = await User.findById(superAdmin.userId);
-      if (user) {
-        if (data.email) user.email = data.email.toLowerCase();
-        if (data.instituteEmail) user.instituteEmail = data.instituteEmail.toLowerCase();
-        if (data.phone) user.phone = data.phone;
+    // Update user if email or phone changed
+    const user = await User.findById(superAdmin.userId);
+    if (user) {
+      let userUpdated = false;
+      
+      // Only update email if it's different
+      if (data.email && user.email !== data.email.toLowerCase()) {
+        user.email = data.email.toLowerCase();
+        userUpdated = true;
+      }
+      
+      // Only update instituteEmail if it's different
+      if (data.instituteEmail && user.instituteEmail !== data.instituteEmail.toLowerCase()) {
+        user.instituteEmail = data.instituteEmail.toLowerCase();
+        userUpdated = true;
+      }
+      
+      // Only update phone if it's different
+      if (data.phone && user.phone !== data.phone) {
+        user.phone = data.phone;
+        userUpdated = true;
+      }
+      
+      // Only save if something changed
+      if (userUpdated) {
         await user.save();
       }
     }

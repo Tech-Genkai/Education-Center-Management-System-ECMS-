@@ -189,14 +189,31 @@
         }
     }
 
+    // Reset Student Form
+    window.resetStudentForm = function() {
+        const form = document.getElementById('studentForm');
+        if (form) {
+            form.reset();
+            document.getElementById('studentId_db').value = '';
+        }
+    }
+
     // Edit Student Function
     async function editStudent(id) {
         try {
             const response = await fetch(`/api/students/${id}`, { credentials: 'include' });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                console.error('API Error:', errorData);
+                alert('Failed to load student data: ' + (errorData.message || `HTTP ${response.status}`));
+                return;
+            }
+            
             const data = await response.json();
             if (data.student) {
                 const s = data.student;
-                const form = document.querySelector('form[x-show*="addStudent"]');
+                const form = document.getElementById('studentForm');
                 if (form) {
                     form.querySelector('[name="firstName"]').value = s.firstName || '';
                     form.querySelector('[name="lastName"]').value = s.lastName || '';
@@ -206,24 +223,46 @@
                     form.querySelector('[name="rollNumber"]').value = s.rollNumber || '';
                     form.querySelector('[name="dateOfBirth"]').value = formatISOToDDMMYYYY(s.dateOfBirth);
                     form.querySelector('[name="instituteEmail"]').value = s.userId?.instituteEmail || s.instituteEmail || '';
-                    form.querySelector('[name="studentId_db"]').value = s._id;
+                    document.getElementById('studentId_db').value = s._id;
                 }
-                const alpineData = document.querySelector('[x-data]').__x.$data;
-                alpineData.modalType = 'editStudent';
-                alpineData.showModal = true;
+                // Access Alpine.js data - try body element first
+                const alpineElement = document.querySelector('body[x-data]') || document.querySelector('[x-data]');
+                if (alpineElement && alpineElement._x_dataStack && alpineElement._x_dataStack[0]) {
+                    const alpineData = alpineElement._x_dataStack[0];
+                    alpineData.modalType = 'editStudent';
+                    alpineData.showModal = true;
+                } else if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
+                    const alpineData = alpineElement.__x.$data;
+                    alpineData.modalType = 'editStudent';
+                    alpineData.showModal = true;
+                } else {
+                    console.error('Alpine.js not found. Element:', alpineElement);
+                    // Fallback: just reload the page after a short delay
+                    alert('Student data loaded but modal opening failed. Page will refresh.');
+                    setTimeout(() => location.reload(), 500);
+                }
+            } else {
+                console.error('Invalid response format:', data);
+                alert('Failed to load student data: Invalid response format');
             }
         } catch (error) {
             console.error('Error fetching student:', error);
-            alert('Failed to load student data');
+            alert('Failed to load student data: ' + error.message);
         }
     }
 
     // Update Student Function
     async function updateStudent() {
-        const form = document.querySelector('form[x-show*="addStudent"]');
-        const id = form.querySelector('[name="studentId_db"]').value;
+        const form = document.getElementById('studentForm');
+        const id = document.getElementById('studentId_db').value;
+        if (!id) {
+            alert('Error: Student ID not found');
+            return;
+        }
         const formData = new FormData(form);
         const data = normalizeDatePayload(Object.fromEntries(formData.entries()));
+        // Remove the db id from the data payload
+        delete data.studentId_db;
         
         try {
             const response = await fetch(`/api/students/${id}`, {
@@ -236,13 +275,25 @@
             if (response.ok) {
                 document.querySelector('[x-data]').__x.$data.showModal = false;
                 form.reset();
+                document.getElementById('studentId_db').value = '';
                 loadStudents();
+                alert('Student updated successfully!');
             } else {
                 const error = await response.json();
                 alert('Error: ' + (error.message || 'Failed to update student'));
             }
         } catch (error) {
+            console.error('Error updating student:', error);
             alert('Failed to update student');
+        }
+    }
+
+    // Reset Teacher Form
+    window.resetTeacherForm = function() {
+        const form = document.getElementById('teacherForm');
+        if (form) {
+            form.reset();
+            document.getElementById('teacherId_db').value = '';
         }
     }
 
@@ -250,10 +301,18 @@
     async function editTeacher(id) {
         try {
             const response = await fetch(`/api/teachers/${id}`, { credentials: 'include' });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                console.error('API Error:', errorData);
+                alert('Failed to load teacher data: ' + (errorData.message || `HTTP ${response.status}`));
+                return;
+            }
+            
             const data = await response.json();
             if (data.teacher) {
                 const t = data.teacher;
-                const form = document.querySelector('form[x-show*="addTeacher"]');
+                const form = document.getElementById('teacherForm');
                 if (form) {
                     form.querySelector('[name="firstName"]').value = t.firstName || '';
                     form.querySelector('[name="lastName"]').value = t.lastName || '';
@@ -263,24 +322,45 @@
                     form.querySelector('[name="department"]').value = t.department || '';
                     form.querySelector('[name="qualification"]').value = t.qualification || '';
                     form.querySelector('[name="instituteEmail"]').value = t.userId?.instituteEmail || t.instituteEmail || '';
-                    form.querySelector('[name="teacherId_db"]').value = t._id;
+                    document.getElementById('teacherId_db').value = t._id;
                 }
-                const alpineData = document.querySelector('[x-data]').__x.$data;
-                alpineData.modalType = 'editTeacher';
-                alpineData.showModal = true;
+                // Access Alpine.js data - try body element first
+                const alpineElement = document.querySelector('body[x-data]') || document.querySelector('[x-data]');
+                if (alpineElement && alpineElement._x_dataStack && alpineElement._x_dataStack[0]) {
+                    const alpineData = alpineElement._x_dataStack[0];
+                    alpineData.modalType = 'editTeacher';
+                    alpineData.showModal = true;
+                } else if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
+                    const alpineData = alpineElement.__x.$data;
+                    alpineData.modalType = 'editTeacher';
+                    alpineData.showModal = true;
+                } else {
+                    console.error('Alpine.js not found. Element:', alpineElement);
+                    alert('Teacher data loaded but modal opening failed. Page will refresh.');
+                    setTimeout(() => location.reload(), 500);
+                }
+            } else {
+                console.error('Invalid response format:', data);
+                alert('Failed to load teacher data: Invalid response format');
             }
         } catch (error) {
             console.error('Error fetching teacher:', error);
-            alert('Failed to load teacher data');
+            alert('Failed to load teacher data: ' + error.message);
         }
     }
     
     // Update Teacher Function
     async function updateTeacher() {
-        const form = document.querySelector('form[x-show*="addTeacher"]');
-        const id = form.querySelector('[name="teacherId_db"]').value;
+        const form = document.getElementById('teacherForm');
+        const id = document.getElementById('teacherId_db').value;
+        if (!id) {
+            alert('Error: Teacher ID not found');
+            return;
+        }
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
+        // Remove the db id from the data payload
+        delete data.teacherId_db;
         
         try {
             const response = await fetch(`/api/teachers/${id}`, {
@@ -293,13 +373,25 @@
             if (response.ok) {
                 document.querySelector('[x-data]').__x.$data.showModal = false;
                 form.reset();
+                document.getElementById('teacherId_db').value = '';
                 loadTeachers();
+                alert('Teacher updated successfully!');
             } else {
                 const error = await response.json();
                 alert('Error: ' + (error.message || 'Failed to update teacher'));
             }
         } catch (error) {
+            console.error('Error updating teacher:', error);
             alert('Failed to update teacher');
+        }
+    }
+
+    // Reset Admin Form
+    window.resetAdminForm = function() {
+        const form = document.getElementById('adminForm');
+        if (form) {
+            form.reset();
+            document.getElementById('adminId_db').value = '';
         }
     }
 
@@ -307,10 +399,18 @@
     async function editAdmin(id) {
         try {
             const response = await fetch(`/api/superadmins/${id}`, { credentials: 'include' });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                console.error('API Error:', errorData);
+                alert('Failed to load admin data: ' + (errorData.message || `HTTP ${response.status}`));
+                return;
+            }
+            
             const data = await response.json();
             if (data.superAdmin) {
                 const a = data.superAdmin;
-                const form = document.querySelector('form[x-show*="addAdmin"]');
+                const form = document.getElementById('adminForm');
                 if (form) {
                     form.querySelector('[name="firstName"]').value = a.firstName || '';
                     form.querySelector('[name="lastName"]').value = a.lastName || '';
@@ -319,31 +419,49 @@
                     form.querySelector('[name="adminId"]').value = a.adminId || '';
                     form.querySelector('[name="designation"]').value = a.designation || '';
                     form.querySelector('[name="department"]').value = a.department || '';
-                    let hiddenId = form.querySelector('[name="adminId_db"]');
-                    if (!hiddenId) {
-                        hiddenId = document.createElement('input');
-                        hiddenId.type = 'hidden';
-                        hiddenId.name = 'adminId_db';
-                        form.appendChild(hiddenId);
+                    const instituteEmailField = form.querySelector('[name="instituteEmail"]');
+                    if (instituteEmailField) {
+                        instituteEmailField.value = a.userId?.instituteEmail || a.instituteEmail || '';
                     }
-                    hiddenId.value = a._id;
+                    document.getElementById('adminId_db').value = a._id;
                 }
-                const alpineData = document.querySelector('[x-data]').__x.$data;
-                alpineData.modalType = 'editAdmin';
-                alpineData.showModal = true;
+                // Access Alpine.js data - try body element first
+                const alpineElement = document.querySelector('body[x-data]') || document.querySelector('[x-data]');
+                if (alpineElement && alpineElement._x_dataStack && alpineElement._x_dataStack[0]) {
+                    const alpineData = alpineElement._x_dataStack[0];
+                    alpineData.modalType = 'editAdmin';
+                    alpineData.showModal = true;
+                } else if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
+                    const alpineData = alpineElement.__x.$data;
+                    alpineData.modalType = 'editAdmin';
+                    alpineData.showModal = true;
+                } else {
+                    console.error('Alpine.js not found. Element:', alpineElement);
+                    alert('Admin data loaded but modal opening failed. Page will refresh.');
+                    setTimeout(() => location.reload(), 500);
+                }
+            } else {
+                console.error('Invalid response format:', data);
+                alert('Failed to load admin data: Invalid response format');
             }
         } catch (error) {
             console.error('Error fetching admin:', error);
-            alert('Failed to load admin data');
+            alert('Failed to load admin data: ' + error.message);
         }
     }
 
-    // Global Fallback for Admin Update
-    window.updateAdminGlobal = async function() {
-        const form = document.querySelector('form[x-show*="addAdmin"]');
-        const id = form.querySelector('[name="adminId_db"]').value;
+    // Update Admin Handler (called from form)
+    window.updateAdminHandler = async function() {
+        const form = document.getElementById('adminForm');
+        const id = document.getElementById('adminId_db').value;
+        if (!id) {
+            alert('Error: Admin ID not found');
+            return;
+        }
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
+        // Remove the db id from the data payload
+        delete data.adminId_db;
         
         try {
             const response = await fetch(`/api/superadmins/${id}`, {
@@ -354,8 +472,9 @@
             });
             
             if (response.ok) {
-                document.querySelector('body').__x.$data.showModal = false;
+                document.querySelector('[x-data]').__x.$data.showModal = false;
                 form.reset();
+                document.getElementById('adminId_db').value = '';
                 loadAdmins();
                 alert('Admin updated successfully!');
             } else {
@@ -363,9 +482,45 @@
                 alert('Error: ' + (error.message || 'Failed to update admin'));
             }
         } catch (error) {
+            console.error('Error updating admin:', error);
             alert('Failed to update admin');
         }
     }
+
+    // Submit Admin Handler (called from form)
+    window.submitAdminHandler = async function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        // Remove the db id from the data payload
+        delete data.adminId_db;
+        
+        try {
+            const response = await fetch('/api/superadmins', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                document.querySelector('[x-data]').__x.$data.showModal = false;
+                e.target.reset();
+                loadAdmins();
+                alert('Admin created successfully!');
+            } else {
+                const error = await response.json();
+                console.error('Submit Admin Error:', error);
+                alert('Error creating admin: ' + (error.message || JSON.stringify(error)));
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('Failed to create admin: ' + error.message);
+        }
+    }
+
+    // Global Fallback for Admin Update (kept for backward compatibility)
+    window.updateAdminGlobal = window.updateAdminHandler;
 
     // Expose functions to window
     window.submitStudentForm = submitStudentForm;
@@ -377,4 +532,7 @@
     window.editStudent = editStudent;
     window.editTeacher = editTeacher;
     window.editAdmin = editAdmin;
+    window.resetStudentForm = window.resetStudentForm || function() {};
+    window.resetTeacherForm = window.resetTeacherForm || function() {};
+    window.resetAdminForm = window.resetAdminForm || function() {};
 </script>

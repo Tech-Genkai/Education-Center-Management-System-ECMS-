@@ -21,12 +21,26 @@
             },
 
             // ==========================================
+            // FORM RESET FUNCTIONS
+            // ==========================================
+            resetStudentForm() {
+                if (window.resetStudentForm) window.resetStudentForm();
+            },
+            resetTeacherForm() {
+                if (window.resetTeacherForm) window.resetTeacherForm();
+            },
+            resetAdminForm() {
+                if (window.resetAdminForm) window.resetAdminForm();
+            },
+
+            // ==========================================
             // ADMIN FORM HANDLERS
             // ==========================================
             async submitAdminForm(e) {
                 console.log('DEBUG: Alpine submitAdminForm called');
                 const formData = new FormData(e.target);
                 const data = Object.fromEntries(formData.entries());
+                delete data.adminId_db;
                 
                 try {
                     const response = await fetch('/api/superadmins', {
@@ -53,10 +67,15 @@
             },
 
             async updateAdmin() {
-                const form = document.querySelector('form[x-show*="addAdmin"]');
-                const id = form.querySelector('[name="adminId_db"]').value;
+                const form = document.getElementById('adminForm');
+                const id = document.getElementById('adminId_db').value;
+                if (!id) {
+                    alert('Error: Admin ID not found');
+                    return;
+                }
                 const formData = new FormData(form);
                 const data = Object.fromEntries(formData.entries());
+                delete data.adminId_db;
                 
                 try {
                     const response = await fetch(`/api/superadmins/${id}`, {
@@ -69,12 +88,15 @@
                     if (response.ok) {
                         this.showModal = false;
                         form.reset();
+                        document.getElementById('adminId_db').value = '';
                         loadAdmins();
+                        alert('Admin updated successfully!');
                     } else {
                         const error = await response.json();
                         alert('Error: ' + (error.message || 'Failed to update admin'));
                     }
                 } catch (error) {
+                    console.error('Error updating admin:', error);
                     alert('Failed to update admin');
                 }
             },
@@ -86,12 +108,16 @@
                 const formData = new FormData(e.target);
                 const data = Object.fromEntries(formData.entries());
                 
-                // Remove empty strings to avoid validation issues
+                // Normalize date and remove empty strings
+                if (window.normalizeDatePayload) {
+                    window.normalizeDatePayload(data);
+                }
                 Object.keys(data).forEach(key => {
                     if (data[key] === '' || data[key] === undefined) {
                         delete data[key];
                     }
                 });
+                delete data.studentId_db;
                 
                 console.log('Submitting student data:', data);
                 
@@ -123,10 +149,20 @@
             },
 
             async updateStudent() {
-                const form = document.querySelector('form[x-show*="addStudent"]');
-                const id = form.querySelector('[name="studentId_db"]').value;
+                const form = document.getElementById('studentForm');
+                const id = document.getElementById('studentId_db').value;
+                if (!id) {
+                    alert('Error: Student ID not found');
+                    return;
+                }
                 const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
+                let data = Object.fromEntries(formData.entries());
+                
+                // Normalize date
+                if (window.normalizeDatePayload) {
+                    data = window.normalizeDatePayload(data);
+                }
+                delete data.studentId_db;
                 
                 try {
                     const response = await fetch(`/api/students/${id}`, {
@@ -139,12 +175,15 @@
                     if (response.ok) {
                         this.showModal = false;
                         form.reset();
+                        document.getElementById('studentId_db').value = '';
                         loadStudents();
+                        alert('Student updated successfully!');
                     } else {
                         const error = await response.json();
                         alert('Error: ' + (error.message || 'Failed to update student'));
                     }
                 } catch (error) {
+                    console.error('Error updating student:', error);
                     alert('Failed to update student');
                 }
             },
@@ -162,6 +201,7 @@
                         delete data[key];
                     }
                 });
+                delete data.teacherId_db;
                 
                 try {
                     const response = await fetch('/api/teachers', {
@@ -187,10 +227,15 @@
             },
 
             async updateTeacher() {
-                const form = document.querySelector('form[x-show*="addTeacher"]');
-                const id = form.querySelector('[name="teacherId_db"]').value;
+                const form = document.getElementById('teacherForm');
+                const id = document.getElementById('teacherId_db').value;
+                if (!id) {
+                    alert('Error: Teacher ID not found');
+                    return;
+                }
                 const formData = new FormData(form);
                 const data = Object.fromEntries(formData.entries());
+                delete data.teacherId_db;
                 
                 try {
                     const response = await fetch(`/api/teachers/${id}`, {
@@ -203,14 +248,27 @@
                     if (response.ok) {
                         this.showModal = false;
                         form.reset();
+                        document.getElementById('teacherId_db').value = '';
                         loadTeachers();
+                        alert('Teacher updated successfully!');
                     } else {
                         const error = await response.json();
                         alert('Error: ' + (error.message || 'Failed to update teacher'));
                     }
                 } catch (error) {
+                    console.error('Error updating teacher:', error);
                     alert('Failed to update teacher');
                 }
+            },
+
+            // ==========================================
+            // ADMIN HANDLERS FOR ALPINE FORM SUBMIT
+            // ==========================================
+            async submitAdminHandler(e) {
+                await this.submitAdminForm(e);
+            },
+            async updateAdminHandler() {
+                await this.updateAdmin();
             }
         }));
     });
