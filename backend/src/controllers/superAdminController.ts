@@ -287,6 +287,10 @@ export const deleteSuperAdmin = async (req: Request, res: Response) => {
       if (!superAdmin) {
         return res.status(404).json({ message: 'SuperAdmin not found' });
       }
+      
+      // Emit Socket.IO event for real-time updates
+      io.emit('admin:deleted', { adminId: id, hard: true });
+      
       return res.status(200).json({ message: 'SuperAdmin permanently deleted' });
     } else {
       // Soft delete - set status to inactive
@@ -299,6 +303,9 @@ export const deleteSuperAdmin = async (req: Request, res: Response) => {
       if (!superAdmin) {
         return res.status(404).json({ message: 'SuperAdmin not found' });
       }
+
+      // Emit Socket.IO event for real-time updates
+      io.emit('admin:deleted', { adminId: id, admin: superAdmin });
 
       return res.status(200).json({
         message: 'SuperAdmin deactivated successfully',

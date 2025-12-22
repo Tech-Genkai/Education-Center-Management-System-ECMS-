@@ -164,6 +164,15 @@
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
         
+        // Remove empty string values - let backend use optional/default values
+        Object.keys(data).forEach(key => {
+            if (data[key] === '' || data[key] === null || data[key] === undefined) {
+                delete data[key];
+            }
+        });
+        
+        console.log('DEBUG: Form data being sent:', data);
+        
         try {
             const response = await fetch('/api/superadmins', {
                 method: 'POST',
@@ -173,15 +182,25 @@
             });
             
             if (response.ok) {
-                // Close modal via Alpine access
-                document.querySelector('body').__x.$data.showModal = false;
+                // Close modal via Alpine access - find the Alpine component
+                const alpineEl = document.querySelector('[x-data]');
+                if (alpineEl && alpineEl.__x) {
+                    alpineEl.__x.$data.showModal = false;
+                }
                 e.target.reset();
                 loadAdmins();
                 alert('Admin created successfully!');
             } else {
                 const error = await response.json();
                 console.error('Submit Admin Error:', error);
-                alert('Error creating admin: ' + (error.message || JSON.stringify(error)));
+                
+                // Show detailed validation errors
+                if (error.errors && Array.isArray(error.errors)) {
+                    const errorMessages = error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join('\n');
+                    alert('Validation failed:\n\n' + errorMessages);
+                } else {
+                    alert('Error creating admin: ' + (error.message || JSON.stringify(error)));
+                }
             }
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -354,7 +373,10 @@
             });
             
             if (response.ok) {
-                document.querySelector('body').__x.$data.showModal = false;
+                const alpineEl = document.querySelector('[x-data]');
+                if (alpineEl && alpineEl.__x) {
+                    alpineEl.__x.$data.showModal = false;
+                }
                 form.reset();
                 loadAdmins();
                 alert('Admin updated successfully!');

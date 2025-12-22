@@ -20,7 +20,7 @@ const UserSchema = new Schema<IUser>(
   {
     email: { type: String, required: true, unique: true, index: true, trim: true, lowercase: true, match: EMAIL_REGEX },
     instituteEmail: { type: String, required: false, sparse: true, index: true, trim: true, lowercase: true },
-    phone: { type: String, required: true, trim: true, match: PHONE_REGEX },
+    phone: { type: String, required: false, trim: true, match: PHONE_REGEX },
     password: { type: String, required: true, minlength: 8 },
     role: { type: String, enum: ['student', 'teacher', 'superadmin'], required: true },
     isActive: { type: Boolean, default: true },
