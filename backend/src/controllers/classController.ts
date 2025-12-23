@@ -69,8 +69,10 @@ export const getClassById = async (req: Request, res: Response) => {
  */
 export const createClass = async (req: Request, res: Response) => {
   try {
+    console.log('🔍 Creating class with data:', req.body);
     const parsed = createClassSchema.safeParse(req.body);
     if (!parsed.success) {
+      console.error('❌ Validation failed:', parsed.error.errors);
       return res.status(400).json({
         message: 'Validation failed',
         errors: parsed.error.errors
@@ -78,6 +80,7 @@ export const createClass = async (req: Request, res: Response) => {
     }
 
     const data = parsed.data;
+    console.log('✅ Validation passed. Data:', data);
 
     const existingClass = await ClassModel.findOne({ classCode: data.classCode });
     if (existingClass) {
@@ -94,6 +97,7 @@ export const createClass = async (req: Request, res: Response) => {
 
     const newClass = new ClassModel(data);
     await newClass.save();
+    console.log('✅ Class saved successfully:', newClass._id);
 
     return res.status(201).json({
       message: 'Class created successfully',
@@ -113,8 +117,10 @@ export const createClass = async (req: Request, res: Response) => {
  */
 export const updateClass = async (req: Request, res: Response) => {
   try {
+    console.log('🔍 Updating class with data:', req.body);
     const parsed = updateClassSchema.safeParse(req.body);
     if (!parsed.success) {
+      console.error('❌ Validation failed:', parsed.error.errors);
       return res.status(400).json({
         message: 'Validation failed',
         errors: parsed.error.errors
@@ -123,6 +129,7 @@ export const updateClass = async (req: Request, res: Response) => {
 
     const classId = req.params.id;
     const data = parsed.data;
+    console.log('✅ Validation passed. Data:', data);
 
     const classItem = await ClassModel.findById(classId);
     if (!classItem) {
@@ -139,6 +146,7 @@ export const updateClass = async (req: Request, res: Response) => {
 
     Object.assign(classItem, data);
     await classItem.save();
+    console.log('✅ Class updated successfully:', classItem._id);
 
     return res.status(200).json({
       message: 'Class updated successfully',

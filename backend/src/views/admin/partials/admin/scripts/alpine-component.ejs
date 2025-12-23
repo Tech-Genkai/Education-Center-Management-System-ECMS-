@@ -302,7 +302,16 @@
             async submitClassForm(e) {
                 e.preventDefault();
                 const formData = new FormData(e.target);
+                
+                // Handle subjects array properly
+                const subjects = formData.getAll('subjects[]');
                 const data = Object.fromEntries(formData.entries());
+                
+                // Replace subjects[] with proper subjects array
+                delete data['subjects[]'];
+                if (subjects.length > 0) {
+                    data.subjects = subjects;
+                }
                 
                 // Remove empty strings to avoid validation issues
                 Object.keys(data).forEach(key => {
@@ -310,6 +319,8 @@
                         delete data[key];
                     }
                 });
+                
+                console.log('Submitting class data:', data);
                 
                 try {
                     const response = await fetch('/api/classes', {
@@ -322,10 +333,12 @@
                     if (response.ok) {
                         this.showModal = false;
                         e.target.reset();
+                        this.selectedSubjects = [];
                         loadClasses();
                         alert('Class added successfully!');
                     } else {
                         const error = await response.json();
+                        console.error('Class creation error:', error);
                         alert('Error: ' + (error.message || 'Failed to add class'));
                     }
                 } catch (error) {
@@ -381,8 +394,17 @@
                     return;
                 }
                 const formData = new FormData(form);
+                
+                // Handle subjects array properly
+                const subjects = formData.getAll('subjects[]');
                 const data = Object.fromEntries(formData.entries());
+                
+                // Replace subjects[] with proper subjects array
+                delete data['subjects[]'];
                 delete data.classId_db;
+                if (subjects.length > 0) {
+                    data.subjects = subjects;
+                }
                 
                 // Remove empty strings
                 Object.keys(data).forEach(key => {
@@ -390,6 +412,8 @@
                         delete data[key];
                     }
                 });
+                
+                console.log('Updating class data:', data);
                 
                 try {
                     const response = await fetch(`/api/classes/${id}`, {
@@ -403,10 +427,12 @@
                         this.showModal = false;
                         form.reset();
                         document.getElementById('classId_db').value = '';
+                        this.selectedSubjects = [];
                         loadClasses();
                         alert('Class updated successfully!');
                     } else {
                         const error = await response.json();
+                        console.error('Class update error:', error);
                         alert('Error: ' + (error.message || 'Failed to update class'));
                     }
                 } catch (error) {

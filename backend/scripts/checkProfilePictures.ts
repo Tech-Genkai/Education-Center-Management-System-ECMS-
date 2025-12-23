@@ -2,9 +2,7 @@ import mongoose from 'mongoose';
 import { SuperAdmin } from '../src/models/SuperAdmin.js';
 import { User } from '../src/models/User.js';
 import { UserProfile } from '../src/models/UserProfile.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { ClassModel } from '../src/models/Class.js';
 
 const checkProfilePictures = async () => {
   try {
@@ -13,18 +11,35 @@ const checkProfilePictures = async () => {
     await mongoose.connect(mongoUri);
     console.log('✅ Connected to MongoDB\n');
 
+    // Check classes and their subjects
+    console.log('📚 Checking Classes and Subjects:');
+    console.log('='.repeat(80));
+
+    const classes = await ClassModel.find().populate('subjects', 'subjectName subjectCode').lean();
+
+    for (const cls of classes) {
+      console.log(`\n📖 Class: ${cls.className} (${cls.classCode})`);
+      console.log(`   Academic Year: ${cls.academicYear}`);
+      console.log(`   Subjects: ${cls.subjects && cls.subjects.length > 0
+        ? cls.subjects.map((s: any) => `${s.subjectName} (${s.subjectCode})`).join(', ')
+        : 'No subjects assigned'}`);
+      console.log(`   Subjects Array: ${JSON.stringify(cls.subjects?.map((s: any) => s._id) || [])}`);
+    }
+
+    console.log('\n' + '='.repeat(80));
+
     // Fetch all SuperAdmins
     const superAdmins = await SuperAdmin.find().lean();
-    
-    console.log(`📊 Found ${superAdmins.length} SuperAdmin accounts:\n`);
+
+    console.log(`\n👥 Found ${superAdmins.length} SuperAdmin accounts:\n`);
     console.log('='.repeat(80));
-    
+
     for (const admin of superAdmins) {
       console.log(`\n👤 SuperAdmin: ${admin.firstName} ${admin.lastName}`);
       console.log(`   Admin ID: ${admin.adminId}`);
       console.log(`   User ID: ${admin.userId}`);
       console.log(`   SuperAdmin.profilePicture: ${admin.profilePicture}`);
-      
+
       // Check User model
       const user = await User.findById(admin.userId).lean();
       if (user) {
@@ -33,7 +48,7 @@ const checkProfilePictures = async () => {
       } else {
         console.log(`   ⚠️  User document not found!`);
       }
-      
+
       // Check UserProfile model
       const userProfile = await UserProfile.findOne({ userId: admin.userId }).lean();
       if (userProfile) {
@@ -42,12 +57,12 @@ const checkProfilePictures = async () => {
       } else {
         console.log(`   ℹ️  UserProfile document not found`);
       }
-      
+
       console.log('-'.repeat(80));
     }
-    
+
     console.log('\n✅ Check complete');
-    
+
   } catch (error) {
     console.error('❌ Error:', error);
   } finally {
