@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { initGridFS } from '../utils/gridfs.ts';
 
 let isConnecting = false;
 
@@ -26,6 +27,10 @@ export async function connectDatabase(uri?: string, appName = 'ecms-api') {
       heartbeatFrequencyMS: 8000
     });
     console.log('MongoDB connected');
+    
+    // Initialize GridFS after connection
+    initGridFS(mongoose.connection);
+    
     return mongoose.connection;
   } catch (err) {
     console.error('MongoDB connection error:', err);

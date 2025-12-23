@@ -1,5 +1,5 @@
 import { Schema, model, Types } from 'mongoose';
-import { PROFILE_IMAGE_DEFAULT_STORAGE_PATH, PROFILE_IMAGE_DEFAULT_URL } from '../constants/media.ts';
+import { PROFILE_IMAGE_DEFAULT_URL } from '../constants/media.ts';
 import { BIO_MAX_LENGTH, NAME_MAX_LENGTH, PHONE_REGEX, isAllowedProfileUrl, URL_REGEX } from '../utils/validation.ts';
 
 const UserProfileSchema = new Schema(
@@ -12,7 +12,7 @@ const UserProfileSchema = new Schema(
     avatarUrl: { type: String, default: PROFILE_IMAGE_DEFAULT_URL, validate: [isAllowedProfileUrl, 'Invalid URL'] },
     profilePicture: {
       url: { type: String, default: PROFILE_IMAGE_DEFAULT_URL, validate: [isAllowedProfileUrl, 'Invalid URL'] },
-      storagePath: { type: String, default: PROFILE_IMAGE_DEFAULT_STORAGE_PATH },
+      gridfsFileId: { type: String },
       isDefault: { type: Boolean, default: true },
       uploadedAt: Date
     },

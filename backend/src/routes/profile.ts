@@ -3,8 +3,6 @@ import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
 import { Types } from 'mongoose';
 import { UserProfile } from '../models/UserProfile.ts';
 import { SuperAdmin } from '../models/SuperAdmin.ts';
@@ -15,11 +13,10 @@ import { Address } from '../models/Address.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { requireAuth } from '../middleware/session.ts';
 import {
-  PROFILE_IMAGE_DEFAULT_STORAGE_PATH,
-  PROFILE_IMAGE_DEFAULT_URL,
-  PROFILE_IMAGE_UPLOAD_DIR
+  PROFILE_IMAGE_DEFAULT_URL
 } from '../constants/media.ts';
 import sizeOf from 'image-size';
+import { uploadToGridFS, downloadFromGridFS, deleteFromGridFS, findGridFSFile } from '../utils/gridfs.ts';
 
 const router = express.Router();
 
@@ -44,11 +41,8 @@ const hybridAuth = (req: Request, res: Response, next: NextFunction) => {
   return res.status(401).json({ message: 'Unauthorized' });
 };
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const uploadDir = path.resolve(__dirname, `../../public/${PROFILE_IMAGE_UPLOAD_DIR}`);
-fs.mkdirSync(uploadDir, { recursive: true });
+// Use memory storage for multer since we'll upload to GridFS
+const storage = multer.memoryStorage();
 
 const BASE_LIMITS = {
   maxBytes: 2 * 1024 * 1024, // 2MB
@@ -73,15 +67,6 @@ export const getImageLimitsForRole = (role?: string) => {
   return BASE_LIMITS;
 };
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.png';
-    const safeName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-    cb(null, safeName);
-  }
-});
-
 const upload = multer({
   storage,
   limits: { fileSize: PRIVILEGED_LIMITS.maxBytes },
@@ -97,7 +82,7 @@ const upload = multer({
 const uploadResponseSchema = z.object({
   message: z.string(),
   url: z.string(),
-  storagePath: z.string(),
+  fileId: z.string(),
   profile: z.any()
 });
 
@@ -113,13 +98,12 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
     console.log('📸 Avatar upload request received');
     console.log('Body userId:', req.body.userId);
     console.log('Auth context:', (req as any).auth);
-    console.log('File:', req.file ? `${req.file.filename} (${req.file.size} bytes)` : 'No file');
+    console.log('File:', req.file ? `${req.file.originalname} (${req.file.size} bytes)` : 'No file');
     
     const { userId } = req.body as { userId?: string };
     const requester = (req as any).auth as { userId?: string; role?: string };
 
     if (!userId || !Types.ObjectId.isValid(userId)) {
-      if (req.file?.path) fs.unlink(req.file.path, () => undefined);
       console.error('❌ Invalid userId:', userId);
       return res.status(400).json({ message: 'userId is required and must be a valid ObjectId' });
     }
@@ -134,7 +118,6 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
     console.log('🔐 Authorization check:', { isSuperAdmin, requesterRole: requester?.role, requesterId: requester?.userId, targetUserId: userId });
     
     if (!isSuperAdmin && requester?.userId !== userId) {
-      if (req.file?.path) fs.unlink(req.file.path, () => undefined);
       console.error('❌ Forbidden: User cannot upload for another user');
       return res.status(403).json({ message: 'Forbidden' });
     }
@@ -143,7 +126,6 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
 
     // Additional server-side validation for type/size to keep response schema explicit
     if (!ALLOWED_MIME_TYPES.includes(req.file.mimetype)) {
-      fs.unlink(req.file.path, () => undefined);
       return res.status(400).json({
         message: 'Invalid file type',
         allowedTypes: ALLOWED_MIME_TYPES
@@ -151,7 +133,6 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
     }
 
     if (req.file.size > limits.maxBytes) {
-      fs.unlink(req.file.path, () => undefined);
       return res.status(400).json({
         message: 'File too large',
         maxBytes: limits.maxBytes,
@@ -159,7 +140,7 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
       });
     }
 
-    const dimensions = sizeOf(req.file.path);
+    const dimensions = sizeOf(req.file.buffer);
     if (
       !dimensions?.width ||
       !dimensions?.height ||
@@ -168,7 +149,6 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
       dimensions.width < limits.minWidth ||
       dimensions.height < limits.minHeight
     ) {
-      fs.unlink(req.file.path, () => undefined);
       return res.status(400).json({
         message: 'Image dimensions out of allowed range',
         maxWidth: limits.maxWidth,
@@ -179,11 +159,30 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
       });
     }
 
-    const relativeStoragePath = path.posix.join(PROFILE_IMAGE_UPLOAD_DIR, req.file.filename);
-    const publicUrl = `/static/${relativeStoragePath}`;
-
     // Find current profile to delete old uploaded image if replacing
     const existing = await UserProfile.findOne({ userId });
+
+    // Delete old GridFS file if exists
+    if (existing?.profilePicture?.gridfsFileId && existing.profilePicture.isDefault === false) {
+      try {
+        await deleteFromGridFS(existing.profilePicture.gridfsFileId);
+        console.log('🗑️ Deleted old GridFS file:', existing.profilePicture.gridfsFileId);
+      } catch (err) {
+        console.warn('⚠️ Failed to delete old GridFS file:', err);
+      }
+    }
+
+    // Upload to GridFS
+    const gridfsFile = await uploadToGridFS(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype,
+      { userId, uploadedAt: new Date() }
+    );
+    const fileId = gridfsFile._id.toString();
+    console.log('✅ Uploaded to GridFS with fileId:', fileId);
+
+    const publicUrl = `/api/profile/avatar/${fileId}`;
 
     const profile = await UserProfile.findOneAndUpdate(
       { userId },
@@ -192,7 +191,7 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
           avatarUrl: publicUrl,
           profilePicture: {
             url: publicUrl,
-            storagePath: relativeStoragePath,
+            gridfsFileId: fileId,
             isDefault: false,
             uploadedAt: new Date()
           }
@@ -234,18 +233,10 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
       }
     }
 
-    // Cleanup old uploaded image (only if it was not default and path exists)
-    if (existing?.profilePicture?.storagePath && existing.profilePicture.isDefault === false) {
-      const oldPath = path.resolve(__dirname, '../../public', existing.profilePicture.storagePath);
-      if (fs.existsSync(oldPath)) {
-        fs.unlink(oldPath, () => undefined);
-      }
-    }
-
     const responsePayload = {
       message: 'Profile image uploaded successfully',
       url: publicUrl,
-      storagePath: relativeStoragePath,
+      fileId,
       profile
     };
 
@@ -259,7 +250,6 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
     return res.status(200).json(parsed.data);
   } catch (error) {
     console.error('❌ Avatar upload error:', error);
-    if (req.file?.path) fs.unlink(req.file.path, () => undefined);
     const errPayload = { message: 'Failed to upload image', error: (error as Error).message };
     const parsed = errorResponseSchema.safeParse(errPayload);
     return res.status(500).json(parsed.success ? parsed.data : errPayload);
@@ -286,11 +276,13 @@ router.delete('/avatar', hybridAuth, async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Profile not found' });
     }
 
-    const currentPath = existing.profilePicture?.storagePath;
-    if (currentPath && currentPath !== PROFILE_IMAGE_DEFAULT_STORAGE_PATH) {
-      const absPath = path.resolve(__dirname, '../../public', currentPath);
-      if (fs.existsSync(absPath)) {
-        fs.unlink(absPath, () => undefined);
+    // Delete GridFS file if exists
+    if (existing.profilePicture?.gridfsFileId && existing.profilePicture.isDefault === false) {
+      try {
+        await deleteFromGridFS(existing.profilePicture.gridfsFileId);
+        console.log('🗑️ Deleted GridFS file:', existing.profilePicture.gridfsFileId);
+      } catch (err) {
+        console.warn('⚠️ Failed to delete GridFS file:', err);
       }
     }
 
@@ -298,7 +290,7 @@ router.delete('/avatar', hybridAuth, async (req: Request, res: Response) => {
       avatarUrl: PROFILE_IMAGE_DEFAULT_URL,
       profilePicture: {
         url: PROFILE_IMAGE_DEFAULT_URL,
-        storagePath: PROFILE_IMAGE_DEFAULT_STORAGE_PATH,
+        gridfsFileId: undefined,
         isDefault: true,
         uploadedAt: undefined
       }
@@ -546,6 +538,36 @@ router.post('/picture', upload.single('profileImage'), async (req: Request, res:
     if (req.file?.path) fs.unlink(req.file.path, () => undefined);
     console.error('Upload error:', error);
     return res.status(500).json({ message: 'Failed to upload profile picture', error: (error as Error).message });
+  }
+});
+
+// Serve avatar image from GridFS
+router.get('/avatar/:fileId', async (req: Request, res: Response) => {
+  try {
+    const { fileId } = req.params;
+
+    if (!Types.ObjectId.isValid(fileId)) {
+      return res.status(400).json({ message: 'Invalid file ID' });
+    }
+
+    const file = await findGridFSFile(fileId);
+    if (!file) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+
+    // Set cache headers
+    res.set({
+      'Content-Type': file.contentType || 'image/jpeg',
+      'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
+      'ETag': fileId
+    });
+
+    // Stream the file from GridFS
+    const downloadStream = await downloadFromGridFS(fileId);
+    downloadStream.pipe(res);
+  } catch (error) {
+    console.error('❌ Error serving avatar:', error);
+    return res.status(500).json({ message: 'Failed to load image', error: (error as Error).message });
   }
 });
 

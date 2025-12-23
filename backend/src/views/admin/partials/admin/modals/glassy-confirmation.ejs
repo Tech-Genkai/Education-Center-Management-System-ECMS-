@@ -1,0 +1,53 @@
+<!-- Glassy Confirmation Modal -->
+<div id="glassyConfirmModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+  <div class="relative w-full max-w-sm">
+    <div class="glass rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+      <div class="px-6 py-5 border-b border-gray-200/30 dark:border-gray-700/30">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Confirmation</h3>
+      </div>
+      <div class="px-6 py-6">
+        <p class="text-sm text-gray-800 dark:text-gray-200" id="glassyConfirmMessage">Are you sure?</p>
+      </div>
+      <div class="flex justify-end gap-3 px-6 pb-5">
+        <button id="glassyConfirmCancel" class="px-4 py-2 rounded-lg bg-gray-200/60 dark:bg-gray-700/60 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-300/80 dark:hover:bg-gray-600/80 transition">Cancel</button>
+        <button id="glassyConfirmOk" class="px-4 py-2 rounded-lg bg-green-500/80 text-white font-semibold hover:bg-green-600/90 transition">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .glass {
+    background: rgba(255,255,255,0.18);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.24);
+    box-shadow: 0 8px 24px 0 rgba(16,24,32,0.06), inset 0 0 0 1px rgba(255,255,255,0.25);
+  }
+  html.dark .glass {
+    background: rgba(31,41,55,0.56);
+    border-color: rgba(255,255,255,0.06);
+  }
+</style>
+<script>
+window.showGlassyConfirm = function(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('glassyConfirmModal');
+    const msg = document.getElementById('glassyConfirmMessage');
+    const okBtn = document.getElementById('glassyConfirmOk');
+    const cancelBtn = document.getElementById('glassyConfirmCancel');
+    msg.textContent = message;
+    modal.classList.remove('hidden');
+    function cleanup(result) {
+      modal.classList.add('hidden');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      resolve(result);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+  });
+};
+</script>

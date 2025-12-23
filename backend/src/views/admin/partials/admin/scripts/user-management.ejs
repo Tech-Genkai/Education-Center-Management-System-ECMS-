@@ -21,7 +21,8 @@
     // Toggle user status (activate/deactivate)
     async function toggleStatus(userType, userId, currentStatus) {
         const action = currentStatus === 'active' ? 'deactivate' : 'activate';
-        if (!confirm(`Are you sure you want to ${action} this ${userType}?`)) {
+        const confirmed = await window.showGlassyConfirm(`Are you sure you want to ${action} this ${userType}?`);
+        if (!confirmed) {
             return;
         }
 

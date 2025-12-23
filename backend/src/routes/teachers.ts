@@ -67,6 +67,32 @@ router.get('/:id/classes', getTeacherClasses);
 router.get('/:id/subjects', getTeacherSubjects);
 
 /**
+ * @route   PATCH /api/teachers/:id/toggle-status
+ * @desc    Toggle teacher status (active/inactive)
+ * @access  Private (superadmin only)
+ */
+router.patch('/:id/toggle-status', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const { NotFoundError } = await import('../middleware/errorHandler.ts');
+    const { Teacher } = await import('../models/Teacher.ts');
+    
+    const teacher = await Teacher.findById(req.params.id);
+    if (!teacher) throw new NotFoundError('Teacher', req.params.id);
+    
+    // Toggle status
+    teacher.status = teacher.status === 'active' ? 'inactive' : 'active';
+    await teacher.save();
+    
+    res.json({ 
+      message: `Teacher ${teacher.status === 'active' ? 'activated' : 'deactivated'} successfully`,
+      status: teacher.status 
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * @route   POST /api/teachers/:id/reset-password
  * @desc    Reset teacher password
  * @access  Private (superadmin only)

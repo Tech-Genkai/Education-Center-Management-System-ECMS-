@@ -30,11 +30,11 @@
                         <td class="py-3 px-4 text-center">
                             <div class="flex items-center justify-center space-x-2">
                                 <button onclick="toggleStatus('student', '${student._id}', '${student.status}')" 
-                                        class="${student.status === 'active' ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-gray-500'}"
+                                        class="glass-toggle px-2 py-1 text-xs ${student.status === 'active' ? 'glass-toggle--active' : 'glass-toggle--inactive'}"
                                         title="${student.status === 'active' ? 'Deactivate' : 'Activate'}">
-                                    <svg class="w-10 h-6" fill="currentColor" viewBox="0 0 48 24">
-                                        ${student.status === 'active' ? '<rect x="0" y="0" width="48" height="24" rx="12" fill="currentColor"/><circle cx="36" cy="12" r="9" fill="white"/>' : '<rect x="0" y="0" width="48" height="24" rx="12" fill="#e5e7eb"/><circle cx="12" cy="12" r="9" fill="white"/>'}
-                                    </svg>
+                                    <span class="glass-toggle-switch ${student.status === 'active' ? 'glass-toggle-switch--on' : 'glass-toggle-switch--off'}">
+                                        <span class="glass-toggle-knob"></span>
+                                    </span>
                                 </button>
                                 <button onclick="editStudent('${student._id}')" 
                                         class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
@@ -96,11 +96,11 @@
                         <td class="py-3 px-4 text-center">
                             <div class="flex items-center justify-center space-x-2">
                                 <button onclick="toggleStatus('teacher', '${teacher._id}', '${teacher.status}')" 
-                                        class="${teacher.status === 'active' ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-gray-500'}"
+                                        class="glass-toggle px-2 py-1 text-xs ${teacher.status === 'active' ? 'glass-toggle--active' : 'glass-toggle--inactive'}"
                                         title="${teacher.status === 'active' ? 'Deactivate' : 'Activate'}">
-                                    <svg class="w-10 h-6" fill="currentColor" viewBox="0 0 48 24">
-                                        ${teacher.status === 'active' ? '<rect x="0" y="0" width="48" height="24" rx="12" fill="currentColor"/><circle cx="36" cy="12" r="9" fill="white"/>' : '<rect x="0" y="0" width="48" height="24" rx="12" fill="#e5e7eb"/><circle cx="12" cy="12" r="9" fill="white"/>'}
-                                    </svg>
+                                    <span class="glass-toggle-switch ${teacher.status === 'active' ? 'glass-toggle-switch--on' : 'glass-toggle-switch--off'}">
+                                        <span class="glass-toggle-knob"></span>
+                                    </span>
                                 </button>
                                 <button onclick="editTeacher('${teacher._id}')" 
                                         class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
@@ -162,11 +162,11 @@
                         <td class="py-3 px-4 text-center">
                             <div class="flex items-center justify-center space-x-2">
                                 <button onclick="toggleStatus('admin', '${admin._id}', '${admin.status || 'active'}')" 
-                                        class="${(admin.status || 'active') === 'active' ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-gray-500'}"
+                                        class="glass-toggle px-2 py-1 text-xs ${(admin.status || 'active') === 'active' ? 'glass-toggle--active' : 'glass-toggle--inactive'}"
                                         title="${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}">
-                                    <svg class="w-10 h-6" fill="currentColor" viewBox="0 0 48 24">
-                                        ${(admin.status || 'active') === 'active' ? '<rect x="0" y="0" width="48" height="24" rx="12" fill="currentColor"/><circle cx="36" cy="12" r="9" fill="white"/>' : '<rect x="0" y="0" width="48" height="24" rx="12" fill="#e5e7eb"/><circle cx="12" cy="12" r="9" fill="white"/>'}
-                                    </svg>
+                                    <span class="glass-toggle-switch ${(admin.status || 'active') === 'active' ? 'glass-toggle-switch--on' : 'glass-toggle-switch--off'}">
+                                        <span class="glass-toggle-knob"></span>
+                                    </span>
                                 </button>
                                 <button onclick="editAdmin('${admin._id}')" 
                                         class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 

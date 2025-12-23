@@ -67,6 +67,32 @@ router.get('/:id/marks', getStudentMarks);
 router.get('/:id/attendance', getStudentAttendance);
 
 /**
+ * @route   PATCH /api/students/:id/toggle-status
+ * @desc    Toggle student status (active/inactive)
+ * @access  Private (superadmin only)
+ */
+router.patch('/:id/toggle-status', requireRole('superadmin'), async (req, res, next) => {
+  try {
+    const { NotFoundError } = await import('../middleware/errorHandler.ts');
+    const { Student } = await import('../models/Student.ts');
+    
+    const student = await Student.findById(req.params.id);
+    if (!student) throw new NotFoundError('Student', req.params.id);
+    
+    // Toggle status
+    student.status = student.status === 'active' ? 'inactive' : 'active';
+    await student.save();
+    
+    res.json({ 
+      message: `Student ${student.status === 'active' ? 'activated' : 'deactivated'} successfully`,
+      status: student.status 
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * @route   POST /api/students/:id/reset-password
  * @desc    Reset student password
  * @access  Private (superadmin only)
