@@ -16,13 +16,17 @@
             sidebarOpen: true,
             availableTeachers: [],
             availableSubjects: [],
+            availableClasses: [],
             selectedSubjects: [],
+            selectedTeacherSubjects: [],
+            selectedTeacherClasses: [],
 
             // Initialization
             async init() {
                 console.log('Dashboard component initialized, activeTab:', this.activeTab);
                 await this.loadTeachersForDropdown();
                 await this.loadSubjectsForDropdown();
+                await this.loadClassesForDropdown();
             },
 
             // Load teachers for dropdown
@@ -52,6 +56,21 @@
                     }
                 } catch (error) {
                     console.error('Error loading subjects for dropdown:', error);
+                }
+            },
+
+            // Load classes for dropdown
+            async loadClassesForDropdown() {
+                try {
+                    const response = await fetch('/api/classes', {
+                        credentials: 'include'
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.availableClasses = data.classes || [];
+                    }
+                } catch (error) {
+                    console.error('Error loading classes for dropdown:', error);
                 }
             },
 
