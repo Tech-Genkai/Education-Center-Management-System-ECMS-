@@ -339,6 +339,10 @@
                 const formData = new FormData(e.target);
                 const data = Object.fromEntries(formData.entries());
                 
+                // Convert numeric fields
+                if (data.credits) data.credits = parseFloat(data.credits);
+                if (data.classesPerWeek) data.classesPerWeek = parseInt(data.classesPerWeek);
+                
                 // Remove empty strings to avoid validation issues
                 Object.keys(data).forEach(key => {
                     if (data[key] === '' || data[key] === undefined) {
@@ -408,6 +412,52 @@
                 } catch (error) {
                     console.error('Error updating class:', error);
                     alert('Failed to update class');
+                }
+            },
+
+            async updateSubject() {
+                const form = document.getElementById('subjectForm');
+                const id = document.getElementById('subjectId_db').value;
+                if (!id) {
+                    alert('Error: Subject ID not found');
+                    return;
+                }
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                delete data.subjectId_db;
+                
+                // Convert numeric fields
+                if (data.credits) data.credits = parseFloat(data.credits);
+                if (data.classesPerWeek) data.classesPerWeek = parseInt(data.classesPerWeek);
+                
+                // Remove empty strings
+                Object.keys(data).forEach(key => {
+                    if (data[key] === '' || data[key] === undefined) {
+                        delete data[key];
+                    }
+                });
+                
+                try {
+                    const response = await fetch(`/api/subjects/${id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        form.reset();
+                        document.getElementById('subjectId_db').value = '';
+                        loadSubjects();
+                        alert('Subject updated successfully!');
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to update subject'));
+                    }
+                } catch (error) {
+                    console.error('Error updating subject:', error);
+                    alert('Failed to update subject');
                 }
             },
 

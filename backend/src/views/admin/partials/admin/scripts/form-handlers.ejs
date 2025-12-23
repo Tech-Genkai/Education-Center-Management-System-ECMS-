@@ -631,4 +631,58 @@
     }
 
     window.editClass = editClass;
+
+    // Edit Subject Function
+    async function editSubject(id) {
+        try {
+            const response = await fetch(`/api/subjects/${id}`, { credentials: 'include' });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                console.error('API Error:', errorData);
+                alert('Failed to load subject data: ' + (errorData.message || `HTTP ${response.status}`));
+                return;
+            }
+            
+            const data = await response.json();
+            if (data.subject) {
+                const subj = data.subject;
+                const form = document.getElementById('subjectForm');
+                if (form) {
+                    form.querySelector('[name="subjectCode"]').value = subj.subjectCode || '';
+                    form.querySelector('[name="subjectName"]').value = subj.subjectName || '';
+                    form.querySelector('[name="credits"]').value = subj.credits || '';
+                    form.querySelector('[name="branch"]').value = subj.branch || '';
+                    form.querySelector('[name="classesPerWeek"]').value = subj.classesPerWeek || '';
+                    form.querySelector('[name="semester"]').value = subj.semester || '';
+                    form.querySelector('[name="description"]').value = subj.description || '';
+                    
+                    document.getElementById('subjectId_db').value = subj._id;
+                }
+                // Access Alpine.js data
+                const alpineElement = document.querySelector('body[x-data]') || document.querySelector('[x-data]');
+                if (alpineElement && alpineElement._x_dataStack && alpineElement._x_dataStack[0]) {
+                    const alpineData = alpineElement._x_dataStack[0];
+                    alpineData.modalType = 'editSubject';
+                    alpineData.showModal = true;
+                } else if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
+                    const alpineData = alpineElement.__x.$data;
+                    alpineData.modalType = 'editSubject';
+                    alpineData.showModal = true;
+                } else {
+                    console.error('Alpine.js not found. Element:', alpineElement);
+                    alert('Subject data loaded but modal opening failed. Page will refresh.');
+                    setTimeout(() => location.reload(), 500);
+                }
+            } else {
+                console.error('Invalid response format:', data);
+                alert('Failed to load subject data: Invalid response format');
+            }
+        } catch (error) {
+            console.error('Error fetching subject:', error);
+            alert('Failed to load subject data: ' + error.message);
+        }
+    }
+
+    window.editSubject = editSubject;
 </script>

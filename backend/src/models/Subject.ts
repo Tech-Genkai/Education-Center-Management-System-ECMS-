@@ -6,6 +6,9 @@ const SubjectSchema = new Schema(
     subjectName: { type: String, required: true },
     description: String,
     credits: Number,
+    branch: String,
+    classesPerWeek: Number,
+    semester: String,
     teacherId: { type: Types.ObjectId, ref: 'Teacher' },
     classId: { type: Types.ObjectId, ref: 'Class' },
     isActive: { type: Boolean, default: true }

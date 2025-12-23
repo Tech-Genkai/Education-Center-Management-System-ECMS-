@@ -408,7 +408,8 @@
                 'student': '/api/students',
                 'teacher': '/api/teachers',
                 'admin': '/api/superadmins',
-                'class': '/api/classes'
+                'class': '/api/classes',
+                'subject': '/api/subjects'
             };
             
             const endpoint = endpoints[userType];
@@ -460,6 +461,8 @@
                         window.loadAdmins();
                     } else if (userType === 'class' && window.loadClasses) {
                         window.loadClasses();
+                    } else if (userType === 'subject' && window.loadSubjects) {
+                        window.loadSubjects();
                     }
                 }, 300);
             } else {

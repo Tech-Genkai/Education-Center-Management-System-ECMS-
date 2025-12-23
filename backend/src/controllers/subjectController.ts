@@ -10,6 +10,9 @@ const createSubjectSchema = z.object({
   subjectName: z.string().min(1).max(100),
   description: z.string().optional(),
   credits: z.number().int().positive().optional(),
+  branch: z.string().optional(),
+  classesPerWeek: z.number().int().positive().max(20).optional(),
+  semester: z.string().optional(),
   teacherId: z.string().optional(), // ObjectId as string
   classId: z.string().optional(),
   isActive: z.boolean().optional()

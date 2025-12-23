@@ -65,9 +65,12 @@
                 tbody.innerHTML = data.subjects.map(subject => {
                     return `
                     <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white font-medium">${subject.subjectCode || 'N/A'}</td>
                         <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${subject.subjectName || 'N/A'}</td>
-                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.subjectCode || 'N/A'}</td>
-                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.credits || 'N/A'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.credits || '-'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.branch || '-'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.classesPerWeek || '-'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.semester ? 'Semester ' + subject.semester : '-'}</td>
                         <td class="py-3 px-4 text-center">
                             <div class="flex items-center justify-center space-x-2">
                                 <button onclick="editSubject('${subject._id}')" 
@@ -90,11 +93,11 @@
                 `;
                 }).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500 dark:text-gray-400">No subjects found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-gray-500 dark:text-gray-400">No subjects found</td></tr>';
             }
         } catch (error) {
             console.error('Error loading subjects:', error);
-            document.getElementById('subjectsTableBody').innerHTML = '<tr><td colspan="4" class="py-8 text-center text-red-500">Error loading subjects</td></tr>';
+            document.getElementById('subjectsTableBody').innerHTML = '<tr><td colspan="7" class="py-8 text-center text-red-500">Error loading subjects</td></tr>';
         }
     };
 </script>
