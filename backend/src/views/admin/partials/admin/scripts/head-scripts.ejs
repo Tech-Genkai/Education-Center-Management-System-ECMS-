@@ -176,8 +176,12 @@
         if (admins && admins.length > 0) {
             tbody.innerHTML = admins.map(admin => {
                 const email = (admin.userId && admin.userId.email) || 'N/A';
+                const profilePic = admin.profilePicture || '/static/images/profile/default/default-profile.png';
                 return `
                 <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="py-3 px-4">
+                        <img src="${profilePic}" alt="${admin.firstName}" class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600" onerror="this.src='/static/images/profile/default/default-profile.png'">
+                    </td>
                     <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.adminId || 'N/A'}</td>
                     <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${admin.firstName} ${admin.lastName}</td>
                     <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${email}</td>
@@ -223,7 +227,7 @@
             `;
             }).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No admins found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-gray-500 dark:text-gray-400">No admins found</td></tr>';
         }
     }
 

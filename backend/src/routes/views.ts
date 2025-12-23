@@ -176,6 +176,12 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
     const addressDoc = addressId ? await Address.findById(addressId) : null;
     const userAccount = await User.findById(req.session.userId);
     
+    console.log('🔍 Dashboard: Loading profile for userId:', req.session.userId);
+    console.log('   User.profilePicture:', userAccount?.profilePicture);
+    console.log('   UserProfile.profilePicture.url:', userProfile?.profilePicture?.url);
+    console.log('   SuperAdmin.profilePicture:', adminProfile?.profilePicture);
+    console.log('   SuperAdmin.adminId:', adminProfile?.adminId);
+    
     // Fetch real statistics from database
     const totalStudents = await Student.countDocuments();
     const activeStudents = await Student.countDocuments({ status: 'active' });
@@ -190,6 +196,8 @@ router.get('/admin/dashboard', requireAuth, requireRole('superadmin'), async (re
                               userProfile?.profilePicture?.url || 
                               adminProfile?.profilePicture || 
                               '/static/images/profile/default/default-profile.png';
+    
+    console.log('   Final profilePictureUrl:', profilePictureUrl);
     
     const dashboardData = {
       user: {

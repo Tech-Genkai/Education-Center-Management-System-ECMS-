@@ -207,7 +207,8 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
     if (user) {
       // Update User model with profile picture for session access
       await User.findByIdAndUpdate(userId, { $set: { profilePicture: publicUrl } });
-      console.log('✅ User profile picture updated');
+      console.log('✅ User profile picture updated for userId:', userId);
+      console.log('   Profile picture URL:', publicUrl);
       
       if (user.role === 'superadmin') {
         const updated = await SuperAdmin.findOneAndUpdate(
@@ -216,6 +217,11 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
           { new: true }
         );
         console.log('✅ SuperAdmin profile picture updated:', updated ? 'Success' : 'Failed');
+        if (updated) {
+          console.log('   SuperAdmin ID:', updated._id);
+          console.log('   Admin ID:', updated.adminId);
+          console.log('   Profile Picture:', updated.profilePicture);
+        }
       } else if (user.role === 'teacher') {
         await Teacher.findOneAndUpdate(
           { userId },
