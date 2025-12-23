@@ -14,10 +14,45 @@
             modalType: '',
             editData: {},
             sidebarOpen: true,
+            availableTeachers: [],
+            availableSubjects: [],
+            selectedSubjects: [],
 
             // Initialization
-            init() {
+            async init() {
                 console.log('Dashboard component initialized, activeTab:', this.activeTab);
+                await this.loadTeachersForDropdown();
+                await this.loadSubjectsForDropdown();
+            },
+
+            // Load teachers for dropdown
+            async loadTeachersForDropdown() {
+                try {
+                    const response = await fetch('/api/teachers', {
+                        credentials: 'include'
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.availableTeachers = data.teachers || [];
+                    }
+                } catch (error) {
+                    console.error('Error loading teachers for dropdown:', error);
+                }
+            },
+
+            // Load subjects for dropdown
+            async loadSubjectsForDropdown() {
+                try {
+                    const response = await fetch('/api/subjects', {
+                        credentials: 'include'
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.availableSubjects = data.subjects || [];
+                    }
+                } catch (error) {
+                    console.error('Error loading subjects for dropdown:', error);
+                }
             },
 
             // ==========================================
@@ -258,6 +293,121 @@
                 } catch (error) {
                     console.error('Error updating teacher:', error);
                     alert('Failed to update teacher');
+                }
+            },
+
+            // ==========================================
+            // CLASS & SUBJECT FORM HANDLERS
+            // ==========================================
+            async submitClassForm(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Remove empty strings to avoid validation issues
+                Object.keys(data).forEach(key => {
+                    if (data[key] === '' || data[key] === undefined) {
+                        delete data[key];
+                    }
+                });
+                
+                try {
+                    const response = await fetch('/api/classes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        e.target.reset();
+                        loadClasses();
+                        alert('Class added successfully!');
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to add class'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to add class');
+                }
+            },
+
+            async submitSubjectForm(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Remove empty strings to avoid validation issues
+                Object.keys(data).forEach(key => {
+                    if (data[key] === '' || data[key] === undefined) {
+                        delete data[key];
+                    }
+                });
+                
+                try {
+                    const response = await fetch('/api/subjects', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        e.target.reset();
+                        loadSubjects();
+                        alert('Subject added successfully!');
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to add subject'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to add subject');
+                }
+            },
+
+            async updateClass() {
+                const form = document.getElementById('classForm');
+                const id = document.getElementById('classId_db').value;
+                if (!id) {
+                    alert('Error: Class ID not found');
+                    return;
+                }
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                delete data.classId_db;
+                
+                // Remove empty strings
+                Object.keys(data).forEach(key => {
+                    if (data[key] === '' || data[key] === undefined) {
+                        delete data[key];
+                    }
+                });
+                
+                try {
+                    const response = await fetch(`/api/classes/${id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        this.showModal = false;
+                        form.reset();
+                        document.getElementById('classId_db').value = '';
+                        loadClasses();
+                        alert('Class updated successfully!');
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to update class'));
+                    }
+                } catch (error) {
+                    console.error('Error updating class:', error);
+                    alert('Failed to update class');
                 }
             },
 

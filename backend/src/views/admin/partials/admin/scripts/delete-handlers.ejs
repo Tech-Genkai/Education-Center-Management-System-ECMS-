@@ -111,4 +111,41 @@
             alert('Failed to load admin details: ' + error.message);
         }
     };
+
+    /**
+     * Delete Class - Opens confirmation modal
+     * @param {string} id - Class ID
+     */
+    window.deleteClass = async function(id) {
+        try {
+            // Fetch class details
+            const response = await fetch(`/api/classes/${id}`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch class details');
+            }
+            
+            const data = await response.json();
+            const classData = data.class;
+            
+            if (!classData) {
+                throw new Error('Class not found');
+            }
+            
+            // Extract details
+            const className = classData.className || 'Unknown Class';
+            const classCode = classData.classCode || 'N/A';
+            const academicYear = classData.academicYear || 'N/A';
+            const role = `Code: ${classCode} • Year: ${academicYear}`;
+            
+            // Open delete modal
+            openDeleteModal(id, 'class', className, '', role);
+            
+        } catch (error) {
+            console.error('Error fetching class for delete:', error);
+            alert('Failed to load class details: ' + error.message);
+        }
+    };
 </script>

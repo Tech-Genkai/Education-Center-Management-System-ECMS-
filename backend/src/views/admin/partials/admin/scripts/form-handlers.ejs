@@ -107,6 +107,13 @@
         const formData = new FormData(event.target);
         const data = Object.fromEntries(formData.entries());
         
+        // Remove empty strings to avoid validation issues
+        Object.keys(data).forEach(key => {
+            if (data[key] === '' || data[key] === undefined) {
+                delete data[key];
+            }
+        });
+        
         try {
             const response = await fetch('/api/classes', {
                 method: 'POST',
@@ -117,7 +124,12 @@
             
             if (response.ok) {
                 alert('Class added successfully!');
-                showModal = false;
+                // Close modal via Alpine access
+                const alpineEl = document.querySelector('[x-data]');
+                if (alpineEl && alpineEl.__x) {
+                    alpineEl.__x.$data.showModal = false;
+                }
+                event.target.reset();
                 loadClasses();
             } else {
                 const error = await response.json();
@@ -557,4 +569,66 @@
     window.resetStudentForm = window.resetStudentForm || function() {};
     window.resetTeacherForm = window.resetTeacherForm || function() {};
     window.resetAdminForm = window.resetAdminForm || function() {};
+
+    // Edit Class Function
+    async function editClass(id) {
+        try {
+            const response = await fetch(`/api/classes/${id}`, { credentials: 'include' });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                console.error('API Error:', errorData);
+                alert('Failed to load class data: ' + (errorData.message || `HTTP ${response.status}`));
+                return;
+            }
+            
+            const data = await response.json();
+            if (data.class) {
+                const cls = data.class;
+                const form = document.getElementById('classForm');
+                if (form) {
+                    form.querySelector('[name="className"]').value = cls.className || '';
+                    form.querySelector('[name="classCode"]').value = cls.classCode || '';
+                    form.querySelector('[name="section"]').value = cls.section || '';
+                    form.querySelector('[name="branch"]').value = cls.branch || '';
+                    form.querySelector('[name="academicYear"]').value = cls.academicYear || '';
+                    
+                    // Set teacher dropdown
+                    const teacherSelect = document.getElementById('classTeacherSelect');
+                    if (teacherSelect) {
+                        teacherSelect.value = cls.classTeacherId?._id || cls.classTeacherId || '';
+                    }
+                    
+                    document.getElementById('classId_db').value = cls._id;
+                }
+                // Access Alpine.js data
+                const alpineElement = document.querySelector('body[x-data]') || document.querySelector('[x-data]');
+                if (alpineElement && alpineElement._x_dataStack && alpineElement._x_dataStack[0]) {
+                    const alpineData = alpineElement._x_dataStack[0];
+                    // Set selected subjects
+                    alpineData.selectedSubjects = cls.subjects?.map(s => s._id || s) || [];
+                    alpineData.modalType = 'editClass';
+                    alpineData.showModal = true;
+                } else if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
+                    const alpineData = alpineElement.__x.$data;
+                    // Set selected subjects
+                    alpineData.selectedSubjects = cls.subjects?.map(s => s._id || s) || [];
+                    alpineData.modalType = 'editClass';
+                    alpineData.showModal = true;
+                } else {
+                    console.error('Alpine.js not found. Element:', alpineElement);
+                    alert('Class data loaded but modal opening failed. Page will refresh.');
+                    setTimeout(() => location.reload(), 500);
+                }
+            } else {
+                console.error('Invalid response format:', data);
+                alert('Failed to load class data: Invalid response format');
+            }
+        } catch (error) {
+            console.error('Error fetching class:', error);
+            alert('Failed to load class data: ' + error.message);
+        }
+    }
+
+    window.editClass = editClass;
 </script>

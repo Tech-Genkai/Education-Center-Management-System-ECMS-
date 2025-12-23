@@ -10,8 +10,10 @@ const createClassSchema = z.object({
   className: z.string().min(1).max(50),
   classCode: z.string().min(1).max(20),
   section: z.string().optional(),
+  branch: z.string().optional(),
   academicYear: z.string().min(4).max(20),
   classTeacherId: z.string().optional(), // ObjectId as string
+  subjects: z.array(z.string()).optional(), // Array of Subject ObjectIds
   capacity: z.number().int().positive().optional(),
   isActive: z.boolean().optional()
 });

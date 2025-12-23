@@ -5,6 +5,7 @@ const ClassSchema = new Schema(
     className: { type: String, required: true },
     classCode: { type: String, required: true, unique: true },
     section: String,
+    branch: String,
     academicYear: String,
     classTeacherId: { type: Types.ObjectId, ref: 'Teacher' },
     capacity: Number,

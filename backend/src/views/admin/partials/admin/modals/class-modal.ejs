@@ -1,13 +1,13 @@
 <!-- 
-    Class Modal - Add Class Form
-    Purpose: Modal form for creating new classes
+    Class Modal - Add/Edit Class Form
+    Purpose: Modal form for creating and editing classes
     Used in: Admin Dashboard
 -->
-<div x-show="showModal && modalType === 'addClass'" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" @click.self="showModal = false">
+<div x-show="showModal && (modalType === 'addClass' || modalType === 'editClass')" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" @click.self="showModal = false">
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Add New Class</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white" x-text="modalType === 'editClass' ? 'Edit Class' : 'Add New Class'"></h3>
                 <button @click="showModal = false" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -16,7 +16,10 @@
             </div>
             
             <!-- Class Form -->
-            <form @submit.prevent="submitClassForm" class="space-y-4">
+            <form id="classForm" @submit.prevent="modalType === 'editClass' ? updateClass() : submitClassForm($event)" class="space-y-4">
+                <!-- Hidden field for class ID during edit -->
+                <input type="hidden" id="classId_db" name="classId_db">
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class Name *</label>
@@ -24,24 +27,119 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class Code *</label>
-                        <input type="text" name="classCode" required placeholder="e.g. CL-10-A" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        <input type="text" name="classCode" required placeholder="e.g. CL-10-A" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" :readonly="modalType === 'editClass'" :class="{'bg-gray-100 dark:bg-gray-600 cursor-not-allowed': modalType === 'editClass'}">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Section</label>
                         <input type="text" name="section" placeholder="e.g. A" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Branch</label>
+                        <input type="text" name="branch" placeholder="e.g. Science, Commerce" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                     </div>
                      <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Academic Year *</label>
                         <input type="text" name="academicYear" required placeholder="e.g. 2024-2025" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                     </div>
                      <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class Teacher (ID)</label>
-                        <input type="text" name="classTeacherId" placeholder="Teacher ID (Optional)" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class Teacher</label>
+                        <select name="classTeacherId" id="classTeacherSelect" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                            <option value="">-- Select Teacher (Optional) --</option>
+                            <template x-for="teacher in availableTeachers" :key="teacher._id">
+                                <option :value="teacher._id" x-text="`${teacher.firstName} ${teacher.lastName} (${teacher.teacherId || 'N/A'})`"></option>
+                            </template>
+                        </select>
+                    </div>
+                    
+                    <!-- Subjects Multi-Select with Search -->
+                    <div class="md:col-span-2" x-data="{ subjectSearch: '', showSubjectDropdown: false }">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subjects</label>
+                        
+                        <!-- Selected Subjects Display -->
+                        <div class="mb-2 flex flex-wrap gap-2" x-show="selectedSubjects.length > 0">
+                            <template x-for="subjectId in selectedSubjects" :key="subjectId">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
+                                    <span x-text="availableSubjects.find(s => s._id === subjectId)?.subjectName || 'Unknown'"></span>
+                                    <button type="button" @click="selectedSubjects = selectedSubjects.filter(id => id !== subjectId)" class="ml-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </span>
+                            </template>
+                        </div>
+                        
+                        <!-- Search Input -->
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                x-model="subjectSearch"
+                                @focus="showSubjectDropdown = true"
+                                @click.away="showSubjectDropdown = false"
+                                placeholder="Search and select subjects..."
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            />
+                            <svg class="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Dropdown List -->
+                        <div 
+                            x-show="showSubjectDropdown" 
+                            class="absolute z-10 mt-1 w-full max-w-2xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                            x-cloak
+                        >
+                            <template x-for="subject in availableSubjects.filter(s => 
+                                s.subjectName.toLowerCase().includes(subjectSearch.toLowerCase()) || 
+                                s.subjectCode.toLowerCase().includes(subjectSearch.toLowerCase())
+                            )" :key="subject._id">
+                                <div 
+                                    class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-between"
+                                    @click="
+                                        if (selectedSubjects.includes(subject._id)) {
+                                            selectedSubjects = selectedSubjects.filter(id => id !== subject._id);
+                                        } else {
+                                            selectedSubjects.push(subject._id);
+                                        }
+                                    "
+                                >
+                                    <div class="flex-1">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="subject.subjectName"></span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-2" x-text="'(' + subject.subjectCode + ')'"></span>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <svg 
+                                            x-show="selectedSubjects.includes(subject._id)"
+                                            class="w-5 h-5 text-indigo-600 dark:text-indigo-400" 
+                                            fill="currentColor" 
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </template>
+                            <div 
+                                x-show="availableSubjects.filter(s => 
+                                    s.subjectName.toLowerCase().includes(subjectSearch.toLowerCase()) || 
+                                    s.subjectCode.toLowerCase().includes(subjectSearch.toLowerCase())
+                                ).length === 0"
+                                class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center"
+                            >
+                                No subjects found
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden inputs for form submission -->
+                        <template x-for="(subjectId, index) in selectedSubjects" :key="index">
+                            <input type="hidden" name="subjects[]" :value="subjectId">
+                        </template>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-4 pt-4">
                     <button type="button" @click="showModal = false" class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
-                    <button type="submit" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Class</button>
+                    <button type="submit" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700" x-text="modalType === 'editClass' ? 'Update Class' : 'Add Class'"></button>
                 </div>
             </form>
         </div>

@@ -407,7 +407,8 @@
             const endpoints = {
                 'student': '/api/students',
                 'teacher': '/api/teachers',
-                'admin': '/api/superadmins'
+                'admin': '/api/superadmins',
+                'class': '/api/classes'
             };
             
             const endpoint = endpoints[userType];
@@ -457,6 +458,8 @@
                         window.loadTeachers();
                     } else if (userType === 'admin' && window.loadAdmins) {
                         window.loadAdmins();
+                    } else if (userType === 'class' && window.loadClasses) {
+                        window.loadClasses();
                     }
                 }, 300);
             } else {
