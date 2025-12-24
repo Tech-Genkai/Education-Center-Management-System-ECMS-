@@ -22,4 +22,7 @@ export * from './Event';
 export * from './EventRegistration';
 export * from './Grievance';
 export * from './GrievanceComment';
+export * from './AcademicYear';
+export * from './Course';
+export * from './Semester';
 

@@ -1,30 +1,292 @@
-<!-- Subjects Tab Content -->
-<!-- Note: The subjects tab appears to be integrated within the classes tab in the original file -->
-<!-- If you need a separate subjects tab, this is a placeholder structure -->
-<div class="mb-6 flex justify-between items-center">
-    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Subject Management</h2>
-    <button @click="modalType = 'addSubject'; showModal = true; document.getElementById('subjectForm').reset(); document.getElementById('subjectId_db').value = ''" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-        + Add New Subject
-    </button>
-</div>
+<!-- Courses Tab Content -->
+<div x-data="coursesPage()" x-init="init()" class="space-y-6">
+    <!-- Header with Search and Filters -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Course Management</h2>
+            <button @click="openAddCourseModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                + Add New Course
+           </button>
+        </div>
 
-<div class="glass-card rounded-xl shadow-md p-6">
-    <div class="overflow-x-auto">
-        <table class="min-w-full">
-            <thead>
-                <tr class="border-b border-gray-200 dark:border-gray-700">
-                    <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Code</th>
-                    <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Title</th>
-                    <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Credits</th>
-                    <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Semester</th>
-                    <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="subjectsTableBody">
-                <tr class="border-b border-gray-100 dark:border-gray-700">
-                    <td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400">Loading subjects...</td>
-                </tr>
-            </tbody>
-        </table>
+        <!-- Search and Filters -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <!-- Search -->
+            <div class="md:col-span-2">
+                <input 
+                    type="text" 
+                    x-model="searchQuery"
+                    @input.debounce.300ms="loadCourses()"
+                    placeholder="Search by course name or code..." 
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                />
+            </div>
+
+            <!-- Academic Year Filter -->
+            <div>
+                <select 
+                    x-model="filters.academicYear"
+                    @change="loadCourses()"
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                >
+                    <option value="">All Academic Years</option>
+                    <template x-for="year in academicYears" :key="year._id">
+                        <option :value="year._id" x-text="year.year"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <select 
+                    x-model="filters.status"
+                    @change="loadCourses()"
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                >
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+        </div>
     </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6" x-show="statistics">
+        <div class="glass-card rounded-xl p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Courses</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="statistics?.total || 0"></p>
+                </div>
+                <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-xl p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Active</p>
+                    <p class="text-2xl font-bold text-green-600 dark:text-green-400" x-text="statistics?.active || 0"></p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-xl p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Inactive</p>
+                    <p class="text-2xl font-bold text-red-600 dark:text-red-400" x-text="statistics?.inactive || 0"></p>
+                </div>
+                <div class="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-xl p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Current Year</p>
+                    <p class="text-sm font-bold text-gray-900 dark:text-white" x-text="currentAcademicYear?.year || 'Not Set'"></p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Courses Table -->
+    <div class="glass-card rounded-xl shadow-md">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Academic Year</th>
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Course Code</th>
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Course Name</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Semesters</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Status</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">
+                                <div class="flex items-center justify-center">
+                                    <svg class="animate-spin h-8 w-8 text-indigo-600 mr-3" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Loading courses...
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loading && courses.length === 0">
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">
+                                No courses found. Click "Add New Course" to create one.
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-for="course in courses" :key="course._id">
+                        <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white" x-text="course.academicYearId?.year || 'N/A'"></td>
+                            <td class="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white" x-text="course.courseCode"></td>
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white" x-text="course.courseName"></td>
+                            <td class="py-3 px-4 text-center text-sm text-gray-900 dark:text-white" x-text="course.totalSemesters"></td>
+                            <td class="py-3 px-4 text-center">
+                                <span 
+                                    class="px-2 py-1 text-xs font-semibold rounded-full"
+                                    :class="course.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'"
+                                    x-text="course.isActive ? 'Active' : 'Inactive'"
+                                ></span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <button 
+                                        @click="toggleExpanded(course._id)" 
+                                        class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
+                                        title="View Semesters"
+                                    >
+                                        <svg x-show="expandedCourseId !== course._id" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <svg x-show="expandedCourseId === course._id" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                        </svg>
+                                    </button>
+                                    <button 
+                                        @click="openEditCourseModal(course)" 
+                                        class="text-blue-600 hover:text-blue-900 dark:text-blue-400"
+                                        title="Edit"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button 
+                                        @click="toggleCourseStatus(course._id)" 
+                                        :class="course.isActive ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'"
+                                        :title="course.isActive ? 'Deactivate' : 'Activate'"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                        </svg>
+                                    </button>
+                                    <button 
+                                        @click="openDeleteConfirmModal(course)" 
+                                        class="text-red-600 hover:text-red-900 dark:text-red-400"
+                                        title="Delete"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                    <!-- Expandable semester rows -->
+                    <template x-for="course in courses" :key="'expanded-' + course._id">
+                        <tr x-show="expandedCourseId === course._id" 
+                            x-collapse 
+                            class="bg-gray-50 dark:bg-gray-800">
+                            <td colspan="6" class="p-6">
+                                <div class="space-y-4">
+                                    <h4 class="font-semibold text-lg text-gray-900 dark:text-white mb-4">Semesters</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <template x-for="semester in course.semesters || []" :key="semester._id">
+                                            <div class="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                                <div class="flex items-center justify-between mb-3">
+                                                    <h5 class="font-medium text-gray-900 dark:text-white">Semester <span x-text="semester.semesterNumber"></span></h5>
+                                                    <button 
+                                                        @click="openSemesterModal(course, semester)" 
+                                                        class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium"
+                                                    >
+                                                        Manage
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Subject List -->
+                                                <div class="space-y-2">
+                                                    <template x-if="!semester.subjects || semester.subjects.length === 0">
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 italic py-2">No subjects assigned</p>
+                                                    </template>
+                                                    <template x-for="assignment in semester.subjects || []" :key="assignment._id">
+                                                        <div class="text-xs bg-gray-50 dark:bg-gray-600 p-2 rounded border-l-2 border-indigo-500">
+                                                            <p class="font-medium text-gray-900 dark:text-white" x-text="assignment.subjectId?.subjectCode + ' - ' + assignment.subjectId?.subjectName"></p>
+                                                            <p class="text-gray-600 dark:text-gray-300 mt-1">
+                                                                <span class="inline-flex items-center">
+                                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                    </svg>
+                                                                    <span x-text="assignment.teacherId ? (assignment.teacherId.firstName + ' ' + assignment.teacherId.lastName) : 'No teacher assigned'" :class="!assignment.teacherId ? 'text-orange-600 dark:text-orange-400' : ''"></span>
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                                
+                                                <!-- Summary -->
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-2 border-t border-gray-200 dark:border-gray-600">
+                                                    <span class="font-medium" x-text="semester.subjects?.length || 0"></span> subject<span x-show="semester.subjects?.length !== 1">s</span> assigned
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div x-show="pagination && pagination.pages > 1" class="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                Showing page <span x-text="pagination.page"></span> of <span x-text="pagination.pages"></span> (<span x-text="pagination.total"></span> total)
+            </div>
+            <div class="flex space-x-2">
+                <button 
+                    @click="changePage(pagination.page - 1)" 
+                    :disabled="pagination.page === 1"
+                    :class="pagination.page === 1 ? 'opacity-50 cursor-not-allowed' : ''"
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                    Previous
+                </button>
+                <button 
+                    @click="changePage(pagination.page + 1)" 
+                    :disabled="pagination.page >= pagination.pages"
+                    :class="pagination.page >= pagination.pages ? 'opacity-50 cursor-not-allowed' : ''"
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Modals (must be inside coursesPage scope) -->
+    <%- include('../modals/course-modal') %>
+    <%- include('../modals/semester-modal') %>
+    <%- include('../modals/delete-confirm-modal') %>
 </div>

@@ -21,8 +21,8 @@
                     return `
                     <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${cls.className || 'N/A'}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${cls.academicYear || 'N/A'}</td>
                             <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${subjectsList}">${subjectsList}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${cls.academicYear || 'N/A'}</td>
                         <td class="py-3 px-4 text-center">
                             <div class="flex items-center justify-center space-x-2">
                                 <button onclick="editClass('${cls._id}')" 
@@ -66,8 +66,8 @@
                 tbody.innerHTML = data.subjects.map(subject => {
                     return `
                     <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white font-medium">${subject.subjectName || 'N/A'}</td>
-                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.subjectCode || 'N/A'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white font-medium">${subject.subjectCode || 'N/A'}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.subjectName || 'N/A'}</td>
                         <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.credits || '-'}</td>
                         <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.semester ? 'Semester ' + subject.semester : '-'}</td>
                         <td class="py-3 px-4 text-center">

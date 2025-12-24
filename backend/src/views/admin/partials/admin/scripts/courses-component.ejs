@@ -1,0 +1,487 @@
+<script>
+/**
+ * Courses Page Alpine Component
+ * Handles course management with academic years, semesters, and teacher workload tracking
+ */
+function coursesPage() {
+    return {
+        // State
+        courses: [],
+        academicYears: [],
+        currentAcademicYear: null,
+        statistics: null,
+        loading: false,
+        searchQuery: '',
+        filters: {
+            academicYear: '',
+            status: ''
+        },
+        pagination: {
+            page: 1,
+            limit: 50,
+            total: 0,
+            pages: 1
+        },
+        
+        // Modal state
+        showModal: false,
+        modalType: '',
+        currentCourse: null,
+        currentSemester: null,
+        itemToDelete: null,
+        expandedCourseId: null, // Track which course is expanded
+        
+        // Dropdown data
+        availableSubjects: [],
+        availableTeachers: [],
+        
+        // Initialize
+        async init() {
+            await this.loadAcademicYears();
+            await this.loadCourses();
+            await this.loadStatistics();
+            await this.loadSubjects();
+            await this.loadTeachers();
+        },
+        
+        // ==========================================
+        // DATA LOADING
+        // ==========================================
+        async loadAcademicYears() {
+            try {
+                const response = await fetch('/api/academic-years', {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    this.academicYears = data.academicYears || [];
+                    this.currentAcademicYear = this.academicYears.find(y => y.isCurrent);
+                    
+                    // If no current year, show the latest/most recent year
+                    if (!this.currentAcademicYear && this.academicYears.length > 0) {
+                        this.currentAcademicYear = this.academicYears[this.academicYears.length - 1];
+                    }
+                    console.log('Academic years loaded:', this.academicYears.length, 'Current:', this.currentAcademicYear?.year);
+                }
+            } catch (error) {
+                console.error('Error loading academic years:', error);
+            }
+        },
+        
+       async loadCourses() {
+            this.loading = true;
+            try {
+                const params = new URLSearchParams({
+                    page: this.pagination.page,
+                    limit: this.pagination.limit
+                });
+                
+                if (this.searchQuery) params.append('search', this.searchQuery);
+                if (this.filters.academicYear) params.append('academicYear', this.filters.academicYear);
+                if (this.filters.status) params.append('status', this.filters.status);
+                
+                console.log('Loading courses with params:', params.toString());
+                const response = await fetch(`/api/courses?${params}`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.courses = data.courses || [];
+                    this.pagination = data.pagination || this.pagination;
+                    console.log('Courses loaded:', this.courses.length, 'Total:', this.pagination.total);
+                    console.log('First course:', this.courses[0]); // Debug: see the course structure
+                    console.log('All courses:', this.courses); // Debug: see all courses
+                } else {
+                    console.error('Failed to load courses:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                alert('Failed to load courses');
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        async loadStatistics() {
+            try {
+                const params = new URLSearchParams();
+                if (this.filters.academicYear) params.append('academicYearId', this.filters.academicYear);
+                
+                const response = await fetch(`/api/courses/statistics?${params}`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.statistics = data.statistics;
+                }
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        },
+        
+        async loadSubjects() {
+            try {
+                const response = await fetch('/api/subjects', {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    this.availableSubjects = data.subjects || [];
+                }
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+            }
+        },
+        
+        async loadTeachers() {
+            try {
+                const response = await fetch('/api/teachers', {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    this.availableTeachers = data.teachers || [];
+                    
+                    // Load workload for each teacher
+                    for (const teacher of this.availableTeachers) {
+                        await this.loadTeacherWorkload(teacher._id);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading teachers:', error);
+            }
+        },
+        
+        async loadTeacherWorkload(teacherId) {
+            try {
+                const response = await fetch(`/api/semesters/teacher/${teacherId}/workload`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const teacher = this.availableTeachers.find(t => t._id === teacherId);
+                    if (teacher) {
+                        teacher.workload = data.workload?.totalSubjects || 0;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading teacher workload:', error);
+            }
+        },
+        
+        async loadSemesters(courseId) {
+            try {
+                const response = await fetch(`/api/semesters/course/${courseId}`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const course = this.courses.find(c => c._id === courseId);
+                    if (course) {
+                        course.semesters = data.semesters || [];
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading semesters:', error);
+            }
+        },
+        
+        // ==========================================
+        // PAGINATION
+        // ==========================================
+        changePage(page) {
+            if (page >= 1 && page <= this.pagination.pages) {
+                this.pagination.page = page;
+                this.loadCourses();
+            }
+        },
+        
+        // ==========================================
+        // MODAL HANDLERS
+        // ==========================================
+        openAddCourseModal() {
+            this.modalType = 'addCourse';
+            this.showModal = true;
+            setTimeout(() => {
+                document.getElementById('courseForm')?.reset();
+                document.getElementById('courseId_db').value = '';
+            }, 100);
+        },
+        
+        openEditCourseModal(course) {
+            this.modalType = 'editCourse';
+            this.currentCourse = course;
+            this.showModal = true;
+            setTimeout(() => {
+                const form = document.getElementById('courseForm');
+                if (form) {
+                    form.courseCode.value = course.courseCode;
+                    form.courseName.value = course.courseName;
+                    form.totalSemesters.value = course.totalSemesters;
+                    form.academicYear.value = course.academicYearId?.year || '';
+                    form.description.value = course.description || '';
+                    document.getElementById('courseId_db').value = course._id;
+                }
+            }, 100);
+        },
+        
+        openSemesterModal(course, semester) {
+            this.modalType = 'manageSemester';
+            this.currentCourse = course;
+            this.currentSemester = semester;
+            this.showModal = true;
+        },
+        
+        openDeleteConfirmModal(course) {
+            this.modalType = 'deleteConfirm';
+            this.itemToDelete = course;
+            this.showModal = true;
+        },
+        
+        toggleExpanded(courseId) {
+            if (this.expandedCourseId === courseId) {
+                this.expandedCourseId = null; // Collapse if already expanded
+            } else {
+                this.expandedCourseId = courseId; // Expand this course
+                const course = this.courses.find(c => c._id === courseId);
+                if (course && !course.semesters) {
+                    this.loadSemesters(courseId);
+                }
+            }
+        },
+        
+        // ==========================================
+        // COURSE CRUD OPERATIONS
+        // ==========================================
+        async submitCourseForm(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            delete data.courseId_db;
+            
+            // Convert totalSemesters to number
+            data.totalSemesters = parseInt(data.totalSemesters);
+            
+            console.log('Submitting course:', data);
+            
+            try {
+                const response = await fetch('/api/courses', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('Create course response:', response.status);
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Course created:', result);
+                    this.showModal = false;
+                    await this.loadCourses();
+                    await this.loadStatistics();
+                    await this.loadAcademicYears(); // Reload to show newly created year
+                    alert('Course created successfully!');
+                } else {
+                    const error = await response.json();
+                    console.error('Course create error:', error);
+                    alert('Error: ' + (error.message || 'Failed to create course'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to create course');
+            }
+        },
+        
+        async updateCourse() {
+            const form = document.getElementById('courseForm');
+            const id = document.getElementById('courseId_db').value;
+            if (!id) {
+                alert('Error: Course ID not found');
+                return;
+            }
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            delete data.courseId_db;
+            delete data.courseCode;
+            delete data.academicYearId;
+            
+            if (data.totalSemesters) data.totalSemesters = parseInt(data.totalSemesters);
+            
+            try {
+                const response = await fetch(`/api/courses/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    this.showModal = false;
+                    await this.loadCourses();
+                    alert('Course updated successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to update course'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to update course');
+            }
+        },
+        
+        async toggleCourseStatus(courseId) {
+            try {
+                const response = await fetch(`/api/courses/${courseId}/toggle-status`, {
+                    method: 'PATCH',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    await this.loadCourses();
+                    await this.loadStatistics();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to toggle status'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to toggle course status');
+            }
+        },
+        
+        async confirmDelete(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const password = formData.get('password');
+            
+            if (!this.itemToDelete) return;
+            
+            try {
+                const response = await fetch(`/api/courses/${this.itemToDelete._id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ password })
+                });
+                
+                if (response.ok) {
+                    this.showModal = false;
+                    this.itemToDelete = null;
+                    await this.loadCourses();
+                    await this.loadStatistics();
+                    alert('Course deleted successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to delete course'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to delete course');
+            }
+        },
+        
+        // ==========================================
+        // SEMESTER MANAGEMENT
+        // ==========================================
+        async assignSubjectToSemester(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Remove empty teacher field (send as undefined if not selected)
+            if (!data.teacherId || data.teacherId === '') {
+                delete data.teacherId;
+            }
+            
+            if (!this.currentSemester) return;
+            
+            try {
+                const response = await fetch(`/api/semesters/${this.currentSemester._id}/assign`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.warning) {
+                        if (!confirm(result.message + ' Continue?')) {
+                            return;
+                        }
+                    }
+                    e.target.reset();
+                    await this.loadSemesters(this.currentCourse._id);
+                    this.currentSemester = this.currentCourse.semesters.find(s => s._id === this.currentSemester._id);
+                    await this.loadTeachers();
+                    alert('Subject assigned successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to assign subject'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to assign subject');
+            }
+        },
+        
+        async removeAssignment(assignmentId) {
+            if (!confirm('Remove this subject assignment?')) return;
+            
+            try {
+                const response = await fetch(`/api/semesters/${this.currentSemester._id}/assignment/${assignmentId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    await this.loadSemesters(this.currentCourse._id);
+                    this.currentSemester = this.currentCourse.semesters.find(s => s._id === this.currentSemester._id);
+                    await this.loadTeachers();
+                    alert('Assignment removed successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to remove assignment'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to remove assignment');
+            }
+        },
+        
+        async changeTeacher(assignment) {
+            const teacherId = prompt('Enter new teacher ID (leave empty to unassign):');
+            
+            try {
+                const response = await fetch(`/api/semesters/${this.currentSemester._id}/assignment/${assignment._id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ teacherId: teacherId || null })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.warning) {
+                        if (!confirm(result.message + ' Continue?')) {
+                            return;
+                        }
+                    }
+                    await this.loadSemesters(this.currentCourse._id);
+                    this.currentSemester = this.currentCourse.semesters.find(s => s._id === this.currentSemester._id);
+                    await this.loadTeachers();
+                    alert('Teacher assignment updated!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to update teacher'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to update teacher assignment');
+            }
+        }
+    };
+}
+</script>

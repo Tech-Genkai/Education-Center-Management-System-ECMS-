@@ -16,6 +16,9 @@ import studentsRouter from './routes/students.ts';
 import teachersRouter from './routes/teachers.ts';
 import classesRouter from './routes/classes.ts';
 import subjectsRouter from './routes/subjects.ts';
+import academicYearsRouter from './routes/academicYears.ts';
+import coursesRouter from './routes/courses.ts';
+import semestersRouter from './routes/semesters.ts';
 import { startProfileUploadCleanupJob } from './jobs/cron/cleanupProfileUploads.ts';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi.ts';
@@ -114,6 +117,9 @@ app.use('/api/students', studentsRouter);
 app.use('/api/teachers', teachersRouter);
 app.use('/api/classes', classesRouter);
 app.use('/api/subjects', subjectsRouter);
+app.use('/api/academic-years', academicYearsRouter);
+app.use('/api/courses', coursesRouter);
+app.use('/api/semesters', semestersRouter);
 
 app.get('/healthz', async (_req, res) => {
   const dbStatus = getDatabaseStatus();
