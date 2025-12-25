@@ -4,48 +4,29 @@
      * Contains: loadClasses, loadSubjects functions
      */
 
-    // Load Classes function
+    // Classes pagination state
+    window.classesData = {
+        allClasses: [],
+        currentPage: 1,
+        itemsPerPage: 10
+    };
+
+    // Load Classes function with pagination
     window.loadClasses = async function() {
         try {
             const response = await fetch('/api/classes', {
                 credentials: 'include'
             });
             const data = await response.json();
-            const tbody = document.getElementById('classesTableBody');
             
             if (data.classes && data.classes.length > 0) {
-                tbody.innerHTML = data.classes.map(cls => {
-                    const subjectsList = cls.subjects && cls.subjects.length > 0 
-                        ? cls.subjects.map(s => s.subjectName || s.subjectCode || 'Unknown').join(', ')
-                        : 'No subjects';
-                    return `
-                    <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${cls.className || 'N/A'}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${subjectsList}">${subjectsList}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${cls.academicYear || 'N/A'}</td>
-                        <td class="py-3 px-4 text-center">
-                            <div class="flex items-center justify-center space-x-2">
-                                <button onclick="editClass('${cls._id}')" 
-                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
-                                        title="Edit">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                </button>
-                                <button onclick="deleteClass('${cls._id}')" 
-                                        class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
-                                        title="Delete">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                }).join('');
-                } else {
+                window.classesData.allClasses = data.classes;
+                window.classesData.currentPage = 1;
+                renderClassesTable();
+            } else {
+                const tbody = document.getElementById('classesTableBody');
                 tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500 dark:text-gray-400">No classes found</td></tr>';
+                updateClassesPagination(0, 0, 0, 1, 1);
             }
         } catch (error) {
             console.error('Error loading classes:', error);
@@ -53,50 +34,258 @@
         }
     };
 
-    // Load Subjects function
+    // Render classes table with current pagination
+    window.renderClassesTable = function() {
+        const { allClasses, currentPage, itemsPerPage } = window.classesData;
+        const tbody = document.getElementById('classesTableBody');
+        
+        const totalItems = allClasses.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+        const pageClasses = allClasses.slice(startIndex, endIndex);
+
+        if (pageClasses.length > 0) {
+            tbody.innerHTML = pageClasses.map(cls => {
+                const subjectsList = cls.subjects && cls.subjects.length > 0 
+                    ? cls.subjects.map(s => s.subjectName || s.subjectCode || 'Unknown').join(', ')
+                    : 'No subjects';
+                return `
+                <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${cls.className || 'N/A'}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${subjectsList}">${subjectsList}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${cls.academicYear || 'N/A'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editClass('${cls._id}')" 
+                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
+                                    title="Edit">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            <button onclick="deleteClass('${cls._id}')" 
+                                    class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
+                                    title="Delete">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500 dark:text-gray-400">No classes found</td></tr>';
+        }
+
+        updateClassesPagination(startIndex + 1, endIndex, totalItems, currentPage, totalPages);
+    };
+
+    // Update classes pagination UI
+    window.updateClassesPagination = function(start, end, total, currentPage, totalPages) {
+        document.getElementById('classesShowingStart').textContent = total > 0 ? start : 0;
+        document.getElementById('classesShowingEnd').textContent = end;
+        document.getElementById('classesTotalCount').textContent = total;
+        document.getElementById('classesCurrentPage').textContent = currentPage;
+        document.getElementById('classesTotalPages').textContent = totalPages;
+
+        const prevBtn = document.getElementById('classesPrevBtn');
+        const nextBtn = document.getElementById('classesNextBtn');
+        
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+    };
+
+    // Change classes page function
+    window.changeClassesPage = function(direction) {
+        const { allClasses, currentPage, itemsPerPage } = window.classesData;
+        const totalPages = Math.ceil(allClasses.length / itemsPerPage) || 1;
+        
+        const newPage = currentPage + direction;
+        if (newPage >= 1 && newPage <= totalPages) {
+            window.classesData.currentPage = newPage;
+            renderClassesTable();
+        }
+    };
+
+    // Subjects pagination state
+    window.subjectsData = {
+        allSubjects: [],
+        filteredSubjects: [],
+        currentPage: 1,
+        itemsPerPage: 10,
+        currentSemester: 'all',
+        currentCourse: 'all',
+        courses: []
+    };
+
+    // Load courses for filter dropdown
+    window.loadCoursesForFilter = async function() {
+        try {
+            const response = await fetch('/api/courses', {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            const courseSelect = document.getElementById('courseFilter');
+            
+            if (data.courses && data.courses.length > 0) {
+                window.subjectsData.courses = data.courses;
+                // Clear existing options except 'All Courses'
+                courseSelect.innerHTML = '<option value="all">All Courses</option>';
+                // Add course options
+                data.courses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course.courseCode;
+                    option.textContent = `${course.courseCode} - ${course.courseName}`;
+                    courseSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading courses for filter:', error);
+        }
+    };
+
+    // Load Subjects function with pagination
     window.loadSubjects = async function() {
         try {
             const response = await fetch('/api/subjects', {
                 credentials: 'include'
             });
             const data = await response.json();
-            const tbody = document.getElementById('subjectsTableBody');
             
             if (data.subjects && data.subjects.length > 0) {
-                tbody.innerHTML = data.subjects.map(subject => {
-                    return `
-                    <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white font-medium">${subject.subjectCode || 'N/A'}</td>
-                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.subjectName || 'N/A'}</td>
-                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.credits || '-'}</td>
-                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.semester ? 'Semester ' + subject.semester : '-'}</td>
-                        <td class="py-3 px-4 text-center">
-                            <div class="flex items-center justify-center space-x-2">
-                                <button onclick="editSubject('${subject._id}')" 
-                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
-                                        title="Edit">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                </button>
-                                <button onclick="deleteSubject('${subject._id}')" 
-                                        class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
-                                        title="Delete">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                }).join('');
+                // Sort subjects by semester
+                window.subjectsData.allSubjects = data.subjects.sort((a, b) => {
+                    const semA = a.semester || 0;
+                    const semB = b.semester || 0;
+                    return semA - semB;
+                });
+                window.subjectsData.filteredSubjects = [...window.subjectsData.allSubjects];
+                window.subjectsData.currentPage = 1;
+                renderSubjectsTable();
             } else {
+                const tbody = document.getElementById('subjectsTableBody');
                 tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400">No subjects found</td></tr>';
+                updateSubjectsPagination(0, 0, 0, 1, 1);
             }
         } catch (error) {
             console.error('Error loading subjects:', error);
             document.getElementById('subjectsTableBody').innerHTML = '<tr><td colspan="5" class="py-8 text-center text-red-500">Error loading subjects</td></tr>';
         }
+    };
+
+    // Render subjects table with current pagination
+    window.renderSubjectsTable = function() {
+        const { filteredSubjects, currentPage, itemsPerPage } = window.subjectsData;
+        const tbody = document.getElementById('subjectsTableBody');
+        
+        const totalItems = filteredSubjects.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+        const pageSubjects = filteredSubjects.slice(startIndex, endIndex);
+
+        if (pageSubjects.length > 0) {
+            tbody.innerHTML = pageSubjects.map(subject => {
+                return `
+                <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="py-3 px-4 text-sm text-gray-900 dark:text-white font-medium">${subject.subjectCode || 'N/A'}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.subjectName || 'N/A'}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${subject.credits || '-'}</td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                            ${subject.semester ? 'Sem ' + subject.semester : '-'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editSubject('${subject._id}')" 
+                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" 
+                                    title="Edit">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            <button onclick="deleteSubject('${subject._id}')" 
+                                    class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium" 
+                                    title="Delete">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400">No subjects found for the selected semester</td></tr>';
+        }
+
+        updateSubjectsPagination(startIndex + 1, endIndex, totalItems, currentPage, totalPages);
+    };
+
+    // Update pagination UI
+    window.updateSubjectsPagination = function(start, end, total, currentPage, totalPages) {
+        document.getElementById('subjectsShowingStart').textContent = total > 0 ? start : 0;
+        document.getElementById('subjectsShowingEnd').textContent = end;
+        document.getElementById('subjectsTotalCount').textContent = total;
+        document.getElementById('subjectsCurrentPage').textContent = currentPage;
+        document.getElementById('subjectsTotalPages').textContent = totalPages;
+
+        const prevBtn = document.getElementById('subjectsPrevBtn');
+        const nextBtn = document.getElementById('subjectsNextBtn');
+        
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+    };
+
+    // Change page function
+    window.changeSubjectsPage = function(direction) {
+        const { filteredSubjects, currentPage, itemsPerPage } = window.subjectsData;
+        const totalPages = Math.ceil(filteredSubjects.length / itemsPerPage) || 1;
+        
+        const newPage = currentPage + direction;
+        if (newPage >= 1 && newPage <= totalPages) {
+            window.subjectsData.currentPage = newPage;
+            renderSubjectsTable();
+        }
+    };
+
+    // Combined filter function for both course and semester
+    window.filterSubjects = function() {
+        const selectedSemester = document.getElementById('semesterFilter').value;
+        const selectedCourse = document.getElementById('courseFilter').value;
+        
+        window.subjectsData.currentSemester = selectedSemester;
+        window.subjectsData.currentCourse = selectedCourse;
+        window.subjectsData.currentPage = 1;
+
+        // Start with all subjects
+        let filtered = [...window.subjectsData.allSubjects];
+
+        // Filter by course (using branch field)
+        if (selectedCourse !== 'all') {
+            filtered = filtered.filter(subject => 
+                subject.branch && subject.branch.toUpperCase() === selectedCourse.toUpperCase()
+            );
+        }
+
+        // Filter by semester
+        if (selectedSemester !== 'all') {
+            filtered = filtered.filter(subject => 
+                String(subject.semester) === selectedSemester
+            );
+        }
+
+        window.subjectsData.filteredSubjects = filtered;
+        renderSubjectsTable();
+    };
+
+    // Legacy function for backward compatibility
+    window.filterSubjectsBySemester = function() {
+        filterSubjects();
     };
 </script>

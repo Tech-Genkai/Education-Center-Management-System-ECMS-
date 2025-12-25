@@ -128,7 +128,17 @@ function coursesPage() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    this.availableSubjects = data.subjects || [];
+                    // Sort subjects: first by semester, then alphabetically by name
+                    this.availableSubjects = (data.subjects || []).sort((a, b) => {
+                        // First sort by semester number
+                        const semA = parseInt(a.semester) || 999;
+                        const semB = parseInt(b.semester) || 999;
+                        if (semA !== semB) return semA - semB;
+                        // Then sort alphabetically by subject name
+                        const nameA = (a.subjectName || '').toLowerCase();
+                        const nameB = (b.subjectName || '').toLowerCase();
+                        return nameA.localeCompare(nameB);
+                    });
                 }
             } catch (error) {
                 console.error('Error loading subjects:', error);

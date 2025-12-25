@@ -33,12 +33,59 @@
             </tbody>
         </table>
     </div>
+    <!-- Classes Pagination Controls -->
+    <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+            Showing <span id="classesShowingStart">0</span> - <span id="classesShowingEnd">0</span> of <span id="classesTotalCount">0</span> classes
+        </div>
+        <div class="flex items-center gap-2">
+            <button id="classesPrevBtn" onclick="changeClassesPage(-1)" 
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                ← Previous
+            </button>
+            <span class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Page <span id="classesCurrentPage">1</span> of <span id="classesTotalPages">1</span>
+            </span>
+            <button id="classesNextBtn" onclick="changeClassesPage(1)" 
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                Next →
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Subjects Table -->
 <div class="glass-card rounded-xl shadow-md p-6">
-    <div class="mb-4">
+    <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Subjects</h3>
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Course Filter -->
+            <div class="flex items-center gap-2">
+                <label for="courseFilter" class="text-sm font-medium text-gray-700 dark:text-gray-300">Course:</label>
+                <select id="courseFilter" onchange="filterSubjects()" 
+                        class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <option value="all">All Courses</option>
+                </select>
+            </div>
+            <!-- Semester Filter -->
+            <div class="flex items-center gap-2">
+                <label for="semesterFilter" class="text-sm font-medium text-gray-700 dark:text-gray-300">Semester:</label>
+                <select id="semesterFilter" onchange="filterSubjects()" 
+                        class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <option value="all">All Semesters</option>
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option>
+                    <option value="6">Semester 6</option>
+                    <option value="7">Semester 7</option>
+                    <option value="8">Semester 8</option>
+                    <option value="9">Semester 9</option>
+                    <option value="10">Semester 10</option>
+                </select>
+            </div>
+        </div>
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full">
@@ -57,5 +104,24 @@
                 </tr>
             </tbody>
         </table>
+    </div>
+    <!-- Pagination Controls -->
+    <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+            Showing <span id="subjectsShowingStart">0</span> - <span id="subjectsShowingEnd">0</span> of <span id="subjectsTotalCount">0</span> subjects
+        </div>
+        <div class="flex items-center gap-2">
+            <button id="subjectsPrevBtn" onclick="changeSubjectsPage(-1)" 
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                ← Previous
+            </button>
+            <span class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Page <span id="subjectsCurrentPage">1</span> of <span id="subjectsTotalPages">1</span>
+            </span>
+            <button id="subjectsNextBtn" onclick="changeSubjectsPage(1)" 
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                Next →
+            </button>
+        </div>
     </div>
 </div>
