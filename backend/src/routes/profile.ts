@@ -4,6 +4,7 @@ import { z } from 'zod';
 import multer from 'multer';
 import path from 'path';
 import { Types } from 'mongoose';
+import { requireAuth } from '../middleware/session.ts';
 import { UserProfile } from '../models/UserProfile.ts';
 import { SuperAdmin } from '../models/SuperAdmin.ts';
 import { Teacher } from '../models/Teacher.ts';
@@ -11,7 +12,6 @@ import { Student } from '../models/Student.ts';
 import { User } from '../models/User.ts';
 import { Address } from '../models/Address.ts';
 import { authMiddleware } from '../middleware/auth.ts';
-import { requireAuth } from '../middleware/session.ts';
 import {
   PROFILE_IMAGE_DEFAULT_URL
 } from '../constants/media.ts';
@@ -93,15 +93,15 @@ const errorResponseSchema = z.object({
   error: z.string().optional()
 });
 
-router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, res: Response) => {
+router.post('/avatar', requireAuth, upload.single('image'), async (req: Request, res: Response) => {
   try {
     console.log('📸 Avatar upload request received');
     console.log('Body userId:', req.body.userId);
-    console.log('Auth context:', (req as any).auth);
+    console.log('Session:', { userId: req.session.userId, role: req.session.role });
     console.log('File:', req.file ? `${req.file.originalname} (${req.file.size} bytes)` : 'No file');
     
     const { userId } = req.body as { userId?: string };
-    const requester = (req as any).auth as { userId?: string; role?: string };
+    const requester = { userId: req.session.userId, role: req.session.role };
 
     if (!userId || !Types.ObjectId.isValid(userId)) {
       console.error('❌ Invalid userId:', userId);
@@ -263,10 +263,10 @@ router.post('/avatar', hybridAuth, upload.single('image'), async (req: Request, 
 });
 
 // Delete avatar (revert to default)
-router.delete('/avatar', hybridAuth, async (req: Request, res: Response) => {
+router.delete('/avatar', requireAuth, async (req: Request, res: Response) => {
   try {
     const { userId } = req.body as { userId?: string };
-    const requester = (req as any).auth as { userId?: string; role?: string };
+    const requester = { userId: req.session.userId, role: req.session.role };
 
     if (!userId || !Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: 'userId is required and must be a valid ObjectId' });
@@ -339,10 +339,10 @@ router.delete('/avatar', hybridAuth, async (req: Request, res: Response) => {
 });
 
 // Get profile by userId
-router.get('/', hybridAuth, async (req: Request, res: Response) => {
+router.get('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const { userId } = req.query as { userId?: string };
-    const requester = (req as any).auth as { userId?: string; role?: string };
+    const requester = { userId: req.session.userId, role: req.session.role };
 
     if (!userId || !Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: 'userId is required and must be a valid ObjectId' });
@@ -366,15 +366,9 @@ router.get('/', hybridAuth, async (req: Request, res: Response) => {
 });
 
 // Update profile (for session-based auth from dashboard)
-router.put('/', async (req: Request, res: Response) => {
+router.put('/', requireAuth, async (req: Request, res: Response) => {
   try {
-    // Get userId from session
-    const session = (req as any).session;
-    if (!session || !session.userId) {
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
-
-    const userId = session.userId;
+    const userId = req.session.userId;
     const { firstName, lastName, phone, dateOfBirth, gender, designation, department, address, bloodGroup, emergencyContact, houseNo, buildingName, street, city, district, state, country, pinCode, landmark, zipCode } = req.body;
 
     // Update User account info
@@ -420,6 +414,18 @@ router.put('/', async (req: Request, res: Response) => {
       await adminProfile.save();
     }
 
+    // Update Student profile
+    const studentProfile = await Student.findOne({ userId });
+    if (studentProfile) {
+      if (firstName) studentProfile.firstName = firstName;
+      if (lastName) studentProfile.lastName = lastName;
+      if (phone) studentProfile.phone = phone;
+      if (dateOfBirth) studentProfile.dateOfBirth = new Date(dateOfBirth);
+      if (gender) studentProfile.gender = gender;
+
+      await studentProfile.save();
+    }
+
     // Update UserProfile
     const profileData: any = {};
     if (firstName || lastName) {
@@ -459,7 +465,8 @@ router.put('/', async (req: Request, res: Response) => {
     return res.status(200).json({ 
       message: 'Profile updated successfully',
       profile,
-      adminProfile
+      adminProfile,
+      studentProfile
     });
   } catch (error) {
     console.error('Profile update error:', error);
@@ -468,19 +475,13 @@ router.put('/', async (req: Request, res: Response) => {
 });
 
 // Upload profile picture (session-based)
-router.post('/picture', upload.single('profileImage'), async (req: Request, res: Response) => {
+router.post('/picture', requireAuth, upload.single('profileImage'), async (req: Request, res: Response) => {
   try {
-    const session = (req as any).session;
-    if (!session || !session.userId) {
-      if (req.file?.path) fs.unlink(req.file.path, () => undefined);
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
-
     if (!req.file) {
       return res.status(400).json({ message: 'Image file is required' });
     }
 
-    const userId = session.userId;
+    const userId = req.session.userId;
     const limits = getImageLimitsForRole(session.role);
 
     // Validate dimensions
