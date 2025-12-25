@@ -83,9 +83,40 @@ if (process.env.NODE_ENV === 'development') {
 router.get('/student/dashboard', requireAuth, requireRole('student'), async (req: Request, res: Response) => {
   try {
     // Mock data - replace with actual database queries
+    // Prefer real student profile name when available, otherwise fall back to email username
+    let studentDisplayName = req.session.email?.split('@')[0] || 'Student';
+    let studentEmail = req.session.email || '';
+    let studentProfilePicture = '';
+    let studentDetails = {};
+    try {
+      const studentProfile = await Student.findOne({ userId: req.session.userId }).lean();
+      if (studentProfile) {
+        if (studentProfile.firstName || studentProfile.lastName) {
+          studentDisplayName = `${studentProfile.firstName || ''} ${studentProfile.lastName || ''}`.trim();
+        }
+        studentEmail = studentProfile.email || studentEmail;
+        studentProfilePicture = studentProfile.profilePicture || '';
+        studentDetails = {
+          studentId: studentProfile.studentId,
+          phone: studentProfile.phone,
+          dateOfBirth: studentProfile.dateOfBirth ? formatDateDDMMYYYY(studentProfile.dateOfBirth) : '',
+          gender: studentProfile.gender,
+          section: studentProfile.section,
+          admissionDate: studentProfile.admissionDate ? formatDateDDMMYYYY(studentProfile.admissionDate) : '',
+          status: studentProfile.status,
+        };
+      }
+    } catch (err) {
+      console.error('Error fetching student profile for display name:', err);
+    }
+
     const dashboardData = {
       user: {
-        name: req.session.email?.split('@')[0] || 'Student',
+        _id: req.session.userId,
+        name: studentDisplayName,
+        email: studentEmail,
+        profilePicture: studentProfilePicture,
+        ...studentDetails,
       },
       stats: {
         totalClasses: 6,
@@ -126,9 +157,20 @@ router.get('/student/dashboard', requireAuth, requireRole('student'), async (req
 router.get('/teacher/dashboard', requireAuth, requireRole('teacher'), async (req: Request, res: Response) => {
   try {
     // Mock data - replace with actual database queries
+    // Prefer real teacher profile name when available, otherwise fall back to email username
+    let teacherDisplayName = req.session.email?.split('@')[0] || 'Teacher';
+    try {
+      const teacherProfile = await Teacher.findOne({ userId: req.session.userId }).lean();
+      if (teacherProfile && (teacherProfile.firstName || teacherProfile.lastName)) {
+        teacherDisplayName = `${teacherProfile.firstName || ''} ${teacherProfile.lastName || ''}`.trim();
+      }
+    } catch (err) {
+      console.error('Error fetching teacher profile for display name:', err);
+    }
+
     const dashboardData = {
       user: {
-        name: req.session.email?.split('@')[0] || 'Teacher',
+        name: teacherDisplayName,
       },
       stats: {
         totalStudents: 156,
