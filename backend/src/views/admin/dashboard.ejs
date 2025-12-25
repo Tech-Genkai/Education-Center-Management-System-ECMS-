@@ -50,6 +50,12 @@
     <%- include('./partials/admin/scripts/alpine-component') %>
     <%- include('./partials/admin/scripts/courses-component') %>
     
+    <!-- Auto Date Formatter -->
+    <%- include('./partials/admin/scripts/date-formatter') %>
+    
+    <!-- Alpine.js Collapse Plugin (must load before Alpine.js) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    
     <!-- Alpine.js for Reactive UI -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
@@ -152,6 +158,8 @@
     <%- include('./partials/admin/modals/glassy-confirmation') %>
     <!-- Delete Confirmation Modal -->
     <%- include('./partials/admin/modals/delete-confirmation') %>
+    <!-- User Detail Popup Modal -->
+    <%- include('./partials/admin/modals/user-detail-modal') %>
 
     <!-- ========================================
          JAVASCRIPT FUNCTIONALITY
@@ -169,6 +177,9 @@
 
     <!-- User Management (Delete, Toggle Status, etc.) -->
     <%- include('./partials/admin/scripts/user-management') %>
+    
+    <!-- User Detail Popup Helper -->
+    <%- include('./partials/admin/scripts/user-detail-helper') %>
 
     <!-- Delete Handlers -->
     <%- include('./partials/admin/scripts/delete-handlers') %>

@@ -20,6 +20,10 @@
             selectedSubjects: [],
             selectedTeacherSubjects: [],
             selectedTeacherClasses: [],
+            
+            // User Detail Modal State
+            showUserDetailModal: false,
+            selectedUser: null,
 
             // Initialization
             async init() {
@@ -514,6 +518,26 @@
             },
             async updateAdminHandler() {
                 await this.updateAdmin();
+            },
+            
+            // ==========================================
+            // USER DETAIL MODAL HANDLERS
+            // ==========================================
+            viewUserDetail(user, userType) {
+                this.selectedUser = { ...user, userType };
+                this.showUserDetailModal = true;
+            },
+            
+            editUserFromDetail() {
+                this.showUserDetailModal = false;
+                // Route to appropriate edit function based on user type
+                if (this.selectedUser.userType === 'student') {
+                    editStudent(this.selectedUser._id);
+                } else if (this.selectedUser.userType === 'teacher') {
+                    editTeacher(this.selectedUser._id);
+                } else if (this.selectedUser.userType === 'admin') {
+                    editAdmin(this.selectedUser._id);
+                }
             }
         }));
     });

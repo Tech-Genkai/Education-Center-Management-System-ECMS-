@@ -1,0 +1,85 @@
+<script>
+/**
+ * Global Date Auto-Formatter
+ * Automatically formats date inputs as user types: 05062006 → 05/06/2006
+ */
+
+// Function to format date input
+function formatDateInput(input) {
+    let value = input.value.replace(/\D/g, ''); // Remove non-digits
+    
+    if (value.length >= 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2);
+    }
+    if (value.length >= 5) {
+        value = value.substring(0, 5) + '/' + value.substring(5);
+    }
+    if (value.length > 10) {
+        value = value.substring(0, 10);
+    }
+    
+    input.value = value;
+}
+
+// Auto-apply to all date inputs on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all date input fields (type="date", type="text" with date-related names)
+    const dateInputs = document.querySelectorAll('input[type="date"], input[name*="date"], input[name*="Date"], input[placeholder*="date"], input[placeholder*="Date"], input.date-input');
+    
+    dateInputs.forEach(input => {
+        // Change type to text if it's a date input (for custom formatting)
+        if (input.type === 'date') {
+            input.type = 'text';
+            input.placeholder = input.placeholder || 'DD/MM/YYYY';
+        }
+        
+        // Add input event listener
+        input.addEventListener('input', function(e) {
+            formatDateInput(e.target);
+        });
+        
+        // Add paste event listener
+        input.addEventListener('paste', function(e) {
+            setTimeout(() => formatDateInput(e.target), 10);
+        });
+    });
+});
+
+// Also watch for dynamically added inputs (for modals and AJAX content)
+const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1) { // Element node
+                const dateInputs = node.querySelectorAll ? node.querySelectorAll('input[type="date"], input[name*="date"], input[name*="Date"], input[placeholder*="date"], input[placeholder*="Date"], input.date-input') : [];
+                
+                dateInputs.forEach(input => {
+                    if (input.type === 'date') {
+                        input.type = 'text';
+                        input.placeholder = input.placeholder || 'DD/MM/YYYY';
+                    }
+                    
+                    if (!input.dataset.dateFormatterAdded) {
+                        input.addEventListener('input', function(e) {
+                            formatDateInput(e.target);
+                        });
+                        
+                        input.addEventListener('paste', function(e) {
+                            setTimeout(() => formatDateInput(e.target), 10);
+                        });
+                        
+                        input.dataset.dateFormatterAdded = 'true';
+                    }
+                });
+            }
+        });
+    });
+});
+
+// Start observing the document for changes
+if (document.body) {
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
+</script>

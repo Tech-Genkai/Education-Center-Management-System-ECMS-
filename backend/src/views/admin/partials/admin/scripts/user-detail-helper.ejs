@@ -1,0 +1,48 @@
+<script>
+/**
+ * Global User Detail View Function
+ * Opens animated popup with user information
+ */
+window.viewUserDetail = function(user, userType) {
+    console.log('viewUserDetail called:', userType, user);
+    
+    // Get the Alpine dashboard component instance using Alpine's proper API
+    const dashboardEl = document.querySelector('[x-data*="dashboard"]');
+    console.log('Dashboard element:', dashboardEl);
+    
+    if (dashboardEl) {
+        // Use Alpine's $data magic property
+        try {
+            const alpineData = Alpine.$data(dashboardEl);
+            console.log('Alpine data:', alpineData);
+            alpineData.selectedUser = { ...user, userType };
+            alpineData.showUserDetailModal = true;
+        } catch (error) {
+            console.error('Error accessing Alpine data:', error);
+        }
+    } else {
+        console.error('Dashboard element not found!');
+    }
+};
+
+// ID-based wrapper to fetch user from already loaded data
+window.viewUserDetailById = function(userId, userType) {
+    console.log('viewUserDetailById called:', userId, userType);
+    
+    // Get user from the appropriate global data store
+    let user = null;
+    if (userType === 'student' && window.cachedStudents) {
+        user = window.cachedStudents.find(s => s._id === userId);
+    } else if (userType === 'teacher' && window.cachedTeachers) {
+        user = window.cachedTeachers.find(t => t._id === userId);
+    } else if (userType === 'admin' && window.cachedAdmins) {
+        user = window.cachedAdmins.find(a => a._id === userId);
+    }
+    
+    if (user) {
+        window.viewUserDetail(user, userType);
+    } else {
+        console.error('User not found:', userId, userType);
+    }
+};
+</script>

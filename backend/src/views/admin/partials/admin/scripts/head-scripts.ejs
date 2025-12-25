@@ -62,8 +62,12 @@
         if (students && students.length > 0) {
             tbody.innerHTML = students.map(student => {
                 const email = (student.userId && student.userId.email) || 'N/A';
+                const profilePic = student.profilePicture || '/static/images/profile/default/default-profile.png';
                 return `
                 <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="py-3 px-4">
+                        <img src="${profilePic}" alt="${student.firstName}" class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600" onerror="this.src='/static/images/profile/default/default-profile.png'">
+                    </td>
                     <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.studentId || 'N/A'}</td>
                     <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.firstName} ${student.lastName}</td>
                     <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${email}</td>
@@ -75,6 +79,14 @@
                     </td>
                     <td class="py-3 px-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
+                            <button onclick="viewUserDetailById('${student._id}', 'student')" 
+                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium" 
+                                    title="View Details">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
                             <button onclick="toggleStatus('student', '${student._id}', '${student.status}')" 
                                     class="glass-toggle px-2 py-1 text-xs ${student.status === 'active' ? 'glass-toggle--active' : 'glass-toggle--inactive'}"
                                     title="${student.status === 'active' ? 'Deactivate' : 'Activate'}">
@@ -109,7 +121,7 @@
             `;
             }).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No students found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-gray-500 dark:text-gray-400">No students found</td></tr>';
         }
     }
 
@@ -119,8 +131,12 @@
         if (teachers && teachers.length > 0) {
             tbody.innerHTML = teachers.map(teacher => {
                 const email = (teacher.userId && teacher.userId.email) || 'N/A';
+                const profilePic = teacher.profilePicture || '/static/images/profile/default/default-profile.png';
                 return `
                 <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="py-3 px-4">
+                        <img src="${profilePic}" alt="${teacher.firstName}" class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600" onerror="this.src='/static/images/profile/default/default-profile.png'">
+                    </td>
                     <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.teacherId || 'N/A'}</td>
                     <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${teacher.firstName} ${teacher.lastName}</td>
                     <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">${email}</td>
@@ -132,6 +148,14 @@
                     </td>
                     <td class="py-3 px-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
+                            <button onclick="viewUserDetailById('${teacher._id}', 'teacher')" 
+                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium" 
+                                    title="View Details">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
                             <button onclick="toggleStatus('teacher', '${teacher._id}', '${teacher.status}')" 
                                     class="glass-toggle px-2 py-1 text-xs ${teacher.status === 'active' ? 'glass-toggle--active' : 'glass-toggle--inactive'}"
                                     title="${teacher.status === 'active' ? 'Deactivate' : 'Activate'}">
@@ -166,7 +190,7 @@
             `;
             }).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">No teachers found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-gray-500 dark:text-gray-400">No teachers found</td></tr>';
         }
     }
 
@@ -193,6 +217,14 @@
                     </td>
                     <td class="py-3 px-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
+                            <button onclick="viewUserDetailById('${admin._id}', 'admin')" 
+                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium" 
+                                    title="View Details">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
                             <button onclick="toggleStatus('admin', '${admin._id}', '${admin.status || 'active'}')" 
                                     class="glass-toggle px-2 py-1 text-xs ${(admin.status || 'active') === 'active' ? 'glass-toggle--active' : 'glass-toggle--inactive'}"
                                     title="${(admin.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}">
@@ -240,13 +272,16 @@
             const data = await response.json();
             
             // Store full data for search functionality
-            window.allStudents = data.students || [];
+            const students = data.students || [];
+        
+            // Cache for user detail modal
+            window.cachedStudents = students;
             
             // Render all students initially
-            renderStudents(window.allStudents);
+            renderStudents(students);
         } catch (error) {
             console.error('Error loading students:', error);
-            document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading students</td></tr>';
+            document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="7" class="py-8 text-center text-red-500">Error loading students</td></tr>';
         }
     };
 
@@ -258,13 +293,16 @@
             const data = await response.json();
             
             // Store full data for search functionality
-            window.allTeachers = data.teachers || [];
+            const teachers = data.teachers || [];
+        
+            // Cache for user detail modal
+            window.cachedTeachers = teachers;
             
             // Render all teachers initially
-            renderTeachers(window.allTeachers);
+            renderTeachers(teachers);
         } catch (error) {
             console.error('Error loading teachers:', error);
-            document.getElementById('teachersTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading teachers</td></tr>';
+            document.getElementById('teachersTableBody').innerHTML = '<tr><td colspan="7" class="py-8 text-center text-red-500">Error loading teachers</td></tr>';
         }
     };
 
@@ -276,10 +314,13 @@
             const data = await response.json();
             
             // Store full data for search functionality
-            window.allAdmins = data.superAdmins || [];
+            const admins = data.superAdmins || [];
+        
+            // Cache for user detail modal
+            window.cachedAdmins = admins;
             
             // Render all admins initially
-            renderAdmins(window.allAdmins);
+            renderAdmins(admins);
         } catch (error) {
             console.error('Error loading admins:', error);
             document.getElementById('adminsTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading admins</td></tr>';

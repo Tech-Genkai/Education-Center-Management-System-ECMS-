@@ -28,23 +28,44 @@ const CourseSchema = new Schema(
       type: String,
       trim: true
     },
+    status: {
+      type: String,
+      enum: ['draft', 'active', 'archived'],
+      default: 'active'
+    },
     isActive: { 
       type: Boolean, 
       default: true 
+    },
+    startDate: {
+      type: Date
+    },
+    endDate: {
+      type: Date
     },
     createdBy: {
       type: Types.ObjectId,
       ref: 'User'
     }
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
 
 // Compound unique index: courseCode should be unique per academic year
 CourseSchema.index({ courseCode: 1, academicYearId: 1 }, { unique: true });
 
 // Index for faster queries
+CourseSchema.index({ academicYearId: 1, status: 1 });
 CourseSchema.index({ academicYearId: 1, isActive: 1 });
 CourseSchema.index({ courseName: 'text', description: 'text' });
+
+// Virtual for student count (will be populated by aggregation)
+CourseSchema.virtual('studentCount').get(function() {
+  return this._studentCount || 0;
+});
 
 export const Course = model('Course', CourseSchema);

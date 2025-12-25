@@ -174,19 +174,9 @@
         socket.emit('request:online-users');
     });
 
-    // Expose functions to global scope for Alpine.js
-    window.submitAdminForm = submitAdminForm;
-    window.updateAdmin = updateAdmin;
-    window.submitTeacherForm = submitTeacherForm;
-    window.submitStudentForm = submitStudentForm;
-    window.updateTeacher = updateTeacher;
-    window.updateStudent = updateStudent;
-    window.editStudent = editStudent;
-    window.editTeacher = editTeacher;
-    window.editAdmin = editAdmin;
-    window.deleteStudent = deleteStudent;
-    window.deleteTeacher = deleteTeacher;
-    window.deleteAdmin = deleteAdmin;
+    // Expose utility functions to global scope
+    // Note: CRUD functions (submitAdminForm, editStudent, etc.) are already exposed
+    // in form-handlers.ejs and other dedicated scripts
     window.addNotice = addNotice;
     window.deleteNotice = deleteNotice;
 </script>
