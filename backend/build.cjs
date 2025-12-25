@@ -3,6 +3,25 @@ const { glob } = require('glob');
 const fs = require('fs');
 const path = require('path');
 
+function copyDir(src, dest) {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+  
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    
+    if (entry.isDirectory()) {
+      copyDir(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
 function replaceImports(dir) {
   const files = fs.readdirSync(dir, { withFileTypes: true });
   
@@ -41,6 +60,10 @@ async function buildApp() {
   console.log('✅ Build completed, fixing import paths...');
   replaceImports('./dist');
   console.log('✅ Import paths fixed');
+  
+  console.log('📁 Copying views and static assets...');
+  copyDir('./src/views', './dist/src/views');
+  console.log('✅ Views copied');
 }
 
 buildApp().catch((err) => {
