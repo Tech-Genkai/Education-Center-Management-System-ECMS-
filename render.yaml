@@ -12,10 +12,8 @@ services:
         value: production
       - key: PORT
         value: 10000
-      # Database Configuration
       - key: MONGODB_URI
         sync: false
-      # Session & Security
       - key: SESSION_SECRET
         generateValue: true
       - key: JWT_SECRET
@@ -23,13 +21,11 @@ services:
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: BCRYPT_ROUNDS
-        value: 12
-      # Application Settings
+        value: "12"
       - key: APP_NAME
-        value: ECMS Portal
+        value: "ECMS Portal"
       - key: APP_URL
         sync: false
-      # Email/SMTP Configuration (Optional)
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
@@ -39,14 +35,12 @@ services:
       - key: SMTP_PASSWORD
         sync: false
       - key: SMTP_FROM_NAME
-        value: ECMS Portal
+        value: "ECMS Portal"
       - key: SMTP_FROM_EMAIL
         sync: false
-      # Redis Configuration (Optional)
       - key: REDIS_URL
         sync: false
-      # Profile Upload Cleanup
       - key: PROFILE_UPLOAD_RETENTION_DAYS
-        value: 1
+        value: "1"
       - key: PROFILE_UPLOAD_CLEANUP_INTERVAL_MS
-        value: 3600000
+        value: "3600000"
