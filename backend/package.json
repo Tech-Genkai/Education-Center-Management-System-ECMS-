@@ -8,8 +8,8 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node-esm src/server.ts",
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.json && node -e \"const fs=require('fs');const path=require('path');function r(d){fs.readdirSync(d,{withFileTypes:true}).forEach(e=>{const p=path.join(d,e.name);if(e.isDirectory())r(p);else if(e.isFile()&&p.endsWith('.js')){let c=fs.readFileSync(p,'utf8');c=c.replace(/from\\s+['\\\"](\\.\\.\\/|\\.\\/)([^'\\\"]+)\\.ts['\\\"]/g,'from \\\"$1$2.js\\\"');c=c.replace(/import\\s+['\\\"](\\.\\.\\/|\\.\\/)([^'\\\"]+)\\.ts['\\\"]/g,'import \\\"$1$2.js\\\"');fs.writeFileSync(p,c,'utf8');}})}r('./dist');\"",
+    "start": "node dist/src/server.js",
     "lint": "eslint 'src/**/*.{ts,js}'",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
     "seed": "ts-node-esm scripts/seedTestUsers.ts",

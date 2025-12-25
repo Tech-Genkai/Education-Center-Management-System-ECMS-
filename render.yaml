@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: ecms-backend
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install && cd ../shared && npm install && cd ../backend && npm run build
+    startCommand: cd backend && npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Database Configuration
+      - key: MONGODB_URI
+        sync: false
+      # Session & Security
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: BCRYPT_ROUNDS
+        value: 12
+      # Application Settings
+      - key: APP_NAME
+        value: ECMS Portal
+      - key: APP_URL
+        sync: false
+      # Email/SMTP Configuration (Optional)
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_NAME
+        value: ECMS Portal
+      - key: SMTP_FROM_EMAIL
+        sync: false
+      # Redis Configuration (Optional)
+      - key: REDIS_URL
+        sync: false
+      # Profile Upload Cleanup
+      - key: PROFILE_UPLOAD_RETENTION_DAYS
+        value: 1
+      - key: PROFILE_UPLOAD_CLEANUP_INTERVAL_MS
+        value: 3600000

@@ -180,7 +180,7 @@ app.use((err: any, req: any, res: any, next: any) => {
   }
 });
 
-const port = process.env.PORT || 5000;
+const port = Number(process.env.PORT) || 5000;
 
 // Only start the server when executed directly (not during tests)
 if (process.env.NODE_ENV !== 'test') {
