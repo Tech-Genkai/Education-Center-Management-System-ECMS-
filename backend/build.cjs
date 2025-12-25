@@ -64,6 +64,11 @@ async function buildApp() {
   console.log('📁 Copying views and static assets...');
   copyDir('./src/views', './dist/src/views');
   console.log('✅ Views copied');
+  
+  if (fs.existsSync('./public')) {
+    copyDir('./public', './dist/public');
+    console.log('✅ Public folder copied');
+  }
 }
 
 buildApp().catch((err) => {
