@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts (keep only backend/dist)
+backend/src/
+backend/tests/
+backend/scripts/
+*.ts
+*.map
+tsconfig.json
+
+# Git
+.git/
+.gitignore
+
+# Documentation (optional - exclude if you want smaller deployments)
+*.md
+!README.md
+
+# Render config (not needed for Vercel)
+render.yaml
+RENDER_DEPLOYMENT.md
+
+# Other configs
+.prettierrc
+.eslintrc*
+jest.config.*
+
+# Logs
+logs/
+*.log

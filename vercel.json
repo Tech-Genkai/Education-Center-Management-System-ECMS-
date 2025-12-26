@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "name": "ecms-backend",
+  "builds": [
+    {
+      "src": "backend/dist/src/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "backend/public/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "backend/dist/src/server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "regions": ["iad1"]
+}
