@@ -23,6 +23,12 @@ function copyDir(src, dest) {
 }
 
 function replaceImports(dir) {
+  // Check if directory exists before trying to read it
+  if (!fs.existsSync(dir)) {
+    console.warn(`⚠️  Directory ${dir} does not exist, skipping import replacement`);
+    return;
+  }
+  
   const files = fs.readdirSync(dir, { withFileTypes: true });
   
   for (const file of files) {
@@ -43,6 +49,11 @@ function replaceImports(dir) {
 async function buildApp() {
   const entryPoints = await glob('src/**/*.ts');
   const scriptPoints = await glob('scripts/**/*.ts');
+  
+  // Ensure dist directory exists
+  if (!fs.existsSync('./dist')) {
+    fs.mkdirSync('./dist', { recursive: true });
+  }
   
   await build({
     entryPoints: [...entryPoints, ...scriptPoints],
