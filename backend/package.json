@@ -12,8 +12,7 @@
     "start": "node dist/src/server.js",
     "lint": "eslint 'src/**/*.{ts,js}'",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
-    "seed": "ts-node-esm scripts/seedTestUsers.ts",
-    "clear-db": "ts-node-esm scripts/clearDatabase.ts"
+    "seed": "ts-node-esm scripts/seedTestUsers.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
