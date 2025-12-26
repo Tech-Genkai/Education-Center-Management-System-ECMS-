@@ -4,6 +4,7 @@ coverage/
 .idea/
 .vscode/
 .env
+.env.example
 
 # Accidentally created files
 nodemon
