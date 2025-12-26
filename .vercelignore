@@ -20,23 +20,23 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Build artifacts (keep only backend/dist)
+# Source files (we only need built files)
 backend/src/
 backend/tests/
 backend/scripts/
 *.ts
-*.map
+!backend/dist/**/*.js
 tsconfig.json
 
 # Git
 .git/
 .gitignore
 
-# Documentation (optional - exclude if you want smaller deployments)
+# Documentation (optional)
 *.md
 !README.md
 
-# Render config (not needed for Vercel)
+# Render config
 render.yaml
 RENDER_DEPLOYMENT.md
 
