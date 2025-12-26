@@ -202,7 +202,7 @@ export const getSuperAdminById = async (req: Request, res: Response) => {
     }
 
     const superAdmin = await SuperAdmin.findById(id)
-      .populate('userId', 'email role isActive lastLogin')
+      .populate('userId', 'email phone instituteEmail role isActive lastLogin')
       .populate('addressId')
       .lean();
 
