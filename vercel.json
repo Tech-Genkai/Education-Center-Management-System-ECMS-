@@ -20,8 +20,8 @@
       "dest": "/api/index.js"
     }
   ],
-  "installCommand": "cd backend && npm install && cd ../shared && npm install",
-  "buildCommand": "cd backend && npm run build",
+  "installCommand": "npm install --prefix ./shared && npm install --prefix ./backend",
+  "buildCommand": "npm run build --prefix ./backend",
   "env": {
     "NODE_ENV": "production"
   }
