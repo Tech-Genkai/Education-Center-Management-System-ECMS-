@@ -1,2 +1,4 @@
 .gitignore
 _legacy/
+.env
+.env.example
