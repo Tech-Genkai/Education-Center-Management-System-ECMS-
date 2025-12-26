@@ -1,9 +1,11 @@
 {
   "version": 2,
   "name": "ecms-backend",
+  "buildCommand": "cd backend && npm install && npm run build",
+  "installCommand": "cd backend && npm install && cd ../shared && npm install",
   "builds": [
     {
-      "src": "backend/dist/src/server.js",
+      "src": "backend/package.json",
       "use": "@vercel/node"
     }
   ],
@@ -20,5 +22,6 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "framework": null
 }
