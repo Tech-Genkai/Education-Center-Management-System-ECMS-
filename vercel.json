@@ -1,27 +1,28 @@
 {
   "version": 2,
-  "name": "ecms-backend",
-  "buildCommand": "cd backend && npm install && npm run build",
-  "installCommand": "cd backend && npm install && cd ../shared && npm install",
   "builds": [
     {
-      "src": "backend/package.json",
+      "src": "api/index.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "backend/public/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/static/(.*)",
-      "dest": "backend/public/$1"
+      "dest": "/backend/public/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "backend/dist/src/server.js"
+      "dest": "/api/index.js"
     }
   ],
+  "installCommand": "cd backend && npm install && cd ../shared && npm install",
+  "buildCommand": "cd backend && npm run build",
   "env": {
     "NODE_ENV": "production"
-  },
-  "regions": ["iad1"],
-  "framework": null
+  }
 }
