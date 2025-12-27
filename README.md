@@ -5,12 +5,14 @@ A comprehensive education center management system with server-side rendering.
 ## Quick Start
 
 1. **Install dependencies**:
+
    ```bash
    cd backend
    npm install
    ```
 
 2. **Configure environment** (create `.env` in backend folder):
+
    ```env
    PORT=5000
    MONGODB_URI=your_mongodb_connection_string
@@ -19,6 +21,7 @@ A comprehensive education center management system with server-side rendering.
    ```
 
 3. **Start the server**:
+
    ```bash
    npm run dev
    ```
@@ -57,7 +60,8 @@ A comprehensive education center management system with server-side rendering.
 
 Vercel provides excellent support for email/SMTP, making it perfect for the password reset feature.
 
-**Quick Deploy**: 
+**Quick Deploy**:
+
 ```bash
 npm install -g vercel
 vercel login
@@ -67,21 +71,15 @@ vercel
 **Full Guide**: See [VERCEL_QUICK_START.md](VERCEL_QUICK_START.md) for quick deployment or [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) for complete instructions.
 
 **Email Providers Supported**:
+
 - SendGrid (100 emails/day free)
 - Resend (100 emails/day free)
 - Brevo (300 emails/day free)
 - Gmail (for testing)
-
-### Deploy to Render (Alternative)
-
-**Note**: Render has limited email support on free tier. See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for instructions.
-
-**Comparison**: See [RENDER_VS_VERCEL.md](RENDER_VS_VERCEL.md) for detailed comparison.
 
 ## Documentation
 
 - [QUICK_START.md](QUICK_START.md) - Local development setup
 - [VERCEL_QUICK_START.md](VERCEL_QUICK_START.md) - Deploy to Vercel in 5 minutes
 - [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) - Complete Vercel deployment guide
-- [RENDER_VS_VERCEL.md](RENDER_VS_VERCEL.md) - Deployment platform comparison
 - [PROJECT_PLAN.md](PROJECT_PLAN.md) - Project planning and architecture

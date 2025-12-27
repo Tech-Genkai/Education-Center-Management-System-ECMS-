@@ -404,34 +404,9 @@ Recovery Steps:
    └─→ Review email usage
 ```
 
----
-
-## Comparison: Old (Render) vs New (Vercel)
-
-```
-                Render                      Vercel
-              ┌────────┐                  ┌────────┐
-              │ Always │                  │ Scale  │
-              │   On   │                  │   to   │
-              │ Server │                  │  Zero  │
-              └────┬───┘                  └────┬───┘
-                   │                           │
-         ┌─────────┼─────────┐      ┌─────────┼─────────┐
-         │         │         │      │         │         │
-      ┌──▼──┐  ┌──▼──┐  ┌──▼──┐ ┌──▼──┐  ┌──▼──┐  ┌──▼──┐
-      │     │  │     │  │     │ │     │  │     │  │ ... │
-      │ DB  │  │Email│  │ App │ │ DB  │  │Email│  │     │
-      │     │  │  ❌ │  │     │ │     │  │  ✅ │  │18+ │
-      └─────┘  └─────┘  └─────┘ └─────┘  └─────┘  └─────┘
-       Free      NO      750hrs   Free     YES     Edge
-                         /month                   Network
-```
-
----
-
 ## Conclusion
 
-The new Vercel architecture provides:
+The Vercel architecture provides:
 
 ✅ **Email Support** - Full SMTP capabilities
 ✅ **Global Performance** - 18+ edge locations
