@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import { json, urlencoded } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -74,15 +75,29 @@ app.set('views', viewsPath);
 // Trust proxy - required for rate limiting to work correctly behind proxies
 app.set('trust proxy', 1);
 
-// Session configuration
+// Session configuration with MongoDB store for serverless persistence
+const isProduction = process.env.NODE_ENV === 'production';
+const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URL;
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'dev-session-secret-change-in-production',
     resave: false,
     saveUninitialized: false,
+    proxy: isProduction, // Trust the reverse proxy in production
+    // Use MongoDB store for persistent sessions (required for serverless)
+    store: MongoStore.create({
+      mongoUrl: mongoUri,
+      dbName: 'ecms',
+      collectionName: 'sessions',
+      ttl: 24 * 60 * 60, // 24 hours in seconds
+      autoRemove: 'native', // Use MongoDB TTL index for session cleanup
+      touchAfter: 3600 // Only update session every hour (reduces DB writes)
+    }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProduction, // HTTPS only in production
       httpOnly: true,
+      sameSite: isProduction ? 'lax' : 'lax', // 'lax' allows same-origin requests
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
   })
