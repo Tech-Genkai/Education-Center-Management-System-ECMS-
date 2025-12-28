@@ -42,18 +42,23 @@ const dbConnectionPromise = connectDatabase(
 
 const app = express();
 const httpServer = createServer(app);
-const io = new SocketIOServer(httpServer, {
-  cors: {
-    origin: true,
-    credentials: true
-  }
-});
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Detect Vercel environment and resolve paths correctly
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+
+// Socket.IO only works with persistent connections - disable on Vercel serverless
+let io: SocketIOServer | null = null;
+if (!isVercel) {
+  io = new SocketIOServer(httpServer, {
+    cors: {
+      origin: true,
+      credentials: true
+    }
+  });
+}
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Views path: In Vercel, views are in backend/dist/src/views relative to project root
 // Locally, views are relative to __dirname (src/views)
@@ -263,14 +268,16 @@ if (process.env.NODE_ENV !== 'test') {
     }
   });
   
-  // Socket.IO connection handling
-  io.on('connection', (socket) => {
-    console.log('🔌 Client connected:', socket.id);
-    
-    socket.on('disconnect', () => {
-      console.log('🔌 Client disconnected:', socket.id);
+  // Socket.IO connection handling (only when not on Vercel)
+  if (io) {
+    io.on('connection', (socket) => {
+      console.log('🔌 Client connected:', socket.id);
+      
+      socket.on('disconnect', () => {
+        console.log('🔌 Client disconnected:', socket.id);
+      });
     });
-  });
+  }
 
   httpServer.listen(port, () => {
     console.log('\n┌──────────────────────────────────────────┐');

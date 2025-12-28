@@ -80,9 +80,21 @@ router.post('/login', [
     user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
 
-    // Redirect to appropriate dashboard
-    const role = user.role === 'superadmin' ? 'admin' : user.role;
-    return res.redirect(`/${role}/dashboard`);
+    // Save session to MongoDB before redirect (required for MongoDB session store)
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.render('login', {
+          title: 'Login - ECMS',
+          error: 'Login failed. Please try again.',
+          savedEmail: email
+        });
+      }
+      
+      // Redirect to appropriate dashboard
+      const role = user.role === 'superadmin' ? 'admin' : user.role;
+      return res.redirect(`/${role}/dashboard`);
+    });
     
   } catch (err) {
     console.error('Login error:', err);
