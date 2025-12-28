@@ -28,6 +28,17 @@ import viewRoutes from './routes/views.ts';
 import { attachUserToLocals } from './middleware/session.ts';
 import { connectDatabase, getDatabaseStatus, pingDatabase } from './config/database.ts';
 
+// Connect to database at module load time (important for Vercel serverless)
+// This ensures DB is connected before handling any requests
+const dbConnectionPromise = connectDatabase(
+  process.env.MONGODB_URI || process.env.MONGODB_URL, 
+  'ecms-api'
+).then(() => {
+  console.log('✅ MongoDB connected successfully');
+}).catch((err) => {
+  console.error('❌ Database connection failed:', err.message);
+});
+
 const app = express();
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, {
@@ -123,6 +134,17 @@ app.use('/', viewRoutes);
 // API docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));
 app.get('/docs.json', (_req, res) => res.json(openapiSpec));
+
+// Middleware to ensure database is connected before handling API routes
+app.use('/api', async (_req, _res, next) => {
+  try {
+    await dbConnectionPromise;
+    next();
+  } catch (err) {
+    console.error('Database connection error in middleware:', err);
+    next();
+  }
+});
 
 // API routes
 app.use('/api/auth', authRouter);
