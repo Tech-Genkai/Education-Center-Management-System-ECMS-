@@ -40,9 +40,25 @@ const io = new SocketIOServer(httpServer, {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Detect Vercel environment and resolve paths correctly
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+
+// Views path: In Vercel, views are in backend/dist/src/views relative to project root
+// Locally, views are relative to __dirname (src/views)
+const viewsPath = isVercel 
+  ? path.join(process.cwd(), 'backend', 'dist', 'src', 'views')
+  : path.join(__dirname, 'views');
+
+// Static assets path: In Vercel, public is in backend/dist/public
+// Locally, public is relative to __dirname (../public)
+const staticPath = isVercel
+  ? path.join(process.cwd(), 'backend', 'dist', 'public')
+  : path.resolve(__dirname, '../public');
+
 // Configure view engine for SSR
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', viewsPath);
+
 
 // Trust proxy - required for rate limiting to work correctly behind proxies
 app.set('trust proxy', 1);
@@ -78,10 +94,9 @@ app.use(
 );
 
 // Serve static assets (images, icons, etc.) with cache headers
-const staticAssetsPath = path.resolve(__dirname, '../public');
 app.use(
   '/static',
-  express.static(staticAssetsPath, {
+  express.static(staticPath, {
     setHeaders: (res, filePath) => {
       const isImage = /\.(png|jpe?g|webp|gif|svg)$/i.test(filePath);
       // 30d for images (immutable), 1h for other assets in /static
