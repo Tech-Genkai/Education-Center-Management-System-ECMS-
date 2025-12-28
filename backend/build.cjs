@@ -80,6 +80,14 @@ async function buildApp() {
     copyDir('./public', './dist/public');
     console.log('✅ Public folder copied');
   }
+  
+  // Copy shared module for Vercel deployment
+  const sharedSrc = '../shared';
+  const sharedDest = './dist/shared';
+  if (fs.existsSync(sharedSrc)) {
+    copyDir(sharedSrc, sharedDest);
+    console.log('✅ Shared module copied for Vercel');
+  }
 }
 
 buildApp().catch((err) => {

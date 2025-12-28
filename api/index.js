@@ -5,26 +5,42 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Cache the app import for better cold start performance
+let appPromise = null;
+
+async function getApp() {
+  if (!appPromise) {
+    // Construct path to the compiled server module
+    const serverPath = join(__dirname, '..', 'backend', 'dist', 'src', 'server.js');
+    appPromise = import(serverPath).then(module => module.app);
+  }
+  return appPromise;
+}
+
 export default async function handler(req, res) {
   try {
-    // Construct absolute path to the server module
-    const serverPath = join(__dirname, '..', 'backend', 'dist', 'src', 'server.js');
+    const app = await getApp();
     
-    // Dynamically import the ES module
-    const { app } = await import(serverPath);
+    // Ensure proper handling of the request
+    if (!app) {
+      throw new Error('Express app not exported from server module');
+    }
     
     // Pass request to Express app
     return app(req, res);
   } catch (error) {
     console.error('Failed to load Express app:', error);
     console.error('Current directory:', __dirname);
-    console.error('Attempted path:', join(__dirname, '..', 'backend', 'dist', 'src', 'server.js'));
+    console.error('Stack:', error.stack);
+    
+    // Reset cache on error to allow retry
+    appPromise = null;
     
     return res.status(500).json({ 
       error: 'Server initialization failed',
       message: error.message,
-      stack: error.stack,
-      details: 'Check build logs and environment variables'
+      hint: 'Check Vercel build logs and environment variables',
+      timestamp: new Date().toISOString()
     });
   }
 }
