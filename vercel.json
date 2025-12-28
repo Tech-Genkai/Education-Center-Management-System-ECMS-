@@ -3,9 +3,11 @@
   "buildCommand": "cd backend && npm install && npm run build",
   "installCommand": "npm install && cd backend && npm install && cd ../shared && npm install",
   "framework": null,
+  "outputDirectory": ".",
   "functions": {
     "api/**/*.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "backend/dist/**"
     }
   },
   "rewrites": [
