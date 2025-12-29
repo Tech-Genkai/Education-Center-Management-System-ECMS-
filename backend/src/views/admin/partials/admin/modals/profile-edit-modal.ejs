@@ -65,6 +65,49 @@
         </div>
       </div>
 
+      <!-- Bio Section -->
+      <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          About Me
+        </h4>
+        <textarea name="bio" rows="3" placeholder="Write a brief bio about yourself..." class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"><%= user.bio || '' %></textarea>
+      </div>
+
+      <!-- Social Links Section -->
+      <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Social & Professional Links
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">LinkedIn URL</label>
+            <input type="url" name="linkedinUrl" value="<%= user.linkedinUrl || '' %>" placeholder="https://linkedin.com/in/username" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GitHub URL</label>
+            <input type="url" name="githubUrl" value="<%= user.githubUrl || '' %>" placeholder="https://github.com/username" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Twitter / X URL</label>
+            <input type="url" name="twitterUrl" value="<%= user.twitterUrl || '' %>" placeholder="https://twitter.com/username" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Portfolio / Website</label>
+            <input type="url" name="portfolioUrl" value="<%= user.portfolioUrl || '' %>" placeholder="https://yourportfolio.com" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instagram URL</label>
+            <input type="url" name="instagramUrl" value="<%= user.instagramUrl || '' %>" placeholder="https://instagram.com/username" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">YouTube Channel</label>
+            <input type="url" name="youtubeUrl" value="<%= user.youtubeUrl || '' %>" placeholder="https://youtube.com/@channel" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          </div>
+        </div>
+      </div>
+
       <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
         <div class="flex items-center justify-between">
           <h4 class="text-base font-semibold text-gray-900 dark:text-white">Address</h4>
