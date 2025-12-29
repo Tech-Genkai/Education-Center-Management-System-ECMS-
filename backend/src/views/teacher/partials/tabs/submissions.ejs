@@ -1,0 +1,79 @@
+<!-- Teacher Submissions Tab -->
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Grade Submissions</h2>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Review and grade student submissions</p>
+    </div>
+
+    <!-- Pending Submissions -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pending Submissions</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Assignment</th>
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Class</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Submissions</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Due Date</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    <% if (submissions && submissions.length > 0) { %>
+                        <% submissions.forEach(function(submission) { %>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white"><%= submission.title %></td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-300"><%= submission.class %></td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="text-sm font-medium text-gray-900 dark:text-white"><%= submission.submitted %>/<%= submission.total %></span>
+                            </td>
+                            <td class="py-3 px-4 text-center text-sm text-gray-600 dark:text-gray-300"><%= submission.dueDate %></td>
+                            <td class="py-3 px-4 text-center">
+                                <button class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-sm font-medium hover:bg-green-200 dark:hover:bg-green-900/50 transition">
+                                    Grade →
+                                </button>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400">No pending submissions</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recently Graded -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recently Graded</h3>
+        <div class="space-y-3">
+            <% if (recentlyGraded && recentlyGraded.length > 0) { %>
+                <% recentlyGraded.forEach(function(item) { %>
+                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white"><%= item.studentName %></p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400"><%= item.assignment %> • <%= item.class %></p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-lg font-bold text-gray-900 dark:text-white"><%= item.grade %>/<%= item.maxGrade %></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400"><%= item.gradedDate %></p>
+                    </div>
+                </div>
+                <% }); %>
+            <% } else { %>
+                <p class="text-center text-gray-500 dark:text-gray-400 py-4">No recently graded submissions</p>
+            <% } %>
+        </div>
+    </div>
+</div>

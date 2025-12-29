@@ -422,6 +422,9 @@ router.put('/', requireAuth, async (req: Request, res: Response) => {
       if (phone) studentProfile.phone = phone;
       if (dateOfBirth) studentProfile.dateOfBirth = new Date(dateOfBirth);
       if (gender) studentProfile.gender = gender;
+      if (bloodGroup) (studentProfile as any).bloodGroup = bloodGroup;
+      if (req.body.guardianName) (studentProfile as any).guardianName = req.body.guardianName;
+      if (req.body.guardianPhone) (studentProfile as any).guardianPhone = req.body.guardianPhone;
 
       await studentProfile.save();
     }

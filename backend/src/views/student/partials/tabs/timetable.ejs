@@ -1,0 +1,86 @@
+<!-- Timetable Tab -->
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Class Timetable</h2>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Your weekly schedule</p>
+    </div>
+
+    <!-- Weekly Timetable -->
+    <div class="glass-card rounded-xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[800px]">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800">
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 w-24">Time</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Monday</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Tuesday</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Wednesday</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Thursday</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Friday</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Saturday</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <% 
+                    const timeSlots = [
+                        '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', 
+                        '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'
+                    ];
+                    const colors = ['blue', 'green', 'purple', 'yellow', 'pink', 'indigo'];
+                    %>
+                    <% timeSlots.forEach(function(time, idx) { %>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300"><%= time %></td>
+                        <% for (let day = 0; day < 6; day++) { %>
+                            <% 
+                            // Find class for this time slot and day
+                            const classForSlot = (timetable && timetable[day] && timetable[day][idx]) || null;
+                            %>
+                            <td class="px-2 py-2">
+                                <% if (classForSlot) { %>
+                                <div class="p-2 bg-<%= colors[idx % 6] %>-100 dark:bg-<%= colors[idx % 6] %>-900/30 rounded-lg text-center">
+                                    <p class="text-sm font-medium text-<%= colors[idx % 6] %>-800 dark:text-<%= colors[idx % 6] %>-200"><%= classForSlot.subject %></p>
+                                    <p class="text-xs text-<%= colors[idx % 6] %>-600 dark:text-<%= colors[idx % 6] %>-400"><%= classForSlot.room %></p>
+                                </div>
+                                <% } else { %>
+                                <div class="p-2 text-center">
+                                    <span class="text-xs text-gray-400 dark:text-gray-600">—</span>
+                                </div>
+                                <% } %>
+                            </td>
+                        <% } %>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Today's Classes -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Today's Classes</h3>
+        <div class="space-y-3">
+            <% if (schedule && schedule.length > 0) { %>
+                <% schedule.forEach(function(item, idx) { %>
+                <div class="flex items-center p-4 bg-<%= item.color || colors[idx % 6] %>-50 dark:bg-<%= item.color || colors[idx % 6] %>-900/20 rounded-lg border-l-4 border-<%= item.color || colors[idx % 6] %>-500">
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <p class="font-semibold text-gray-900 dark:text-white"><%= item.subject %></p>
+                            <span class="text-sm text-gray-500 dark:text-gray-400"><%= item.time %></span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= item.room %> • <% if (item.teacher) { %><%= item.teacher %><% } else { %>TBA<% } %></p>
+                    </div>
+                </div>
+                <% }); %>
+            <% } else { %>
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="text-gray-500 dark:text-gray-400">No classes scheduled for today</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>

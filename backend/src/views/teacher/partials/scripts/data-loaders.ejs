@@ -1,0 +1,124 @@
+<script>
+    // Profile Picture Upload Functions
+    window.selectedFile = null;
+    window.originalImageSrc = null;
+    
+    window.handleProfilePictureChange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please select a valid image file (JPG, PNG, or WEBP)');
+            event.target.value = '';
+            return;
+        }
+        
+        const maxSize = 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('File size must be less than 2MB');
+            event.target.value = '';
+            return;
+        }
+        
+        if (!window.originalImageSrc) {
+            window.originalImageSrc = document.getElementById('profilePicturePreview').src;
+        }
+        
+        window.selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('profilePicturePreview').src = e.target.result;
+            document.getElementById('uploadControls').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.cancelProfilePictureUpload = function() {
+        window.selectedFile = null;
+        if (window.originalImageSrc) {
+            document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+        }
+        document.getElementById('uploadControls').classList.add('hidden');
+        document.getElementById('profilePictureInput').value = '';
+    };
+
+    window.uploadProfilePicture = async function() {
+        if (!window.selectedFile) return;
+        
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadControls = document.getElementById('uploadControls');
+        
+        const dashboardEl = document.querySelector('[x-data]');
+        const userId = dashboardEl?.__x?.$data?.user?._id || '';
+        
+        const formData = new FormData();
+        formData.append('image', window.selectedFile);
+        formData.append('userId', userId);
+        
+        try {
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+            
+            const response = await fetch('/api/profile/avatar', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                alert('Profile picture updated successfully!');
+                window.location.reload();
+            } else {
+                const error = await response.json();
+                alert('Error: ' + (error.message || 'Failed to upload picture'));
+                if (window.originalImageSrc) {
+                    document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to upload picture. Please try again.');
+            if (window.originalImageSrc) {
+                document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+            }
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Photo';
+            uploadControls.classList.add('hidden');
+            window.selectedFile = null;
+        }
+    };
+
+    // Assignment Form Handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const assignmentForm = document.getElementById('assignmentForm');
+        if (assignmentForm) {
+            assignmentForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(assignmentForm);
+                const data = Object.fromEntries(formData.entries());
+                
+                try {
+                    const response = await fetch('/api/teacher/assignments', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        alert('Assignment created successfully!');
+                        document.getElementById('assignmentModal').classList.add('hidden');
+                        window.location.reload();
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to create assignment'));
+                    }
+                } catch (error) {
+                    alert('Error creating assignment');
+                }
+            });
+        }
+    });
+</script>

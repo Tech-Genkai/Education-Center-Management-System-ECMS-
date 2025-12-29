@@ -1,554 +1,114 @@
+<%# ========================================
+     STUDENT DASHBOARD - MAIN FILE
+     Built from scratch with modular partials
+     ======================================== %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - ECMS</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class'
         }
     </script>
-
+    
+    <!-- Custom Styles -->
+    <script src="/static/js/dark-mode.js"></script>
     <link rel="stylesheet" href="/static/css/shared-styles.css">
+    
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Cropper.js for Image Cropping -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        [x-cloak] { display: none !important; }
+        .sidebar-scrollbar::-webkit-scrollbar { width: 6px; }
+        .sidebar-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 3px; }
+        .sidebar-scrollbar::-webkit-scrollbar-thumb:hover { background: #6B7280; }
+    </style>
+    
+    <!-- Alpine.js Component -->
+    <%- include('./partials/scripts/alpine-component') %>
+    
+    <!-- Alpine.js Collapse Plugin -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
-    <div class="min-h-screen flex">
-        <!-- Left Sidebar -->
-        <aside id="sidebar" class="fixed left-0 top-0 h-screen w-64 glass-card border-r border-gray-200 dark:border-gray-700 transition-all duration-300 z-50 flex flex-col p-4 overflow-y-auto">
-            <!-- Logo Section -->
-            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span class="text-lg font-bold text-white">E</span>
-                    </div>
-                    <div class="sidebar-label">
-                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">ECMS</h3>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Student</p>
-                    </div>
-                </div>
-                <button id="toggleSidebar" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
-                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                </button>
+
+<body class="bg-stone-50 dark:bg-gray-900 text-gray-900 dark:text-white" x-data="studentDashboard()">
+    
+    <!-- Sidebar Navigation -->
+    <%- include('./partials/sidebar') %>
+
+    <!-- Main Content Area -->
+    <div :class="sidebarOpen ? 'ml-64' : 'ml-20'" class="transition-all duration-300">
+        
+        <!-- Header -->
+        <%- include('./partials/header') %>
+
+        <!-- Main Content Tabs -->
+        <main class="p-6">
+            
+            <!-- Dashboard Overview Tab -->
+            <div x-show="activeTab === 'dashboard'" x-cloak>
+                <%- include('./partials/tabs/dashboard-overview') %>
             </div>
 
-            <!-- Navigation -->
-            <nav class="flex-1 space-y-1">
-                <a href="#" data-section="dashboard" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Dashboard">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                    <span class="sidebar-label">DASHBOARD</span>
-                </a>
-                <a href="#" data-section="profile" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Profile">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    <span class="sidebar-label">PROFILE</span>
-                </a>
-                <a href="#" data-section="syllabus" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Syllabus">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                    <span class="sidebar-label">SYLLABUS</span>
-                </a>
-                <a href="#" data-section="calendar" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Calendar">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <span class="sidebar-label">CALENDAR</span>
-                </a>
-                <a href="#" data-section="timetable" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Time Table">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span class="sidebar-label">TIME TABLE</span>
-                </a>
-                <a href="#" data-section="fees" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Fees Details">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span class="sidebar-label">FEES DETAILS</span>
-                </a>
-                <a href="#" data-section="leave" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Leave Details">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span class="sidebar-label">LEAVE DETAILS</span>
-                </a>
-                <a href="#" data-section="contact" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Contact Mentor">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    <span class="sidebar-label">CONTACT MENTOR</span>
-                </a>
-            </nav>
-
-            <!-- User Profile -->
-            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center space-x-3">
-                    <img src="<%= user.profilePicture || '/static/images/profile/default/avatar.png' %>" alt="Profile" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
-                    <div class="sidebar-label min-w-0">
-                        <div class="text-sm font-semibold text-gray-900 dark:text-white truncate"><%= user.name || 'Student' %></div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 truncate"><%= user.email || '' %></div>
-                    </div>
-                </div>
+            <!-- Profile Tab -->
+            <div x-show="activeTab === 'profile'" x-cloak>
+                <%- include('./partials/tabs/profile') %>
             </div>
-        </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 ml-64 transition-all duration-300" id="mainContent">
-            <!-- Header -->
-            <nav class="glass-header shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
-                <div class="px-6 py-4 flex justify-between items-center">
-                    <div>
-                        <span class="text-gray-600 dark:text-gray-300 font-medium">Student Dashboard</span>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                            <svg id="theme-icon" class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
-                        </button>
-                        <span class="text-sm text-gray-700 dark:text-gray-300">Welcome, <strong><%= user.name %></strong></span>
-                        <form method="POST" action="/logout" class="inline">
-                            <button type="submit" class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium">Logout</button>
-                        </form>
-                    </div>
-                </div>
-            </nav>
-
-            <!-- Page Content -->
-            <div id="content-container">
-                <!-- Dashboard Content -->
-                <div id="dashboard-content" class="p-8">
-                    <div class="max-w-4xl">
-                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Welcome back, Salman Ansari!</h1>
-                        <p class="text-gray-600 dark:text-gray-400 mt-2">Here's what's happening with your classes today.</p>
-                    </div>
-                </div>
-
-                <!-- Profile Content -->
-                <div id="profile-content" class="hidden flex items-center justify-center h-full p-8">
-                    <div class="glass-card w-full max-w-4xl p-8 rounded-lg shadow-lg">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Profile Details</h2>
-                            <button id="editProfileBtn" type="button" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm">
-                                Edit Profile
-                            </button>
-                        </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <!-- Profile Picture Section -->
-                            <div class="lg:col-span-1">
-                                <div class="glass-card rounded-xl shadow-md p-6">
-                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Profile Picture</h3>
-                                    <div class="flex flex-col items-center">
-                                        <div class="relative mb-4">
-                                            <img id="profilePicturePreview" src="<%= user.profilePicture || '/static/images/profile/default/avatar.png' %>" alt="Profile" class="w-40 h-40 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600">
-                                            <div id="uploadSpinner" class="hidden absolute inset-0 bg-gray-900 bg-opacity-50 rounded-full flex items-center justify-center">
-                                                <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                            </div>
-                                            <button type="button" onclick="document.getElementById('profilePictureInput').click()" class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition-all hover:scale-110">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                </svg>
-                                            </button>
-                                            <input type="file" id="profilePictureInput" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="handleProfilePictureChange(event)">
-                                        </div>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400 text-center mb-2"><%= user.name %></p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-500 text-center"><%= user.email %></p>
-                                        <div id="uploadControls" class="hidden mt-4 space-y-2 w-full">
-                                            <button type="button" onclick="uploadProfilePicture()" id="uploadBtn" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-colors">
-                                                <span class="flex items-center justify-center">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                                    </svg>
-                                                    Upload Photo
-                                                </span>
-                                            </button>
-                                            <button type="button" onclick="cancelProfilePictureUpload()" class="w-full px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 text-sm transition-colors">
-                                                Cancel
-                                            </button>
-                                        </div>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">JPG, PNG or WEBP (Max 2MB)</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Profile Information Section -->
-                            <div class="lg:col-span-2">
-                                <div class="glass-card rounded-xl shadow-md p-6">
-                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Personal Information</h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                                        <div>
-                                            <p class="text-gray-500 dark:text-gray-400">Student ID</p>
-                                            <p class="text-gray-900 dark:text-white font-medium"><%= user.studentId || '—' %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500 dark:text-gray-400">Full Name</p>
-                                            <p class="text-gray-900 dark:text-white font-medium"><%= user.name || '—' %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500 dark:text-gray-400">Email</p>
-                                            <p class="text-gray-900 dark:text-white font-medium"><%= user.email %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500 dark:text-gray-400">Phone</p>
-                                            <p class="text-gray-900 dark:text-white font-medium"><%= user.phone || '—' %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500 dark:text-gray-400">Date of Birth</p>
-                                            <p class="text-gray-900 dark:text-white font-medium"><%= user.dateOfBirth || '—' %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500 dark:text-gray-400">Gender</p>
-                                            <p class="text-gray-900 dark:text-white font-medium capitalize"><%= user.gender || '—' %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500 dark:text-gray-400">Class</p>
-                                            <p class="text-gray-900 dark:text-white font-medium"><%= user.className || '—' %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500 dark:text-gray-400">Section</p>
-                                            <p class="text-gray-900 dark:text-white font-medium"><%= user.section || '—' %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-gray-500 dark:text-gray-400">Admission Date</p>
-                                            <p class="text-gray-900 dark:text-white font-medium"><%= user.admissionDate || '—' %></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Syllabus Tab -->
+            <div x-show="activeTab === 'syllabus'" x-cloak>
+                <%- include('./partials/tabs/syllabus') %>
             </div>
+
+            <!-- Calendar Tab -->
+            <div x-show="activeTab === 'calendar'" x-cloak>
+                <%- include('./partials/tabs/calendar') %>
+            </div>
+
+            <!-- Timetable Tab -->
+            <div x-show="activeTab === 'timetable'" x-cloak>
+                <%- include('./partials/tabs/timetable') %>
+            </div>
+
+            <!-- Fees Tab -->
+            <div x-show="activeTab === 'fees'" x-cloak>
+                <%- include('./partials/tabs/fees') %>
+            </div>
+
+            <!-- Leave Tab -->
+            <div x-show="activeTab === 'leave'" x-cloak>
+                <%- include('./partials/tabs/leave') %>
+            </div>
+
+            <!-- Contact Mentor Tab -->
+            <div x-show="activeTab === 'contact'" x-cloak>
+                <%- include('./partials/tabs/contact-mentor') %>
+            </div>
+
         </main>
     </div>
 
-    <!-- Edit Profile Modal -->
-    <div id="editProfileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden overflow-y-auto">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Profile</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Update your personal information</p>
-                </div>
-                <button type="button" id="closeProfileModal" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" aria-label="Close">
-                    <span class="text-xl">&times;</span>
-                </button>
-            </div>
+    <!-- Modals -->
+    <%- include('./partials/modals/profile-edit-modal') %>
 
-            <form id="editProfileForm" class="px-6 py-6 space-y-6 overflow-y-auto flex-1">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
-                        <input type="text" name="firstName" value="<%= user.firstName || '' %>" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label>
-                        <input type="text" name="lastName" value="<%= user.lastName || '' %>" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
-                        <input type="tel" name="phone" value="<%= user.phone || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
-                        <input type="text" name="dateOfBirth" value="<%= user.dateOfBirth || '' %>" placeholder="dd/mm/yyyy" pattern="^(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[0-2])/[0-9]{4}$" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
-                        <select name="gender" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                            <option value="unspecified" <%= (user.gender || 'unspecified') === 'unspecified' ? 'selected' : '' %>>Prefer not to say</option>
-                            <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>Male</option>
-                            <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>Female</option>
-                            <option value="other" <%= user.gender === 'other' ? 'selected' : '' %>>Other</option>
-                        </select>
-                    </div>
-                </div>
+    <!-- Data Loaders -->
+    <%- include('./partials/scripts/data-loaders') %>
 
-                <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <button type="button" id="cancelProfileModal" class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
-                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <style>
-        #sidebar {
-            left: 0;
-        }
-        
-        #sidebar.collapsed {
-            width: 5rem;
-        }
-        
-        #sidebar.collapsed .sidebar-label {
-            display: none;
-        }
-        
-        #mainContent {
-            margin-left: 16rem;
-        }
-        
-        body.sidebar-collapsed #mainContent {
-            margin-left: 5rem;
-        }
-    </style>
-
-    <script>
-        (function() {
-            const toggleBtn = document.getElementById('toggleSidebar');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            const themeIcon = document.getElementById('theme-icon');
-
-            // Navigation handler
-            const navLinks = document.querySelectorAll('nav a[data-section]');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const section = this.getAttribute('data-section');
-                    showSection(section);
-                });
-            });
-
-            function showSection(section) {
-                // Hide all sections
-                const sections = document.querySelectorAll('#content-container > div');
-                sections.forEach(sec => sec.classList.add('hidden'));
-
-                // Show the selected section
-                const targetSection = document.getElementById(section + '-content');
-                if (targetSection) {
-                    targetSection.classList.remove('hidden');
-                } else {
-                    // Default to dashboard if section not found
-                    document.getElementById('dashboard-content').classList.remove('hidden');
-                }
-            }
-
-            // Profile edit modal handlers
-            const editProfileBtn = document.getElementById('editProfileBtn');
-            const profileModal = document.getElementById('editProfileModal');
-            const closeProfileModal = document.getElementById('closeProfileModal');
-            const cancelProfileModal = document.getElementById('cancelProfileModal');
-            const editProfileForm = document.getElementById('editProfileForm');
-            const dobInput = editProfileForm ? editProfileForm.querySelector('input[name="dateOfBirth"]') : null;
-
-            const toggleProfileModal = (show) => {
-                if (!profileModal) return;
-                profileModal.classList.toggle('hidden', !show);
-            };
-
-            const formatDobValue = (value) => {
-                if (!value) return '';
-                const digits = value.replace(/\D/g, '').slice(0, 8);
-                if (digits.length === 8) {
-                    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
-                }
-                if (digits.length >= 5) {
-                    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
-                }
-                if (digits.length >= 3) {
-                    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-                }
-                return digits;
-            };
-
-            const attachDobFormatter = () => {
-                if (!dobInput) return;
-                dobInput.addEventListener('input', () => {
-                    const formatted = formatDobValue(dobInput.value);
-                    dobInput.value = formatted;
-                });
-                dobInput.addEventListener('blur', () => {
-                    dobInput.value = formatDobValue(dobInput.value);
-                });
-            };
-
-            if (editProfileBtn) {
-                editProfileBtn.addEventListener('click', () => toggleProfileModal(true));
-            }
-            if (closeProfileModal) {
-                closeProfileModal.addEventListener('click', () => toggleProfileModal(false));
-            }
-            if (cancelProfileModal) {
-                cancelProfileModal.addEventListener('click', () => toggleProfileModal(false));
-            }
-
-            if (profileModal) {
-                profileModal.addEventListener('click', (e) => {
-                    if (e.target === profileModal) toggleProfileModal(false);
-                });
-            }
-
-            if (editProfileForm) {
-                attachDobFormatter();
-
-                editProfileForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const formData = new FormData(editProfileForm);
-                    const data = Object.fromEntries(formData.entries());
-
-                    try {
-                        const response = await fetch('/api/profile', {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(data),
-                            credentials: 'include'
-                        });
-                        if (response.ok) {
-                            alert('Profile updated successfully!');
-                            toggleProfileModal(false);
-                            setTimeout(() => location.reload(), 300);
-                        } else {
-                            const error = await response.json();
-                            alert('Error: ' + (error.message || 'Failed to update profile'));
-                        }
-                    } catch (error) {
-                        alert('Error: ' + error.message);
-                    }
-                });
-            }
-
-            // Profile Picture Upload Functions
-            window.selectedFile = null;
-            window.originalImageSrc = null;
-            
-            window.handleProfilePictureChange = function(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                // Validate file type
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-                if (!allowedTypes.includes(file.type)) {
-                    alert('Please select a valid image file (JPG, PNG, or WEBP)');
-                    event.target.value = '';
-                    return;
-                }
-                
-                // Validate file size (2MB max)
-                const maxSize = 2 * 1024 * 1024; // 2MB
-                if (file.size > maxSize) {
-                    alert('File size must be less than 2MB');
-                    event.target.value = '';
-                    return;
-                }
-                
-                window.selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('profilePicturePreview').src = e.target.result;
-                    document.getElementById('uploadControls').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            };
-
-            window.cancelProfilePictureUpload = function() {
-                window.selectedFile = null;
-                if (window.originalImageSrc) {
-                    document.getElementById('profilePicturePreview').src = window.originalImageSrc;
-                }
-                document.getElementById('uploadControls').classList.add('hidden');
-                document.getElementById('profilePictureInput').value = '';
-            };
-
-            window.uploadProfilePicture = async function() {
-                if (!window.selectedFile) return;
-                
-                const uploadBtn = document.getElementById('uploadBtn');
-                const uploadSpinner = document.getElementById('uploadSpinner');
-                const uploadControls = document.getElementById('uploadControls');
-                
-                const userId = '<%= user._id %>';
-                const formData = new FormData();
-                formData.append('image', window.selectedFile);
-                formData.append('userId', userId);
-                
-                try {
-                    uploadBtn.disabled = true;
-                    uploadBtn.innerHTML = '<span class="flex items-center justify-center"><svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Uploading...</span>';
-                    uploadSpinner.classList.remove('hidden');
-                    
-                    const response = await fetch('/api/profile/avatar', {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'include'
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        alert('Profile picture updated successfully!');
-                        
-                        // Reload page to get updated session data with new profile picture
-                        window.location.reload();
-                    } else {
-                        const error = await response.json();
-                        alert('Error: ' + (error.message || 'Failed to upload picture'));
-                        
-                        if (window.originalImageSrc) {
-                            document.getElementById('profilePicturePreview').src = window.originalImageSrc;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Failed to upload picture. Please try again.');
-                    
-                    if (window.originalImageSrc) {
-                        document.getElementById('profilePicturePreview').src = window.originalImageSrc;
-                    }
-                } finally {
-                    uploadSpinner.classList.add('hidden');
-                    uploadBtn.disabled = false;
-                    uploadBtn.innerHTML = '<span class="flex items-center justify-center"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>Upload Photo</span>';
-                }
-            };
-
-            // Initialize originalImageSrc when page loads
-            document.addEventListener('DOMContentLoaded', function() {
-                window.originalImageSrc = '<%= user.profilePicture || "/static/images/profile/default/avatar.png" %>';
-            });
-
-            // Load sidebar state
-            const isSidebarCollapsed = localStorage.getItem('student_sidebar_collapsed') === 'true';
-            if (isSidebarCollapsed) {
-                sidebar.classList.add('collapsed');
-                mainContent.style.marginLeft = '5rem';
-            }
-
-            // Toggle sidebar
-            toggleBtn.addEventListener('click', function() {
-                sidebar.classList.toggle('collapsed');
-                const isCollapsed = sidebar.classList.contains('collapsed');
-                mainContent.style.marginLeft = isCollapsed ? '5rem' : '16rem';
-                localStorage.setItem('student_sidebar_collapsed', isCollapsed);
-            });
-
-            // Theme toggle
-            function updateIcon(isDark) {
-                if (isDark) {
-                    themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-10.66l-.707.707M4.05 19.95l-.707-.707M21 12h-1M4 12H3m16.66 6.66l-.707-.707M4.05 4.05l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
-                } else {
-                    themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>';
-                }
-            }
-
-            function setTheme(isDark) {
-                if (isDark) {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                }
-                updateIcon(isDark);
-            }
-
-            const storedTheme = localStorage.getItem('ecms_theme');
-            if (storedTheme) {
-                setTheme(storedTheme === 'dark');
-            } else {
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                setTheme(prefersDark);
-            }
-
-            themeToggleBtn.addEventListener('click', function() {
-                const isDark = document.documentElement.classList.contains('dark');
-                setTheme(!isDark);
-                localStorage.setItem('ecms_theme', !isDark ? 'dark' : 'light');
-            });
-        })();
-    </script>
 </body>
 </html>

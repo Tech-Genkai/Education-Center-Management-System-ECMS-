@@ -1,0 +1,90 @@
+<script>
+    function studentDashboard() {
+        return {
+            // State
+            sidebarOpen: localStorage.getItem('student_sidebar_open') !== 'false',
+            activeTab: 'dashboard',
+            showProfileModal: false,
+            
+            // User data from server
+            user: {
+                _id: '<%= user._id %>',
+                name: '<%= user.name %>',
+                firstName: '<%= user.firstName || "" %>',
+                lastName: '<%= user.lastName || "" %>',
+                email: '<%= user.email %>',
+                phone: '<%= user.phone || "" %>',
+                studentId: '<%= user.studentId || "" %>',
+                rollNumber: '<%= user.rollNumber || "" %>',
+                dateOfBirth: '<%= user.dateOfBirth || "" %>',
+                gender: '<%= user.gender || "" %>',
+                bloodGroup: '<%= user.bloodGroup || "" %>',
+                section: '<%= user.section || "" %>',
+                className: '<%= user.className || "" %>',
+                courseName: '<%= user.courseName || "" %>',
+                semester: '<%= user.semester || "" %>',
+                admissionDate: '<%= user.admissionDate || "" %>',
+                guardianName: '<%= user.guardianName || "" %>',
+                guardianPhone: '<%= user.guardianPhone || "" %>',
+                address: '<%= user.address || "" %>',
+                profilePicture: '<%= user.profilePicture || "/static/images/profile/default/avatar.png" %>'
+            },
+            
+            // Stats
+            stats: {
+                totalClasses: <%= stats.totalClasses || 0 %>,
+                attendance: <%= stats.attendance || 0 %>,
+                pendingAssignments: <%= stats.pendingAssignments || 0 %>,
+                averageGrade: <%= stats.averageGrade || 0 %>
+            },
+            
+            // Methods
+            toggleSidebar() {
+                this.sidebarOpen = !this.sidebarOpen;
+                localStorage.setItem('student_sidebar_open', this.sidebarOpen);
+            },
+            
+            setTab(tab) {
+                this.activeTab = tab;
+            },
+            
+            openProfileModal() {
+                this.showProfileModal = true;
+            },
+            
+            closeProfileModal() {
+                this.showProfileModal = false;
+            },
+            
+            async saveProfile(formData) {
+                try {
+                    const response = await fetch('/api/profile', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData),
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        this.closeProfileModal();
+                        window.location.reload();
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to update profile'));
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            },
+            
+            // Initialize
+            init() {
+                // Check for hash navigation
+                const hash = window.location.hash.substring(1);
+                if (hash && ['dashboard', 'profile', 'syllabus', 'calendar', 'timetable', 'fees', 'leave', 'contact'].includes(hash)) {
+                    this.activeTab = hash;
+                }
+            }
+        }
+    }
+</script>

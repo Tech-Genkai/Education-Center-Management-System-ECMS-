@@ -1,0 +1,62 @@
+<!-- Teacher Classes Tab -->
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">My Classes</h2>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage your assigned classes and students</p>
+    </div>
+
+    <!-- Classes Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% if (classes && classes.length > 0) { %>
+            <% classes.forEach(function(classItem) { %>
+            <div class="glass-card rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 bg-<%= classItem.color %>-100 dark:bg-<%= classItem.color %>-900/30 rounded-lg">
+                        <svg class="w-6 h-6 text-<%= classItem.color %>-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs px-2 py-1 bg-<%= classItem.color %>-100 dark:bg-<%= classItem.color %>-900/30 text-<%= classItem.color %>-700 dark:text-<%= classItem.color %>-300 rounded-full"><%= classItem.section %></span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1"><%= classItem.name %></h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4"><%= classItem.subject %></p>
+                
+                <div class="flex items-center justify-between text-sm mb-4">
+                    <div class="flex items-center text-gray-500 dark:text-gray-400">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        <%= classItem.students %> students
+                    </div>
+                    <div class="flex items-center text-gray-500 dark:text-gray-400">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <%= classItem.time || '—' %>
+                    </div>
+                </div>
+
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-3 py-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 text-sm font-medium transition">
+                        View Students
+                    </button>
+                    <button class="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <% }); %>
+        <% } else { %>
+            <div class="col-span-full text-center py-12">
+                <svg class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Classes Assigned</h3>
+                <p class="text-gray-500 dark:text-gray-400">Classes will appear here once assigned by administrator.</p>
+            </div>
+        <% } %>
+    </div>
+</div>

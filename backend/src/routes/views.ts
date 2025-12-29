@@ -82,68 +82,66 @@ if (process.env.NODE_ENV === 'development') {
 // Student Dashboard
 router.get('/student/dashboard', requireAuth, requireRole('student'), async (req: Request, res: Response) => {
   try {
-    // Mock data - replace with actual database queries
-    // Prefer real student profile name when available, otherwise fall back to email username
+    // Fetch student profile data
+    const studentProfile = await Student.findOne({ userId: req.session.userId }).lean();
     let studentDisplayName = req.session.email?.split('@')[0] || 'Student';
     let studentEmail = req.session.email || '';
     let studentProfilePicture = '';
-    let studentDetails = {};
-    try {
-      const studentProfile = await Student.findOne({ userId: req.session.userId }).lean();
-      if (studentProfile) {
-        if (studentProfile.firstName || studentProfile.lastName) {
-          studentDisplayName = `${studentProfile.firstName || ''} ${studentProfile.lastName || ''}`.trim();
-        }
-        studentEmail = studentProfile.email || studentEmail;
-        studentProfilePicture = studentProfile.profilePicture || '';
-        studentDetails = {
-          studentId: studentProfile.studentId,
-          phone: studentProfile.phone,
-          dateOfBirth: studentProfile.dateOfBirth ? formatDateDDMMYYYY(studentProfile.dateOfBirth) : '',
-          gender: studentProfile.gender,
-          section: studentProfile.section,
-          admissionDate: studentProfile.admissionDate ? formatDateDDMMYYYY(studentProfile.admissionDate) : '',
-          status: studentProfile.status,
-        };
+    let studentDetails: Record<string, unknown> = {};
+    
+    if (studentProfile) {
+      if (studentProfile.firstName || studentProfile.lastName) {
+        studentDisplayName = `${studentProfile.firstName || ''} ${studentProfile.lastName || ''}`.trim();
       }
-    } catch (err) {
-      console.error('Error fetching student profile for display name:', err);
+      studentEmail = (studentProfile.email as string) || studentEmail;
+      studentProfilePicture = (studentProfile.profilePicture as string) || '';
+      studentDetails = {
+        studentId: studentProfile.studentId,
+        phone: studentProfile.phone,
+        dateOfBirth: studentProfile.dateOfBirth ? formatDateDDMMYYYY(studentProfile.dateOfBirth as Date) : '',
+        gender: studentProfile.gender,
+        section: studentProfile.section,
+        admissionDate: studentProfile.admissionDate ? formatDateDDMMYYYY(studentProfile.admissionDate as Date) : '',
+        status: studentProfile.status,
+      };
     }
 
     const dashboardData = {
       user: {
         _id: req.session.userId,
         name: studentDisplayName,
+        firstName: (studentProfile?.firstName as string) || '',
+        lastName: (studentProfile?.lastName as string) || '',
         email: studentEmail,
-        profilePicture: studentProfilePicture,
+        profilePicture: studentProfilePicture || '/static/images/profile/default/avatar.png',
         ...studentDetails,
+        rollNumber: (studentProfile?.rollNumber as string) || '',
+        bloodGroup: (studentProfile?.bloodGroup as string) || '',
+        guardianName: (studentProfile?.guardianName as string) || '',
+        guardianPhone: (studentProfile?.guardianPhone as string) || '',
+        courseName: '',  // TODO: Populate from Course model
+        semester: '',    // TODO: Populate from Semester model
+        className: '',   // TODO: Populate from Class model
+        address: '',     // TODO: Populate from Address model
       },
       stats: {
-        totalClasses: 6,
-        attendance: 92,
-        pendingAssignments: 4,
-        averageGrade: 85
+        totalClasses: 0,
+        attendance: 0,
+        pendingAssignments: 0,
+        averageGrade: 0
       },
-      assignments: [
-        { title: 'Mathematics Quiz', subject: 'Mathematics', dueDate: 'Dec 25, 2024', priority: 'High', priorityColor: 'red' },
-        { title: 'Science Lab Report', subject: 'Science', dueDate: 'Dec 28, 2024', priority: 'Medium', priorityColor: 'yellow' },
-        { title: 'English Essay', subject: 'English', dueDate: 'Jan 2, 2025', priority: 'Low', priorityColor: 'green' }
-      ],
-      grades: [
-        { subject: 'Mathematics', assessment: 'Mid-term Exam', grade: 88, status: 'Graded', gradeColor: 'green', statusColor: 'green' },
-        { subject: 'Science', assessment: 'Lab Report', grade: 92, status: 'Graded', gradeColor: 'green', statusColor: 'green' },
-        { subject: 'English', assessment: 'Essay', grade: 78, status: 'Graded', gradeColor: 'yellow', statusColor: 'green' }
-      ],
-      schedule: [
-        { subject: 'Mathematics', time: '9:00 AM - 10:00 AM', room: 'Room 101', color: 'blue' },
-        { subject: 'Science', time: '10:15 AM - 11:15 AM', room: 'Lab 2', color: 'green' },
-        { subject: 'English', time: '11:30 AM - 12:30 PM', room: 'Room 205', color: 'purple' },
-        { subject: 'History', time: '1:30 PM - 2:30 PM', room: 'Room 303', color: 'yellow' }
-      ],
-      announcements: [
-        { title: 'Exam Schedule Released', date: 'Dec 20, 2024', color: 'blue' },
-        { title: 'Holiday Notice', date: 'Dec 22, 2024', color: 'green' }
-      ]
+      schedule: [],
+      announcements: [],
+      subjects: [],
+      events: [],
+      timetable: [],
+      fees: { total: '0', paid: '0', pending: '0' },
+      feeStructure: [],
+      paymentHistory: [],
+      leaveBalance: { total: 0, used: 0, available: 0, pending: 0 },
+      leaveHistory: [],
+      mentor: null,
+      messages: []
     };
 
     res.render('student/dashboard', { title: 'Student Dashboard', ...dashboardData });
@@ -156,49 +154,53 @@ router.get('/student/dashboard', requireAuth, requireRole('student'), async (req
 // Teacher Dashboard
 router.get('/teacher/dashboard', requireAuth, requireRole('teacher'), async (req: Request, res: Response) => {
   try {
-    // Mock data - replace with actual database queries
-    // Prefer real teacher profile name when available, otherwise fall back to email username
+    // Fetch teacher profile data
+    const teacherProfile = await Teacher.findOne({ userId: req.session.userId }).lean();
     let teacherDisplayName = req.session.email?.split('@')[0] || 'Teacher';
-    try {
-      const teacherProfile = await Teacher.findOne({ userId: req.session.userId }).lean();
-      if (teacherProfile && (teacherProfile.firstName || teacherProfile.lastName)) {
+    let teacherEmail = req.session.email || '';
+    let teacherProfilePicture = '';
+    
+    if (teacherProfile) {
+      if (teacherProfile.firstName || teacherProfile.lastName) {
         teacherDisplayName = `${teacherProfile.firstName || ''} ${teacherProfile.lastName || ''}`.trim();
       }
-    } catch (err) {
-      console.error('Error fetching teacher profile for display name:', err);
+      teacherProfilePicture = teacherProfile.profilePicture || '';
     }
 
     const dashboardData = {
       user: {
+        _id: req.session.userId,
         name: teacherDisplayName,
+        firstName: teacherProfile?.firstName || '',
+        lastName: teacherProfile?.lastName || '',
+        email: teacherEmail,
+        phone: teacherProfile?.phone || '',
+        teacherId: teacherProfile?.teacherId || '',
+        dateOfBirth: teacherProfile?.dateOfBirth ? formatDateDDMMYYYY(teacherProfile.dateOfBirth) : '',
+        gender: teacherProfile?.gender || '',
+        qualification: teacherProfile?.qualification || '',
+        experience: teacherProfile?.experience || '',
+        department: '',  // TODO: Populate from Department model
+        designation: '', // TODO: Populate from designation
+        joiningDate: '', // TODO: Populate
+        address: '',     // TODO: Populate from Address model
+        profilePicture: teacherProfilePicture || '/static/images/profile/default/avatar.png'
       },
       stats: {
-        totalStudents: 156,
-        activeClasses: 4,
-        pendingSubmissions: 23,
-        avgAttendance: 87
+        totalStudents: 0,
+        activeClasses: 0,
+        pendingSubmissions: 0,
+        avgAttendance: 0
       },
-      classes: [
-        { name: 'Grade 10 - A', section: 'Section A', subject: 'Mathematics', students: 42, color: 'blue' },
-        { name: 'Grade 10 - B', section: 'Section B', subject: 'Mathematics', students: 38, color: 'green' },
-        { name: 'Grade 9 - A', section: 'Section A', subject: 'Algebra', students: 40, color: 'purple' },
-        { name: 'Grade 11 - C', section: 'Section C', subject: 'Calculus', students: 36, color: 'yellow' }
-      ],
-      submissions: [
-        { title: 'Chapter 5 Assignment', class: 'Grade 10-A', submitted: 38, total: 42, dueDate: 'Dec 24, 2024' },
-        { title: 'Mid-term Project', class: 'Grade 10-B', submitted: 30, total: 38, dueDate: 'Dec 26, 2024' },
-        { title: 'Practice Problems', class: 'Grade 9-A', submitted: 35, total: 40, dueDate: 'Dec 28, 2024' }
-      ],
-      schedule: [
-        { subject: 'Mathematics', time: '9:00 AM - 10:00 AM', class: 'Grade 10-A', room: 'Room 101', color: 'blue' },
-        { subject: 'Mathematics', time: '10:15 AM - 11:15 AM', class: 'Grade 10-B', room: 'Room 101', color: 'green' },
-        { subject: 'Algebra', time: '11:30 AM - 12:30 PM', class: 'Grade 9-A', room: 'Room 105', color: 'purple' }
-      ],
-      topPerformers: [
-        { name: 'John Smith', class: 'Grade 10-A', grade: 95, color: 'yellow' },
-        { name: 'Sarah Johnson', class: 'Grade 10-B', grade: 93, color: 'gray' },
-        { name: 'Mike Brown', class: 'Grade 9-A', grade: 91, color: 'orange' }
-      ]
+      classes: [],
+      subjects: [],
+      assignments: [],
+      submissions: [],
+      recentlyGraded: [],
+      schedule: [],
+      topPerformers: [],
+      attendanceHistory: [],
+      timetable: []
     };
 
     res.render('teacher/dashboard', { title: 'Teacher Dashboard', ...dashboardData });

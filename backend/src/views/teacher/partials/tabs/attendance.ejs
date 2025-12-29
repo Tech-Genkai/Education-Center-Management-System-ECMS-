@@ -1,0 +1,209 @@
+<!-- Teacher Attendance Tab -->
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Mark Attendance</h2>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Take attendance for your classes</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Selection -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Class</label>
+                <select id="attendanceClass" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
+                    <option value="">Choose a class</option>
+                    <% if (classes && classes.length > 0) { %>
+                        <% classes.forEach(function(classItem) { %>
+                        <option value="<%= classItem._id %>"><%= classItem.name %> - <%= classItem.section %></option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date</label>
+                <input type="date" id="attendanceDate" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Period</label>
+                <select id="attendancePeriod" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
+                    <option value="">Select period</option>
+                    <option value="1">Period 1 (9:00 - 10:00)</option>
+                    <option value="2">Period 2 (10:00 - 11:00)</option>
+                    <option value="3">Period 3 (11:00 - 12:00)</option>
+                    <option value="4">Period 4 (12:00 - 1:00)</option>
+                    <option value="5">Period 5 (2:00 - 3:00)</option>
+                    <option value="6">Period 6 (3:00 - 4:00)</option>
+                </select>
+            </div>
+        </div>
+
+        <button onclick="loadStudentsForAttendance()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+            Load Students
+        </button>
+    </div>
+
+    <!-- Student List for Attendance -->
+    <div id="attendanceList" class="glass-card rounded-xl shadow-md p-6 hidden">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Student Attendance</h3>
+            <div class="flex space-x-2">
+                <button onclick="markAllPresent()" class="px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 text-sm font-medium transition">
+                    Mark All Present
+                </button>
+                <button onclick="markAllAbsent()" class="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 text-sm font-medium transition">
+                    Mark All Absent
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Roll No</th>
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Name</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Status</th>
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="studentListBody" class="divide-y divide-gray-100 dark:divide-gray-700">
+                    <!-- Students will be loaded here dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex justify-end mt-6">
+            <button onclick="submitAttendance()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+                Submit Attendance
+            </button>
+        </div>
+    </div>
+
+    <!-- Attendance History -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Attendance Records</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Date</th>
+                        <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Class</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Present</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">Absent</th>
+                        <th class="text-center py-3 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">%</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    <% if (attendanceHistory && attendanceHistory.length > 0) { %>
+                        <% attendanceHistory.forEach(function(record) { %>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white"><%= record.date %></td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-300"><%= record.class %></td>
+                            <td class="py-3 px-4 text-center text-sm text-green-600 dark:text-green-400"><%= record.present %></td>
+                            <td class="py-3 px-4 text-center text-sm text-red-600 dark:text-red-400"><%= record.absent %></td>
+                            <td class="py-3 px-4 text-center text-sm font-medium text-gray-900 dark:text-white"><%= record.percentage %>%</td>
+                        </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400">No attendance records yet</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadStudentsForAttendance() {
+        const classId = document.getElementById('attendanceClass').value;
+        const date = document.getElementById('attendanceDate').value;
+        
+        if (!classId || !date) {
+            alert('Please select a class and date');
+            return;
+        }
+        
+        // Show the attendance list (in a real app, this would fetch students from API)
+        document.getElementById('attendanceList').classList.remove('hidden');
+        
+        // Mock student data - replace with API call
+        const students = [
+            { rollNo: '001', name: 'John Smith' },
+            { rollNo: '002', name: 'Jane Doe' },
+            { rollNo: '003', name: 'Mike Johnson' },
+            { rollNo: '004', name: 'Sarah Wilson' },
+            { rollNo: '005', name: 'David Brown' }
+        ];
+        
+        const tbody = document.getElementById('studentListBody');
+        tbody.innerHTML = students.map(student => `
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.rollNo}</td>
+                <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">${student.name}</td>
+                <td class="py-3 px-4 text-center">
+                    <div class="flex justify-center space-x-2">
+                        <button onclick="toggleAttendance(this, 'present')" class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-sm attendance-btn" data-status="present">Present</button>
+                        <button onclick="toggleAttendance(this, 'absent')" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm attendance-btn" data-status="">Absent</button>
+                    </div>
+                </td>
+                <td class="py-3 px-4">
+                    <input type="text" placeholder="Remarks" class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white">
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function toggleAttendance(btn, status) {
+        const row = btn.closest('tr');
+        const buttons = row.querySelectorAll('.attendance-btn');
+        buttons.forEach(b => {
+            b.classList.remove('bg-green-500', 'bg-red-500', 'text-white');
+            b.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+            b.dataset.status = '';
+        });
+        
+        if (status === 'present') {
+            btn.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+            btn.classList.add('bg-green-500', 'text-white');
+        } else {
+            btn.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+            btn.classList.add('bg-red-500', 'text-white');
+        }
+        btn.dataset.status = status;
+    }
+    
+    function markAllPresent() {
+        document.querySelectorAll('.attendance-btn[data-status="present"], .attendance-btn:first-child').forEach(btn => {
+            if (btn.textContent.trim() === 'Present') {
+                toggleAttendance(btn, 'present');
+            }
+        });
+    }
+    
+    function markAllAbsent() {
+        document.querySelectorAll('.attendance-btn').forEach(btn => {
+            if (btn.textContent.trim() === 'Absent') {
+                toggleAttendance(btn, 'absent');
+            }
+        });
+    }
+    
+    function submitAttendance() {
+        alert('Attendance submitted successfully!');
+    }
+    
+    // Set today's date as default
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('attendanceDate');
+        if (dateInput) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+    });
+</script>

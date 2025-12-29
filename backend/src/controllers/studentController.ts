@@ -225,7 +225,7 @@ export const updateStudent = async (req: Request, res: Response) => {
     if (data.instituteEmail) student.instituteEmail = data.instituteEmail.toLowerCase();
     await student.save();
 
-    // Update user if email or phone changed
+    // Update user if email, phone, or password changed
     const user = await User.findById(student.userId);
     if (user) {
       let userUpdated = false;
@@ -246,6 +246,14 @@ export const updateStudent = async (req: Request, res: Response) => {
       if (data.phone && user.phone !== data.phone) {
         user.phone = data.phone;
         userUpdated = true;
+      }
+      
+      // Update password if provided - hash it before saving
+      if (data.password && data.password.trim()) {
+        const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
+        user.password = hashedPassword;
+        userUpdated = true;
+        console.log('🔐 Password updated for student:', student.studentId);
       }
       
       // Only save if something changed

@@ -1,0 +1,41 @@
+<!-- Teacher Dashboard Header -->
+<header class="glass-header shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
+    <div class="px-6 py-4 flex justify-between items-center">
+        <!-- Page Title -->
+        <div>
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white capitalize" x-text="activeTab === 'dashboard' ? 'Dashboard' : activeTab"></h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Teacher Portal</p>
+        </div>
+
+        <!-- Right Section -->
+        <div class="flex items-center space-x-4">
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <svg id="theme-icon" class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <!-- Icon updated by dark-mode.js -->
+                </svg>
+            </button>
+
+            <!-- Notifications -->
+            <button class="relative p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                <!-- Notification Badge -->
+                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+
+            <!-- User Menu -->
+            <div class="flex items-center space-x-3">
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                    Welcome, <strong x-text="user.name"></strong>
+                </span>
+                <form method="POST" action="/logout" class="inline">
+                    <button type="submit" class="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition">
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>

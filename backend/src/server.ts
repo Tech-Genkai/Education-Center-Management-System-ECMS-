@@ -20,6 +20,7 @@ import subjectsRouter from './routes/subjects.ts';
 import academicYearsRouter from './routes/academicYears.ts';
 import coursesRouter from './routes/courses.ts';
 import semestersRouter from './routes/semesters.ts';
+import documentsRouter from './routes/documents.ts';
 import { startProfileUploadCleanupJob } from './jobs/cron/cleanupProfileUploads.ts';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi.ts';
@@ -177,6 +178,7 @@ app.use('/api/subjects', subjectsRouter);
 app.use('/api/academic-years', academicYearsRouter);
 app.use('/api/courses', coursesRouter);
 app.use('/api/semesters', semestersRouter);
+app.use('/api/documents', documentsRouter);
 
 app.get('/healthz', async (_req, res) => {
   const dbStatus = getDatabaseStatus();

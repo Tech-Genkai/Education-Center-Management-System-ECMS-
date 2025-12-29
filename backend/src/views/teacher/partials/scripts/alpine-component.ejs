@@ -1,0 +1,86 @@
+<script>
+    function teacherDashboard() {
+        return {
+            // State
+            sidebarOpen: localStorage.getItem('teacher_sidebar_open') !== 'false',
+            activeTab: 'dashboard',
+            showProfileModal: false,
+            
+            // User data from server
+            user: {
+                _id: '<%= user._id %>',
+                name: '<%= user.name %>',
+                firstName: '<%= user.firstName || "" %>',
+                lastName: '<%= user.lastName || "" %>',
+                email: '<%= user.email %>',
+                phone: '<%= user.phone || "" %>',
+                teacherId: '<%= user.teacherId || "" %>',
+                dateOfBirth: '<%= user.dateOfBirth || "" %>',
+                gender: '<%= user.gender || "" %>',
+                qualification: '<%= user.qualification || "" %>',
+                experience: '<%= user.experience || "" %>',
+                department: '<%= user.department || "" %>',
+                designation: '<%= user.designation || "" %>',
+                joiningDate: '<%= user.joiningDate || "" %>',
+                address: '<%= user.address || "" %>',
+                profilePicture: '<%= user.profilePicture || "/static/images/profile/default/avatar.png" %>'
+            },
+            
+            // Stats
+            stats: {
+                totalStudents: <%= stats.totalStudents || 0 %>,
+                activeClasses: <%= stats.activeClasses || 0 %>,
+                pendingSubmissions: <%= stats.pendingSubmissions || 0 %>,
+                avgAttendance: <%= stats.avgAttendance || 0 %>
+            },
+            
+            // Methods
+            toggleSidebar() {
+                this.sidebarOpen = !this.sidebarOpen;
+                localStorage.setItem('teacher_sidebar_open', this.sidebarOpen);
+            },
+            
+            setTab(tab) {
+                this.activeTab = tab;
+            },
+            
+            openProfileModal() {
+                this.showProfileModal = true;
+            },
+            
+            closeProfileModal() {
+                this.showProfileModal = false;
+            },
+            
+            async saveProfile(formData) {
+                try {
+                    const response = await fetch('/api/profile', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData),
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        this.closeProfileModal();
+                        window.location.reload();
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.message || 'Failed to update profile'));
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            },
+            
+            // Initialize
+            init() {
+                // Check for hash navigation
+                const hash = window.location.hash.substring(1);
+                if (hash && ['dashboard', 'profile', 'classes', 'attendance', 'assignments', 'submissions', 'schedule'].includes(hash)) {
+                    this.activeTab = hash;
+                }
+            }
+        }
+    }
+</script>
