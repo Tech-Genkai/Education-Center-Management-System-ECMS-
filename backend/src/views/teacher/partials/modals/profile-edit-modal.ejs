@@ -104,7 +104,7 @@
                     <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                     Social & Academic Links
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">LinkedIn URL</label>
                         <input type="url" name="linkedinUrl" :value="user.linkedinUrl" placeholder="https://linkedin.com/in/username"
@@ -116,13 +116,38 @@
                                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
                     </div>
                     <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Twitter / X URL</label>
+                        <input type="url" name="twitterUrl" :value="user.twitterUrl" placeholder="https://twitter.com/username"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
+                    </div>
+                    <div>
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Google Scholar URL</label>
                         <input type="url" name="scholarUrl" :value="user.scholarUrl" placeholder="https://scholar.google.com/citations?user=..."
                                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Portfolio URL</label>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">ResearchGate URL</label>
+                        <input type="url" name="researchGateUrl" :value="user.researchGateUrl" placeholder="https://researchgate.net/profile/..."
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">ORCID URL</label>
+                        <input type="url" name="orcidUrl" :value="user.orcidUrl" placeholder="https://orcid.org/0000-0000-0000-0000"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">YouTube Channel</label>
+                        <input type="url" name="youtubeUrl" :value="user.youtubeUrl" placeholder="https://youtube.com/@channel"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Portfolio / Website</label>
                         <input type="url" name="portfolioUrl" :value="user.portfolioUrl" placeholder="https://yourportfolio.com"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Instagram URL</label>
+                        <input type="url" name="instagramUrl" :value="user.instagramUrl" placeholder="https://instagram.com/username"
                                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white">
                     </div>
                 </div>

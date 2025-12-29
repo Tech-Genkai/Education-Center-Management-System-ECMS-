@@ -327,15 +327,15 @@
         }
     };
 
-    // Profile Picture Upload Functions
+    // Profile Picture Upload Functions with Cropper.js
     window.selectedFile = null;
     window.originalImageSrc = null;
+    window.cropper = null;
     
     window.handleProfilePictureChange = function(event) {
         const file = event.target.files[0];
         if (!file) return;
         
-        // Validate file type
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!allowedTypes.includes(file.type)) {
             alert('Please select a valid image file (JPG, PNG, or WEBP)');
@@ -343,81 +343,137 @@
             return;
         }
         
-        // Validate file size (2MB max)
-        const maxSize = 2 * 1024 * 1024; // 2MB
+        const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
-            alert('File size must be less than 2MB');
+            alert('File size must be less than 5MB');
             event.target.value = '';
             return;
         }
         
-        window.selectedFile = file;
+        if (!window.originalImageSrc) {
+            window.originalImageSrc = document.getElementById('profilePicturePreview').src;
+        }
+        
         const reader = new FileReader();
         reader.onload = function(e) {
-            document.getElementById('profilePicturePreview').src = e.target.result;
-            document.getElementById('uploadControls').classList.remove('hidden');
+            showCropperModal(e.target.result);
         };
         reader.readAsDataURL(file);
     };
 
+    window.showCropperModal = function(imageSrc) {
+        let modal = document.getElementById('cropperModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'cropperModal';
+            modal.innerHTML = `
+                <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Crop Profile Photo</h3>
+                            <button onclick="closeCropperModal()" class="p-2 text-gray-400 hover:text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="relative w-full" style="max-height: 400px; overflow: hidden;">
+                                <img id="cropperImage" src="" style="max-width: 100%; display: block;">
+                            </div>
+                            <div class="flex items-center justify-center gap-4 mt-4">
+                                <button onclick="rotateCropperLeft()" class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200" title="Rotate Left">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                                </button>
+                                <button onclick="rotateCropperRight()" class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200" title="Rotate Right">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"/></svg>
+                                </button>
+                                <button onclick="resetCropper()" class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200" title="Reset">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+                            <button onclick="closeCropperModal()" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+                            <button onclick="applyCrop()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Apply & Upload</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        const cropperImage = document.getElementById('cropperImage');
+        cropperImage.src = imageSrc;
+        
+        if (window.cropper) window.cropper.destroy();
+        
+        window.cropper = new Cropper(cropperImage, {
+            aspectRatio: 1,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.8,
+            guides: true,
+            center: true,
+            cropBoxMovable: true,
+            cropBoxResizable: true
+        });
+        
+        modal.style.display = 'block';
+    };
+    
+    window.closeCropperModal = function() {
+        const modal = document.getElementById('cropperModal');
+        if (modal) modal.style.display = 'none';
+        if (window.cropper) { window.cropper.destroy(); window.cropper = null; }
+        document.getElementById('profilePictureInput').value = '';
+    };
+    
+    window.rotateCropperLeft = function() { if (window.cropper) window.cropper.rotate(-90); };
+    window.rotateCropperRight = function() { if (window.cropper) window.cropper.rotate(90); };
+    window.resetCropper = function() { if (window.cropper) window.cropper.reset(); };
+    
+    window.applyCrop = async function() {
+        if (!window.cropper) return;
+        
+        const canvas = window.cropper.getCroppedCanvas({ width: 400, height: 400, imageSmoothingQuality: 'high' });
+        if (!canvas) { alert('Failed to crop image'); return; }
+        
+        canvas.toBlob(async (blob) => {
+            if (!blob) { alert('Failed to process image'); return; }
+            
+            const formData = new FormData();
+            formData.append('image', blob, 'profile.jpg');
+            formData.append('userId', '<%= user._id %>');
+            
+            const applyBtn = document.querySelector('#cropperModal button:last-child');
+            if (applyBtn) { applyBtn.disabled = true; applyBtn.textContent = 'Uploading...'; }
+            
+            try {
+                const response = await fetch('/api/profile/avatar', { method: 'POST', body: formData, credentials: 'include' });
+                if (response.ok) {
+                    alert('Profile picture updated!');
+                    closeCropperModal();
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'Failed to upload'));
+                }
+            } catch (error) {
+                alert('Failed to upload. Please try again.');
+            } finally {
+                if (applyBtn) { applyBtn.disabled = false; applyBtn.textContent = 'Apply & Upload'; }
+            }
+        }, 'image/jpeg', 0.9);
+    };
+
     window.cancelProfilePictureUpload = function() {
         window.selectedFile = null;
-        if (window.originalImageSrc) {
-            document.getElementById('profilePicturePreview').src = window.originalImageSrc;
-        }
-        document.getElementById('uploadControls').classList.add('hidden');
+        if (window.originalImageSrc) document.getElementById('profilePicturePreview').src = window.originalImageSrc;
+        document.getElementById('uploadControls')?.classList.add('hidden');
         document.getElementById('profilePictureInput').value = '';
     };
 
     window.uploadProfilePicture = async function() {
-        if (!window.selectedFile) return;
-        
-        const uploadBtn = document.getElementById('uploadBtn');
-        const uploadSpinner = document.getElementById('uploadSpinner');
-        const uploadControls = document.getElementById('uploadControls');
-        
-        const userId = '<%= user._id %>';
-        const formData = new FormData();
-        formData.append('image', window.selectedFile);
-        formData.append('userId', userId);
-        
-        try {
-            uploadBtn.disabled = true;
-            uploadBtn.innerHTML = '<span class="flex items-center justify-center"><svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Uploading...</span>';
-            uploadSpinner.classList.remove('hidden');
-            
-            const response = await fetch('/api/profile/avatar', {
-                method: 'POST',
-                body: formData,
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                alert('Profile picture updated successfully!');
-                
-                // Reload page to get updated session data with new profile picture
-                window.location.reload();
-            } else {
-                const error = await response.json();
-                alert('Error: ' + (error.message || 'Failed to upload picture'));
-                
-                if (window.originalImageSrc) {
-                    document.getElementById('profilePicturePreview').src = window.originalImageSrc;
-                }
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to upload picture. Please try again.');
-            
-            if (window.originalImageSrc) {
-                document.getElementById('profilePicturePreview').src = window.originalImageSrc;
-            }
-        } finally {
-            uploadSpinner.classList.add('hidden');
-            uploadBtn.disabled = false;
-            uploadBtn.innerHTML = '<span class="flex items-center justify-center"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>Upload Photo</span>';
-        }
+        document.getElementById('profilePictureInput').click();
     };
 
     // Initialize originalImageSrc when page loads
