@@ -73,6 +73,60 @@
         }
     }
 
+    // Populate Class Select Dropdown
+    window.populateClassSelect = async function() {
+        try {
+            const select = document.querySelector('select[name="classId"]');
+            if (!select) return;
+
+            // Only fetch if empty (or just has the placeholder)
+            if (select.options.length > 1) return;
+
+            const response = await fetch('/api/classes', { credentials: 'include' });
+            const data = await response.json();
+
+            if (data.classes) {
+                // Clear existing except first
+                select.innerHTML = '<option value="">Select Class</option>';
+                data.classes.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls._id;
+                    option.textContent = `${cls.className} (${cls.classCode})`;
+                    select.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error populating classes:', error);
+        }
+    };
+
+    // Populate Course Select Dropdown
+    window.populateCourseSelect = async function() {
+        try {
+            const select = document.querySelector('select[name="courseId"]');
+            if (!select) return;
+
+            // Only fetch if empty (or just has the placeholder)
+            if (select.options.length > 1) return;
+
+            const response = await fetch('/api/courses', { credentials: 'include' });
+            const data = await response.json();
+
+            if (data.courses) {
+                // Clear existing except first
+                select.innerHTML = '<option value="">Select Course</option>';
+                data.courses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course._id;
+                    option.textContent = `${course.courseName} (${course.courseCode})`;
+                    select.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error populating courses:', error);
+        }
+    };
+
     // Submit Teacher Form
     async function submitTeacherForm(event) {
         event.preventDefault();
@@ -254,6 +308,24 @@
                     form.querySelector('[name="rollNumber"]').value = s.rollNumber || '';
                     form.querySelector('[name="dateOfBirth"]').value = formatISOToDDMMYYYY(s.dateOfBirth);
                     form.querySelector('[name="instituteEmail"]').value = s.userId?.instituteEmail || s.instituteEmail || '';
+                    
+                    // Populate and set course/class/section
+                    await Promise.all([
+                        window.populateCourseSelect(),
+                        window.populateClassSelect()
+                    ]);
+                    
+                    const courseSelect = form.querySelector('[name="courseId"]');
+                    if (courseSelect) courseSelect.value = s.courseId?._id || s.courseId || '';
+
+                    const semesterSelect = form.querySelector('[name="semester"]');
+                    if (semesterSelect) semesterSelect.value = s.semester || '';
+
+                    const classSelect = form.querySelector('[name="classId"]');
+                    if (classSelect) classSelect.value = s.classId?._id || s.classId || '';
+                    
+                    form.querySelector('[name="section"]').value = s.section || '';
+                    
                     document.getElementById('studentId_db').value = s._id;
                 }
                 // Access Alpine.js data - try body element first

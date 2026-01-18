@@ -3,6 +3,8 @@ import { Schema, model, Types } from 'mongoose';
 const FeeSchema = new Schema(
   {
     studentId: { type: Types.ObjectId, ref: 'Student', required: true },
+    courseId: { type: Types.ObjectId, ref: 'Course' }, // Added
+    semester: { type: String }, // Added
     academicYear: String,
     feeType: { type: String, enum: ['tuition', 'transport', 'hostel', 'exam', 'other'], required: true },
     amountDue: { type: Number, required: true },

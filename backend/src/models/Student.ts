@@ -28,6 +28,8 @@ const StudentSchema = new Schema(
       lowercase: true,
       match: EMAIL_REGEX,
     },
+    courseId: { type: Types.ObjectId, ref: "Course" },
+    semester: { type: String, trim: true }, // Added semester
     classId: { type: Types.ObjectId, ref: "Class" },
     section: { type: String, trim: true, maxlength: 20 },
     admissionDate: Date,

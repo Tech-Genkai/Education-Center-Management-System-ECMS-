@@ -1,0 +1,190 @@
+<!-- Marks Management Tab -->
+<div class="max-w-7xl mx-auto">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-3d">Marks & Grades</h2>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="glass-card rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 text-3d">Average Grade</p>
+                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-2 text-3d">B+</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 text-3d">Pass Rate</p>
+                    <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-2 text-3d">92%</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 text-3d">Total Students</p>
+                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-2 text-3d" id="marks-student-count">0</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Enter Marks Section -->
+    <div class="glass-card rounded-xl shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            </svg>
+            <span class="text-3d">Enter Marks</span>
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <!-- Course Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Course</label>
+                <select id="marksCourseSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                        onchange="onMarksCourseChange(this.value)">
+                    <option value="">Select Course</option>
+                </select>
+            </div>
+            
+            <!-- Semester Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Semester</label>
+                <select id="marksSemesterSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                        onchange="onMarksSemesterChange(this.value)">
+                    <option value="">Select Semester</option>
+                    <option value="1">1st Semester</option>
+                    <option value="2">2nd Semester</option>
+                    <option value="3">3rd Semester</option>
+                    <option value="4">4th Semester</option>
+                    <option value="5">5th Semester</option>
+                    <option value="6">6th Semester</option>
+                    <option value="7">7th Semester</option>
+                    <option value="8">8th Semester</option>
+                </select>
+            </div>
+
+            <!-- Subject Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
+                <select id="marksSubjectSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white">
+                    <option value="">Select Subject</option>
+                </select>
+            </div>
+            
+             <!-- Exam Type -->
+             <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Exam Type</label>
+                <select id="marksExamTypeSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white">
+                    <option value="">Select Type</option>
+                    <option value="midterm">Midterm</option>
+                    <option value="final">Final</option>
+                    <option value="assignment">Assignment</option>
+                    <option value="quiz">Quiz</option>
+                </select>
+            </div>
+
+            <!-- Load Button -->
+            <div class="flex items-end">
+                <button onclick="loadMarksEntryStudents()" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                    Load Students
+                </button>
+            </div>
+        </div>
+
+        <!-- Optional Class Filter -->
+        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Max Marks</label>
+                    <input type="number" id="marksMaxMarks" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white" value="100">
+                </div>
+                 <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Filter by Class (Optional)</label>
+                    <select id="marksClassSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white">
+                        <option value="">All Classes</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="marks-entry-list" class="mt-4 hidden">
+            <div id="students-marks-table" class="overflow-x-auto"></div>
+            <button onclick="submitBulkMarks()" class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                Submit Marks
+            </button>
+        </div>
+    </div>
+
+    <!-- Marks Records Table -->
+    <div class="glass-card rounded-xl shadow-md p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-3d">Marks Records</h3>
+            <div class="flex gap-2">
+                <select id="marks-filter-exam" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white text-sm">
+                    <option value="">All Exams</option>
+                    <option value="midterm">Midterm</option>
+                    <option value="final">Final</option>
+                </select>
+                <button onclick="filterMarks()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm">Filter</button>
+                <button onclick="generateReportCard()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm">Generate Report</button>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Student</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subject</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Exam</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Marks</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Percentage</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Grade</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="marks-table-body" class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                            No marks records found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                Showing <span id="marks-start">0</span> to <span id="marks-end">0</span> of <span id="marks-total">0</span> records
+            </p>
+            <div class="flex gap-2">
+                <button onclick="previousMarksPage()" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">Previous</button>
+                <button onclick="nextMarksPage()" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">Next</button>
+            </div>
+        </div>
+    </div>
+</div>

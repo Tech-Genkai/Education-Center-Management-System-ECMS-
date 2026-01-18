@@ -19,7 +19,9 @@ const createStudentSchema = z.object({
   studentId: z.string().min(1).max(50),
   dateOfBirth: z.string().optional(),
   gender: z.enum(['male', 'female', 'other', 'unspecified']).optional(),
-  currentClass: z.string().optional(),
+  courseId: z.string().optional(),
+  semester: z.string().optional(),
+  classId: z.string().optional(),
   section: z.string().optional(),
   rollNumber: z.string().min(1),
   guardianName: z.string().optional(),
@@ -43,12 +45,16 @@ export const getStudents = async (req: Request, res: Response) => {
 
     const status = req.query.status as string;
     const search = req.query.search as string;
-    const currentClass = req.query.class as string;
+    const classId = req.query.classId as string;
+    const courseId = req.query.courseId as string;
+    const semester = req.query.semester as string;
 
     // Build query
     const query: any = {};
     if (status) query.status = status;
-    if (currentClass) query.currentClass = currentClass;
+    if (classId) query.classId = classId;
+    if (courseId) query.courseId = courseId;
+    if (semester) query.semester = semester;
     if (search) {
       query.$or = [
         { firstName: { $regex: search, $options: 'i' } },
@@ -61,6 +67,8 @@ export const getStudents = async (req: Request, res: Response) => {
 
     const students = await Student.find(query)
       .populate('userId', 'email phone instituteEmail')
+      .populate('courseId', 'courseName courseCode')
+      .populate('classId', 'className section')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -160,7 +168,9 @@ export const createStudent = async (req: Request, res: Response) => {
       phone: data.phone,
       dateOfBirth: data.dateOfBirth,
       gender: data.gender || 'unspecified',
-      currentClass: data.currentClass,
+      courseId: data.courseId,
+      semester: data.semester,
+      classId: data.classId,
       section: data.section,
       rollNumber: data.rollNumber,
       guardianName: data.guardianName,

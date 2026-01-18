@@ -2,20 +2,20 @@
 <div class="space-y-6">
     <!-- Page Header -->
     <div class="glass-card rounded-xl shadow-md p-6">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Contact Mentor</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white text-3d">Contact Mentor</h2>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Get in touch with your academic mentor</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Mentor Info -->
         <div class="glass-card rounded-xl shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Mentor</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-3d">Your Mentor</h3>
             <% if (mentor) { %>
             <div class="flex flex-col items-center text-center">
                 <img src="<%= mentor.profilePicture || '/static/images/profile/default/avatar.png' %>" 
                      alt="Mentor" 
                      class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600 mb-4">
-                <h4 class="text-lg font-semibold text-gray-900 dark:text-white"><%= mentor.name %></h4>
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white text-3d"><%= mentor.name %></h4>
                 <p class="text-sm text-gray-500 dark:text-gray-400"><%= mentor.designation || 'Faculty' %></p>
                 <p class="text-sm text-blue-600 dark:text-blue-400 mt-2"><%= mentor.email %></p>
                 <% if (mentor.phone) { %>
@@ -40,7 +40,7 @@
 
         <!-- Message Form -->
         <div class="lg:col-span-2 glass-card rounded-xl shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Send a Message</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-3d">Send a Message</h3>
             <form id="contactForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject</label>
@@ -77,7 +77,7 @@
 
     <!-- Previous Messages -->
     <div class="glass-card rounded-xl shadow-md p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Previous Messages</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-3d">Previous Messages</h3>
         <div class="space-y-4">
             <% if (messages && messages.length > 0) { %>
                 <% messages.forEach(function(msg) { %>

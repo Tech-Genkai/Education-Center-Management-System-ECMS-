@@ -25,4 +25,5 @@ export * from './GrievanceComment';
 export * from './AcademicYear';
 export * from './Course';
 export * from './Semester';
+export * from './ActivityLog';
 

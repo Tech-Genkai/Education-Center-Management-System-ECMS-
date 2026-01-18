@@ -1,7 +1,28 @@
 <!-- Settings Tab Content -->
 <div class="max-w-4xl mx-auto">
-    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">System Settings</h2>
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-3d">System Settings</h2>
     <div class="glass-card rounded-xl shadow-md p-6">
         <p class="text-gray-600 dark:text-gray-400">Settings functionality coming soon...</p>
+    </div>
+
+    <!-- Account Section -->
+    <div class="glass-card rounded-xl shadow-md p-6 mt-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-3d">Account</h3>
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-900 dark:text-white font-medium">Sign Out</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">End your current session and sign out of the system.</p>
+                </div>
+                <form method="POST" action="/logout">
+                    <button type="submit" class="flex items-center space-x-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        <span class="font-medium">Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>

@@ -4,7 +4,7 @@
     <div class="glass-card rounded-xl shadow-md p-6">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Leave Management</h2>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white text-3d">Leave Management</h2>
                 <p class="text-gray-500 dark:text-gray-400 mt-1">Apply for leave and track your requests</p>
             </div>
             <button onclick="document.getElementById('leaveModal').classList.remove('hidden')" 
@@ -17,26 +17,26 @@
     <!-- Leave Balance -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div class="glass-card rounded-xl shadow-md p-6">
-            <p class="text-sm text-gray-500 dark:text-gray-400">Total Allowed</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1"><%= leaveBalance.total || 12 %> days</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-3d">Total Allowed</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1 text-3d"><%= leaveBalance.total || 12 %> days</p>
         </div>
         <div class="glass-card rounded-xl shadow-md p-6">
-            <p class="text-sm text-gray-500 dark:text-gray-400">Used</p>
-            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1"><%= leaveBalance.used || 0 %> days</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-3d">Used</p>
+            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1 text-3d"><%= leaveBalance.used || 0 %> days</p>
         </div>
         <div class="glass-card rounded-xl shadow-md p-6">
-            <p class="text-sm text-gray-500 dark:text-gray-400">Available</p>
-            <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1"><%= leaveBalance.available || 12 %> days</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-3d">Available</p>
+            <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1 text-3d"><%= leaveBalance.available || 12 %> days</p>
         </div>
         <div class="glass-card rounded-xl shadow-md p-6">
-            <p class="text-sm text-gray-500 dark:text-gray-400">Pending Requests</p>
-            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1"><%= leaveBalance.pending || 0 %></p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-3d">Pending Requests</p>
+            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1 text-3d"><%= leaveBalance.pending || 0 %></p>
         </div>
     </div>
 
     <!-- Leave History -->
     <div class="glass-card rounded-xl shadow-md p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Leave History</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-3d">Leave History</h3>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>

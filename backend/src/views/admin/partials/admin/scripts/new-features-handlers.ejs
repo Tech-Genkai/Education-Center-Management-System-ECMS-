@@ -1,0 +1,1191 @@
+<script>
+// ========================================
+// NEW FEATURES HANDLERS - Attendance, Fees, Marks, Assignments
+// ========================================
+
+// Global state for pagination
+let attendancePage = 1;
+let feesPage = 1;
+let marksPage = 1;
+let assignmentsPage = 1;
+const pageLimit = 10;
+
+// ========================================
+// ATTENDANCE HANDLERS
+// ========================================
+
+// --- Attendance Handlers (Refactored for Course/Semester) ---
+
+// Populate Dropdowns logic (shared if possible, but keeping separate for safety unless generalized)
+async function populateAttendanceDropdowns() {
+    try {
+        const courseSelect = document.getElementById('attendanceCourseSelect');
+        if (courseSelect) {
+            const res = await fetch('/api/courses');
+            const data = await res.json();
+            if (data.courses) {
+                courseSelect.innerHTML = '<option value="">Select Course</option>';
+                data.courses.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c._id;
+                    opt.dataset.code = c.courseCode;
+                    opt.textContent = `${c.courseName} (${c.courseCode})`;
+                    courseSelect.appendChild(opt);
+                });
+            }
+        }
+    } catch (e) { console.error('Error loading attendance courses', e); }
+}
+
+let selectedCourseCodeForAttendance = null;
+
+window.onAttendanceCourseChange = async function(courseId) {
+    const select = document.getElementById('attendanceCourseSelect');
+    const courseCode = select.options[select.selectedIndex]?.dataset.code;
+    selectedCourseCodeForAttendance = courseCode;
+    
+    // Reset subjects
+    const subSelect = document.getElementById('attendanceSubjectSelect');
+    subSelect.innerHTML = '<option value="">Select Subject</option>';
+    
+    const semester = document.getElementById('attendanceSemesterSelect').value;
+    if (courseCode && semester) {
+        await loadSubjectsForAttendance(courseCode, semester);
+    }
+}
+
+window.onAttendanceSemesterChange = async function(semester) {
+    if (selectedCourseCodeForAttendance && semester) {
+        await loadSubjectsForAttendance(selectedCourseCodeForAttendance, semester);
+    }
+}
+
+async function loadSubjectsForAttendance(branch, semester) {
+    try {
+        const res = await fetch('/api/subjects'); 
+        const data = await res.json();
+        const subjectSelect = document.getElementById('attendanceSubjectSelect');
+        
+        if (data.subjects) {
+            const filtered = data.subjects.filter(s => 
+                (!s.branch || s.branch === branch) && 
+                (!s.semester || s.semester == semester)
+            );
+            
+            subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+            if (filtered.length === 0) {
+                 subjectSelect.innerHTML = '<option value="">No subjects found</option>';
+            }
+            filtered.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s._id;
+                opt.textContent = `${s.subjectName} (${s.subjectCode})`;
+                subjectSelect.appendChild(opt);
+            });
+        }
+    } catch (e) { console.error('Error loading attendance subjects', e); }
+}
+
+async function loadAttendanceForMarking() {
+    const date = document.getElementById('attendance-date').value;
+    const courseId = document.getElementById('attendanceCourseSelect').value;
+    const semester = document.getElementById('attendanceSemesterSelect').value;
+    const subjectId = document.getElementById('attendanceSubjectSelect').value;
+
+    if (!date || !courseId || !semester || !subjectId) {
+        showNotification('Please select date, course, semester, and subject', 'error');
+        return;
+    }
+
+    try {
+        // Load students for the selected course and semester
+        // We use the new filtering logic in studentController
+        const response = await fetch(`/api/students?courseId=${courseId}&semester=${semester}&limit=100`);
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.data.length > 0) {
+                displayStudentsForAttendance(data.data);
+                document.getElementById('bulk-attendance-list').classList.remove('hidden');
+            } else {
+                 showNotification('No students found for this Course/Semester', 'info');
+                 document.getElementById('bulk-attendance-list').classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading students:', error);
+        showNotification('Failed to load students', 'error');
+    }
+}
+
+function displayStudentsForAttendance(students) {
+    const tableHTML = `
+        <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Roll No</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Present</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Absent</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Late</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                ${students.map(student => `
+                    <tr data-student-id="${student._id}">
+                        <td class="px-4 py-3 text-sm">${student.rollNumber || '-'}</td>
+                        <td class="px-4 py-3 text-sm">${student.firstName} ${student.lastName}</td>
+                        <td class="px-4 py-3 text-center">
+                            <input type="radio" name="attendance-${student._id}" value="present" class="w-4 h-4 text-green-600" checked>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <input type="radio" name="attendance-${student._id}" value="absent" class="w-4 h-4 text-red-600">
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <input type="radio" name="attendance-${student._id}" value="late" class="w-4 h-4 text-yellow-600">
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    document.getElementById('students-attendance-table').innerHTML = tableHTML;
+}
+
+function markAllAs(status) {
+    const radios = document.querySelectorAll(`input[value="${status}"]`);
+    radios.forEach(radio => radio.checked = true);
+}
+
+async function submitBulkAttendance() {
+    const date = document.getElementById('attendance-date').value;
+    const courseId = document.getElementById('attendanceCourseSelect').value;
+    const semester = document.getElementById('attendanceSemesterSelect').value;
+    const subjectId = document.getElementById('attendanceSubjectSelect').value;
+
+    const rows = document.querySelectorAll('#students-attendance-table tbody tr');
+    const records = Array.from(rows).map(row => {
+        const studentId = row.dataset.studentId;
+        const status = row.querySelector('input[type="radio"]:checked').value;
+        return { studentId, status };
+    });
+
+    try {
+        const response = await fetch('/api/attendance/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ courseId, semester, subjectId, date, records })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Attendance marked successfully!', 'success');
+            document.getElementById('bulk-attendance-list').classList.add('hidden');
+            loadAttendanceRecords();
+        } else {
+            showNotification(data.message || 'Failed to mark attendance', 'error');
+        }
+    } catch (error) {
+        console.error('Error submitting attendance:', error);
+        showNotification('Failed to submit attendance', 'error');
+    }
+}
+
+async function loadAttendanceRecords() {
+    try {
+        const response = await fetch(`/api/attendance?page=${attendancePage}&limit=${pageLimit}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayAttendanceRecords(data.data);
+            updateAttendancePagination(data.pagination);
+        }
+    } catch (error) {
+        console.error('Error loading attendance records:', error);
+    }
+}
+
+function displayAttendanceRecords(records) {
+    const tbody = document.getElementById('attendance-table-body');
+    if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No records found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = records.map(record => `
+        <tr>
+            <td class="px-4 py-3 text-sm">${new Date(record.date).toLocaleDateString()}</td>
+            <td class="px-4 py-3 text-sm">${record.studentId?.firstName} ${record.studentId?.lastName}</td>
+            <td class="px-4 py-3 text-sm">${record.classId?.name || 'N/A'}</td>
+            <td class="px-4 py-3 text-sm">${record.subjectId?.name || 'N/A'}</td>
+            <td class="px-4 py-3">
+                <span class="px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(record.status)}">
+                    ${record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                </span>
+            </td>
+            <td class="px-4 py-3 text-sm">
+                <button onclick="editAttendance('${record._id}')" class="text-blue-600 hover:text-blue-800">Edit</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function getStatusBadgeClass(status) {
+    const classes = {
+        present: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+        absent: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+        late: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+        excused: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+    };
+    return classes[status] || classes.present;
+}
+
+function updateAttendancePagination(pagination) {
+    document.getElementById('attendance-start').textContent = (pagination.page - 1) * pagination.limit + 1;
+    document.getElementById('attendance-end').textContent = Math.min(pagination.page * pagination.limit, pagination.total);
+    document.getElementById('attendance-total').textContent = pagination.total;
+}
+
+function previousAttendancePage() {
+    if (attendancePage > 1) {
+        attendancePage--;
+        loadAttendanceRecords();
+    }
+}
+
+function nextAttendancePage() {
+    attendancePage++;
+    loadAttendanceRecords();
+}
+
+// ========================================
+// FEES HANDLERS
+// ========================================
+
+// --- Fees Handlers (Refactored for Course/Semester) ---
+
+async function populateFeesDropdowns() {
+    try {
+        const courseSelect = document.getElementById('feesCourseSelect');
+        if (courseSelect) {
+            const res = await fetch('/api/courses');
+            const data = await res.json();
+            if (data.courses) {
+                courseSelect.innerHTML = '<option value="">All Courses</option>';
+                data.courses.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c._id;
+                    opt.textContent = `${c.courseName} (${c.courseCode})`;
+                    courseSelect.appendChild(opt);
+                });
+            }
+        }
+    } catch (e) { console.error('Error loading fees courses', e); }
+}
+
+function onFeesCourseChange(val) {
+    // Optional: cascade logic if needed
+}
+
+function onFeesSemesterChange(val) {
+    // Optional: cascade logic if needed
+}
+
+async function loadFees() {
+    try {
+        const status = document.getElementById('fee-status-filter').value;
+        const feeType = document.getElementById('fee-type-filter') ? document.getElementById('fee-type-filter').value : ''; // Assuming ID exists or check fees.ejs
+        const courseId = document.getElementById('feesCourseSelect').value;
+        const semester = document.getElementById('feesSemesterSelect').value;
+
+        let url = `/api/fees?page=${feesPage}&limit=${pageLimit}`;
+        if (status) url += `&status=${status}`;
+        if (feeType) url += `&feeType=${feeType}`;
+        if (courseId) url += `&courseId=${courseId}`;
+        if (semester) url += `&semester=${semester}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayFees(data.data);
+            updateFeesPagination(data.pagination);
+        }
+    } catch (error) {
+        console.error('Error loading fees:', error);
+    }
+}
+
+function filterFees() {
+    feesPage = 1;
+    loadFees();
+}
+
+function displayFees(fees) {
+    const tbody = document.getElementById('fees-table-body');
+    if (fees.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No records found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = fees.map(fee => {
+        const balance = fee.amountDue - fee.amountPaid;
+        return `
+            <tr>
+                <td class="px-4 py-3 text-sm">${fee.invoiceNumber || 'N/A'}</td>
+                <td class="px-4 py-3 text-sm">${fee.studentId?.firstName} ${fee.studentId?.lastName}</td>
+                <td class="px-4 py-3 text-sm capitalize">${fee.feeType}</td>
+                <td class="px-4 py-3 text-sm">₹${fee.amountDue.toLocaleString()}</td>
+                <td class="px-4 py-3 text-sm">₹${fee.amountPaid.toLocaleString()}</td>
+                <td class="px-4 py-3 text-sm font-semibold">₹${balance.toLocaleString()}</td>
+                <td class="px-4 py-3">
+                    <span class="px-2 py-1 text-xs rounded-full ${getFeeStatusClass(fee.status)}">
+                        ${fee.status.charAt(0).toUpperCase() + fee.status.slice(1)}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-sm">
+                    <button onclick="recordPayment('${fee._id}')" class="text-green-600 hover:text-green-800 mr-2">Pay</button>
+                    <button onclick="editFee('${fee._id}')" class="text-blue-600 hover:text-blue-800">Edit</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getFeeStatusClass(status) {
+    const classes = {
+        paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+        pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+        partial: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+        overdue: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+    };
+    return classes[status] || classes.pending;
+}
+
+function updateFeesPagination(pagination) {
+    document.getElementById('fees-start').textContent = (pagination.page - 1) * pagination.limit + 1;
+    document.getElementById('fees-end').textContent = Math.min(pagination.page * pagination.limit, pagination.total);
+    document.getElementById('fees-total').textContent = pagination.total;
+}
+
+function previousFeesPage() {
+    if (feesPage > 1) {
+        feesPage--;
+        loadFees();
+    }
+}
+
+function nextFeesPage() {
+    feesPage++;
+    loadFees();
+}
+
+function openFeeModal() {
+    showNotification('Fee modal - To be implemented', 'info');
+}
+
+function openPaymentModal() {
+    showNotification('Payment modal - To be implemented', 'info');
+}
+
+function recordPayment(feeId) {
+    showNotification('Record payment for fee: ' + feeId, 'info');
+}
+
+function editFee(feeId) {
+    showNotification('Edit fee: ' + feeId, 'info');
+}
+
+async function loadOverdueFees() {
+    try {
+        const response = await fetch('/api/fees/overdue');
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(`Found ${data.count} overdue fees`, 'info');
+            displayFees(data.data);
+        }
+    } catch (error) {
+        console.error('Error loading overdue fees:', error);
+    }
+}
+
+// function filterFees() {} // Implemented above
+
+// ========================================
+// MARKS HANDLERS
+// ========================================
+
+// --- New Marks Handlers ---
+
+// Populate Marks Dropdowns (Course & Optional Class)
+async function populateMarksDropdowns() {
+    try {
+        // Load Courses
+        const courseSelect = document.getElementById('marksCourseSelect');
+        if (courseSelect) {
+            const res = await fetch('/api/courses');
+            const data = await res.json();
+            if (data.courses) {
+                courseSelect.innerHTML = '<option value="">Select Course</option>';
+                data.courses.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c._id;
+                    opt.dataset.code = c.courseCode;
+                    opt.textContent = `${c.courseName} (${c.courseCode})`;
+                    courseSelect.appendChild(opt);
+                });
+            }
+        }
+        
+        // Load Classes (Optional Filter)
+        const classSelect = document.getElementById('marksClassSelect');
+        if (classSelect) {
+            const res = await fetch('/api/classes');
+            const data = await res.json();
+            if (data.classes) {
+                classSelect.innerHTML = '<option value="">All Classes</option>';
+                data.classes.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c._id;
+                    opt.textContent = `${c.className} (${c.classCode})`;
+                    classSelect.appendChild(opt);
+                });
+            }
+        }
+    } catch (e) { console.error('Error loading marks dropdowns', e); }
+}
+
+// Global variable to store selected course code
+let selectedCourseCodeForMarks = null;
+
+// Handle Course Change
+window.onMarksCourseChange = async function(courseId) {
+    const select = document.getElementById('marksCourseSelect');
+    const courseCode = select.options[select.selectedIndex]?.dataset.code;
+    selectedCourseCodeForMarks = courseCode;
+    
+    // Reset subjects
+    const subSelect = document.getElementById('marksSubjectSelect');
+    subSelect.innerHTML = '<option value="">Select Subject</option>';
+    
+    // If semester is already selected, load subjects
+    const semester = document.getElementById('marksSemesterSelect').value;
+    if (courseCode && semester) {
+        await loadSubjectsForMarks(courseCode, semester);
+    }
+}
+
+// Handle Semester Change
+window.onMarksSemesterChange = async function(semester) {
+    if (selectedCourseCodeForMarks && semester) {
+        await loadSubjectsForMarks(selectedCourseCodeForMarks, semester);
+    }
+}
+
+// Load Subjects filtered by Branch (CourseCode) and Semester
+async function loadSubjectsForMarks(branch, semester) {
+    try {
+        const res = await fetch('/api/subjects'); // Ideally pass filters to API: /api/subjects?branch=...&semester=...
+        const data = await res.json();
+        const subjectSelect = document.getElementById('marksSubjectSelect');
+        
+        if (data.subjects) {
+            // Client-side filter for now
+            const filtered = data.subjects.filter(s => 
+                (!s.branch || s.branch === branch) && 
+                (!s.semester || s.semester == semester)
+            );
+            
+            subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+            if (filtered.length === 0) {
+                 subjectSelect.innerHTML = '<option value="">No subjects found</option>';
+            }
+            filtered.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s._id;
+                opt.textContent = `${s.subjectName} (${s.subjectCode})`;
+                subjectSelect.appendChild(opt);
+            });
+        }
+    } catch (e) { console.error('Error loading subjects', e); }
+}
+
+// Load Students (Updated for Course-centric flow)
+async function loadMarksEntryStudents() {
+    const courseId = document.getElementById('marksCourseSelect').value;
+    const subjectId = document.getElementById('marksSubjectSelect').value;
+    const classId = document.getElementById('marksClassSelect')?.value; // Optional
+    
+    if (!courseId) {
+        showNotification('Please select a Course', 'error');
+        return;
+    }
+    if (!subjectId) {
+        showNotification('Please select a Subject', 'error');
+        return;
+    }
+
+    try {
+        let url = `/api/students?courseId=${courseId}&limit=100`;
+        if (classId) url += `&classId=${classId}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Check if students exist
+            if (data.data && data.data.length > 0) {
+                displayStudentsForMarks(data.data);
+                document.getElementById('marks-entry-list').classList.remove('hidden');
+            } else {
+                 showNotification('No students found for this Course', 'info');
+                 document.getElementById('marks-entry-list').classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading students:', error);
+        showNotification('Failed to load students', 'error');
+    }
+}
+// Alias for backward compatibility if needed, though we updated onClick
+window.loadStudentsForMarks = loadMarksEntryStudents;
+
+/*
+async function loadStudentsForMarks() {
+    const classId = document.getElementById('marks-class').value;
+    if (!classId) {
+        showNotification('Please select a class', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/students?classId=${classId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayStudentsForMarks(data.data);
+            document.getElementById('marks-entry-list').classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error loading students:', error);
+    }
+}
+*/
+
+function displayStudentsForMarks(students) {
+    const maxMarks = document.getElementById('marksMaxMarks').value || 100;
+    const tableHTML = `
+        <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Roll No</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Marks (out of ${maxMarks})</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Grade</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                ${students.map(student => `
+                    <tr data-student-id="${student._id}">
+                        <td class="px-4 py-3 text-sm">${student.rollNumber}</td>
+                        <td class="px-4 py-3 text-sm">${student.firstName} ${student.lastName}</td>
+                        <td class="px-4 py-3">
+                            <input type="number" min="0" max="${maxMarks}" 
+                                   class="w-24 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                                   data-student-id="${student._id}">
+                        </td>
+                        <td class="px-4 py-3 text-sm font-semibold" id="grade-${student._id}">-</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    document.getElementById('students-marks-table').innerHTML = tableHTML;
+
+    // Add auto-grade calculation
+    document.querySelectorAll('#students-marks-table input[type="number"]').forEach(input => {
+        input.addEventListener('input', (e) => {
+            const marks = parseFloat(e.target.value) || 0;
+            const percentage = (marks / maxMarks) * 100;
+            const grade = calculateGrade(percentage);
+            const studentId = e.target.dataset.studentId;
+            document.getElementById(`grade-${studentId}`).textContent = grade;
+        });
+    });
+}
+
+function calculateGrade(percentage) {
+    if (percentage >= 90) return 'A+';
+    if (percentage >= 80) return 'A';
+    if (percentage >= 70) return 'B+';
+    if (percentage >= 60) return 'B';
+    if (percentage >= 50) return 'C';
+    if (percentage >= 40) return 'D';
+    return 'F';
+}
+
+async function submitBulkMarks() {
+    const examType = document.getElementById('marksExamTypeSelect').value;
+    const courseId = document.getElementById('marksCourseSelect').value;
+    const subjectId = document.getElementById('marksSubjectSelect').value; 
+    const classId = document.getElementById('marksClassSelect')?.value; // Optional
+    const maxMarks = parseInt(document.getElementById('marksMaxMarks').value);
+
+    const rows = document.querySelectorAll('#students-marks-table tbody tr');
+    const records = Array.from(rows).map(row => {
+        const studentId = row.dataset.studentId;
+        const input = row.querySelector('input[type="number"]');
+        const obtainedMarks = parseFloat(input.value) || 0;
+        return { studentId, obtainedMarks };
+    }).filter(r => r.obtainedMarks > 0);
+
+    if (records.length === 0) {
+        showNotification('Please enter marks for at least one student', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/marks/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ classId, subjectId, examType, maxMarks, records })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Marks submitted successfully!', 'success');
+            document.getElementById('marks-entry-list').classList.add('hidden');
+            loadMarksRecords();
+        } else {
+            showNotification(data.message || 'Failed to submit marks', 'error');
+        }
+    } catch (error) {
+        console.error('Error submitting marks:', error);
+        showNotification('Failed to submit marks', 'error');
+    }
+}
+
+async function loadMarksRecords() {
+    try {
+        const response = await fetch(`/api/marks?page=${marksPage}&limit=${pageLimit}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayMarksRecords(data.data);
+            updateMarksPagination(data.pagination);
+        }
+    } catch (error) {
+        console.error('Error loading marks:', error);
+    }
+}
+
+function displayMarksRecords(records) {
+    const tbody = document.getElementById('marks-table-body');
+    if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">No records found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = records.map(record => `
+        <tr>
+            <td class="px-4 py-3 text-sm">${record.studentId?.firstName} ${record.studentId?.lastName}</td>
+            <td class="px-4 py-3 text-sm">${record.subjectId?.name || 'N/A'}</td>
+            <td class="px-4 py-3 text-sm capitalize">${record.examType.replace('_', ' ')}</td>
+            <td class="px-4 py-3 text-sm">${record.obtainedMarks}/${record.maxMarks}</td>
+            <td class="px-4 py-3 text-sm">${record.percentage.toFixed(2)}%</td>
+            <td class="px-4 py-3">
+                <span class="px-2 py-1 text-xs font-semibold rounded ${getGradeBadgeClass(record.grade)}">
+                    ${record.grade}
+                </span>
+            </td>
+            <td class="px-4 py-3 text-sm">
+                <button onclick="editMarks('${record._id}')" class="text-blue-600 hover:text-blue-800">Edit</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function getGradeBadgeClass(grade) {
+    if (grade.startsWith('A')) return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+    if (grade.startsWith('B')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+    if (grade.startsWith('C')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+    if (grade === 'D') return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+    return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+}
+
+function updateMarksPagination(pagination) {
+    document.getElementById('marks-start').textContent = (pagination.page - 1) * pagination.limit + 1;
+    document.getElementById('marks-end').textContent = Math.min(pagination.page * pagination.limit, pagination.total);
+    document.getElementById('marks-total').textContent = pagination.total;
+}
+
+function previousMarksPage() {
+    if (marksPage > 1) {
+        marksPage--;
+        loadMarksRecords();
+    }
+}
+
+function nextMarksPage() {
+    marksPage++;
+    loadMarksRecords();
+}
+
+function filterMarks() {
+    showNotification('Filter marks - To be implemented', 'info');
+}
+
+function generateReportCard() {
+    showNotification('Generate report card - To be implemented', 'info');
+}
+
+function editMarks(id) {
+    showNotification('Edit marks: ' + id, 'info');
+}
+
+// ========================================
+// ASSIGNMENTS HANDLERS
+// ========================================
+
+// --- Assignments Handlers (Refactored for Course/Semester) ---
+
+async function populateAssignmentsDropdowns() {
+    try {
+        const courseSelect = document.getElementById('assignmentsCourseSelect');
+        if (courseSelect) {
+            const res = await fetch('/api/courses');
+            const data = await res.json();
+            if (data.courses) {
+                courseSelect.innerHTML = '<option value="">All Courses</option>';
+                data.courses.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c._id;
+                    opt.textContent = `${c.courseName} (${c.courseCode})`;
+                    courseSelect.appendChild(opt);
+                });
+            }
+        }
+    } catch (e) { console.error('Error loading assignments courses', e); }
+}
+
+function onAssignmentsCourseChange(val) {
+    // Optional: cascade logic if needed
+}
+
+function onAssignmentsSemesterChange(val) {
+    // Optional: cascade logic if needed
+}
+
+async function loadAssignments() {
+    try {
+        const courseId = document.getElementById('assignmentsCourseSelect').value;
+        const semester = document.getElementById('assignmentsSemesterSelect').value;
+        
+        let url = `/api/assignments?page=${assignmentsPage}&limit=${pageLimit}`;
+        if (courseId) url += `&courseId=${courseId}`;
+        if (semester) url += `&semester=${semester}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayAssignments(data.data);
+            updateAssignmentsPagination(data.pagination);
+        }
+    } catch (error) {
+        console.error('Error loading assignments:', error);
+    }
+}
+
+function filterAssignments() {
+    assignmentsPage = 1;
+    loadAssignments();
+}
+
+function displayAssignments(assignments) {
+    const tbody = document.getElementById('assignments-table-body');
+    if (assignments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No assignments found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = assignments.map(assignment => `
+        <tr>
+            <td class="px-4 py-3 text-sm font-medium">${assignment.title}</td>
+            <td class="px-4 py-3 text-sm">${assignment.classId?.name || 'N/A'}</td>
+            <td class="px-4 py-3 text-sm">${assignment.subjectName}</td>
+            <td class="px-4 py-3 text-sm">${assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'No deadline'}</td>
+            <td class="px-4 py-3 text-sm">0 submissions</td>
+            <td class="px-4 py-3 text-sm">
+                <button onclick="viewAssignment('${assignment._id}')" class="text-blue-600 hover:text-blue-800 mr-2">View</button>
+                <button onclick="editAssignment('${assignment._id}')" class="text-green-600 hover:text-green-800 mr-2">Edit</button>
+                <button onclick="deleteAssignment('${assignment._id}')" class="text-red-600 hover:text-red-800">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateAssignmentsPagination(pagination) {
+    document.getElementById('assignments-start').textContent = (pagination.page - 1) * pagination.limit + 1;
+    document.getElementById('assignments-end').textContent = Math.min(pagination.page * pagination.limit, pagination.total);
+    document.getElementById('assignments-total').textContent = pagination.total;
+}
+
+function previousAssignmentsPage() {
+    if (assignmentsPage > 1) {
+        assignmentsPage--;
+        loadAssignments();
+    }
+}
+
+function nextAssignmentsPage() {
+    assignmentsPage++;
+    loadAssignments();
+}
+
+function openAssignmentModal() {
+    showNotification('Create assignment modal - To be implemented', 'info');
+}
+
+function viewAssignment(id) {
+    showNotification('View assignment: ' + id, 'info');
+}
+
+function editAssignment(id) {
+    showNotification('Edit assignment: ' + id, 'info');
+}
+
+function deleteAssignment(id) {
+    showNotification('Delete assignment: ' + id, 'info');
+}
+
+// function filterAssignments() {} // Implemented above
+
+// ========================================
+// INITIALIZATION
+// ========================================
+
+// Populate class and subject dropdowns
+async function populateDropdownsForNewTabs() {
+    try {
+        // Load classes for all dropdowns
+        const classesResponse = await fetch('/api/classes', { credentials: 'include' });
+        const classesData = await classesResponse.json();
+        
+        if (classesData.classes) {
+            const classSelects = [
+                'attendance-class',
+                'marks-class',
+                'filter-class',
+                'assignment-class-filter'
+            ];
+            
+            classSelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    select.innerHTML = '<option value="">Select Class</option>' +
+                        classesData.classes.map(cls => 
+                            `<option value="${cls._id}">${cls.className}</option>`
+                        ).join('');
+                }
+            });
+        }
+
+        // Load subjects for all dropdowns
+        const subjectsResponse = await fetch('/api/subjects', { credentials: 'include' });
+        const subjectsData = await subjectsResponse.json();
+        
+        if (subjectsData.subjects) {
+            const subjectSelects = [
+                'attendance-subject',
+                'marks-subject'
+            ];
+            
+            subjectSelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    select.innerHTML = '<option value="">Select Subject</option>' +
+                        subjectsData.subjects.map(subject => 
+                            `<option value="${subject._id}">${subject.subjectName}</option>`
+                        ).join('');
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error populating dropdowns:', error);
+    }
+}
+
+// Call on page load and when switching to relevant tabs
+document.addEventListener('DOMContentLoaded', function() {
+    // Set today's date as default for attendance
+    const dateInput = document.getElementById('attendance-date');
+    if (dateInput) {
+        dateInput.valueAsDate = new Date();
+    }
+
+    // Populate dropdowns
+    populateDropdownsForNewTabs();
+    populateMarksDropdowns();
+    populateAttendanceDropdowns();
+    populateAssignmentsDropdowns();
+    populateFeesDropdowns();
+
+    // Add Alpine.js watch for tab changes to lazy-load data
+    if (window.Alpine) {
+        Alpine.store('dashboard', {
+            watchTab(newTab) {
+                if (newTab === 'attendance') {
+                    loadAttendanceRecords();
+                } else if (newTab === 'fees') {
+                    loadFees();
+                } else if (newTab === 'marks') {
+                    loadMarksRecords();
+                } else if (newTab === 'assignments') {
+                    loadAssignments();
+                }
+            }
+        });
+    }
+});
+
+// ========================================
+// COURSE HANDLERS
+// ========================================
+
+// State
+let coursesPage = 1;
+const coursePageLimit = 10;
+let editCourseId = null;
+
+// Load Courses
+async function loadCourses() {
+    try {
+        const search = document.getElementById('course-search') ? document.getElementById('course-search').value : '';
+        const status = document.getElementById('course-status-filter') ? document.getElementById('course-status-filter').value : '';
+        
+        let url = `/api/courses?page=${coursesPage}&limit=${coursePageLimit}`;
+        if (search) url += `&search=${search}`;
+        if (status) url += `&status=${status}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.courses) {
+            displayCourses(data.courses);
+            updateCoursePagination(data.pagination);
+            updateCourseStats(data.courses.length); // Ideally stats come from API
+        }
+    } catch (error) {
+        console.error('Error loading courses:', error);
+        showNotification('Failed to load courses', 'error');
+    }
+}
+
+function displayCourses(courses) {
+    const tbody = document.getElementById('courses-table-body');
+    if (!tbody) return;
+    
+    if (courses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No courses found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = courses.map(course => `
+        <tr>
+            <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">${course.courseCode}</td>
+            <td class="px-4 py-3 text-sm">${course.courseName}</td>
+            <td class="px-4 py-3 text-sm">${course.department || 'N/A'}</td>
+            <td class="px-4 py-3 text-center">
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-xs">
+                    ${course.semesterCount || course.totalSemesters} Semesters
+                </span>
+            </td>
+            <td class="px-4 py-3 text-center">
+                 <span class="px-2 py-1 rounded-full text-xs ${course.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'}">
+                    ${course.isActive ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td class="px-4 py-3 text-right text-sm">
+                <button onclick="editCourse('${course._id}')" class="text-blue-600 hover:text-blue-800 mr-3">Edit</button>
+                <button onclick="deleteCourse('${course._id}')" class="text-red-600 hover:text-red-800">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateCoursePagination(pagination) {
+    const startEl = document.getElementById('courses-start');
+    if (startEl) {
+        document.getElementById('courses-start').textContent = (pagination.page - 1) * pagination.limit + 1;
+        document.getElementById('courses-end').textContent = Math.min(pagination.page * pagination.limit, pagination.total);
+        document.getElementById('courses-total').textContent = pagination.total;
+    }
+}
+
+function previousCoursesPage() {
+    if (coursesPage > 1) {
+        coursesPage--;
+        loadCourses();
+    }
+}
+
+function nextCoursesPage() {
+    coursesPage++;
+    loadCourses();
+}
+
+function filterCourses() {
+    coursesPage = 1;
+    loadCourses();
+}
+
+function updateCourseStats(currentCount) {
+    // This is placeholder. Ideally fetch /api/courses/stats
+    // document.getElementById('total-courses').innerText = ...
+}
+
+// Modal Handlers
+function openCourseModal(type = 'add') {
+    const modal = document.getElementById('courseModal');
+    const title = document.getElementById('courseModalTitle');
+    const form = document.getElementById('courseForm');
+    
+    if (type === 'add') {
+        title.textContent = 'Add New Course';
+        form.reset();
+        document.getElementById('courseId_db').value = '';
+        editCourseId = null;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closeCourseModal() {
+    document.getElementById('courseModal').classList.add('hidden');
+}
+
+async function submitCourseForm(e) {
+    e.preventDefault();
+    
+    const formData = {
+        courseName: document.getElementById('courseName').value,
+        courseCode: document.getElementById('courseCode').value,
+        department: document.getElementById('department').value,
+        totalSemesters: parseInt(document.getElementById('totalSemesters').value),
+        durationYears: parseFloat(document.getElementById('durationYears').value),
+        academicYear: document.getElementById('academicYear').value,
+        description: document.getElementById('courseDescription').value
+    };
+
+    try {
+        let url = '/api/courses';
+        let method = 'POST';
+        
+        if (editCourseId) {
+            url = `/api/courses/${editCourseId}`;
+            method = 'PUT';
+        }
+
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showNotification(data.message, 'success');
+            closeCourseModal();
+            loadCourses();
+        } else {
+            showNotification(data.message || 'Operation failed', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving course:', error);
+        showNotification('Failed to save course', 'error');
+    }
+}
+
+async function editCourse(id) {
+    try {
+        const response = await fetch(`/api/courses/${id}`);
+        const data = await response.json();
+        
+        if (response.ok && data.course) {
+            const c = data.course;
+            openCourseModal('edit');
+            editCourseId = id;
+            document.getElementById('courseModalTitle').textContent = 'Edit Course';
+            document.getElementById('courseId_db').value = c._id;
+            document.getElementById('courseName').value = c.courseName;
+            document.getElementById('courseCode').value = c.courseCode;
+            document.getElementById('department').value = c.department || '';
+            document.getElementById('totalSemesters').value = c.totalSemesters;
+            document.getElementById('durationYears').value = c.durationYears || '';
+            document.getElementById('courseDescription').value = c.description || '';
+            // For academicYear, we might need to populate if it's an object or ID
+            if (c.academicYearId && c.academicYearId.year) {
+                 document.getElementById('academicYear').value = c.academicYearId.year;
+            } else if (typeof c.academicYearId === 'string') {
+                 // Might need to fetch if it is ID only
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching course details:', error);
+        showNotification('Failed to load course details', 'error');
+    }
+}
+
+async function deleteCourse(id) {
+    if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) return;
+    
+    // For now bypassing password check or assume user knows (Controller requires password though)
+    // We need to implement a prompt for password
+    const password = prompt("Please enter Admin Password to confirm deletion:");
+    if (!password) return;
+
+    try {
+        const response = await fetch(`/api/courses/${id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+        });
+        
+        const data = await response.json(); // Safely parse JSON
+        
+        if (response.ok) {
+            showNotification('Course deleted successfully', 'success');
+            loadCourses();
+        } else {
+            showNotification(data.message || 'Failed to delete course', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting course:', error);
+        showNotification('Failed to delete course', 'error');
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing init code ...
+    // Note: We need to expose loadCourses or add it to main init
+    if (window.location.href.includes('courses')) { // Or check tab
+         loadCourses();
+    }
+    
+    if (window.Alpine) {
+        Alpine.store('dashboard', {
+            // ... extend existing ...
+             watchTab(newTab) {
+                // ... existing ...
+                if (newTab === 'courses') {
+                    loadCourses();
+                }
+            }
+        });
+    }
+});
+</script>

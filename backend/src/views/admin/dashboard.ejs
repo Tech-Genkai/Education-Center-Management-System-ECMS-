@@ -111,19 +111,41 @@
                 <%- include('./partials/admin/tabs/admins') %>
             </div>
 
+            <!-- Courses Management Tab -->
+            <div x-show="activeTab === 'courses'" x-cloak>
+                <%- include('./partials/admin/tabs/courses') %>
+            </div>
+
             <!-- Classes Management Tab -->
             <div x-show="activeTab === 'classes'" x-cloak>
                 <%- include('./partials/admin/tabs/classes') %>
             </div>
 
-            <!-- Subjects Management Tab -->
-            <div x-show="activeTab === 'subjects'" x-cloak>
-                <%- include('./partials/admin/tabs/subjects') %>
-            </div>
+
 
             <!-- Settings Tab -->
             <div x-show="activeTab === 'settings'" x-cloak>
                 <%- include('./partials/admin/tabs/settings') %>
+            </div>
+
+            <!-- Attendance Tab -->
+            <div x-show="activeTab === 'attendance'" x-cloak>
+                <%- include('./partials/admin/tabs/attendance') %>
+            </div>
+
+            <!-- Fees Tab -->
+            <div x-show="activeTab === 'fees'" x-cloak>
+                <%- include('./partials/admin/tabs/fees') %>
+            </div>
+
+            <!-- Marks Tab -->
+            <div x-show="activeTab === 'marks'" x-cloak>
+                <%- include('./partials/admin/tabs/marks') %>
+            </div>
+
+            <!-- Assignments Tab -->
+            <div x-show="activeTab === 'assignments'" x-cloak>
+                <%- include('./partials/admin/tabs/assignments') %>
             </div>
 
         </main>
@@ -146,11 +168,13 @@
     <!-- Profile Edit Modal -->
     <%- include('./partials/admin/modals/profile-edit-modal') %>
 
+    <!-- Course Add/Edit Modal -->
+    <%- include('./partials/admin/modals/create-course-modal') %>
+
     <!-- Class Add Modal -->
     <%- include('./partials/admin/modals/class-modal') %>
 
-    <!-- Subject Add Modal -->
-    <%- include('./partials/admin/modals/subject-modal') %>
+
 
     <!-- Password Reset Modal -->
     <%- include('./partials/admin/modals/password-reset-modal') %>
@@ -187,6 +211,9 @@
 
     <!-- Delete Handlers -->
     <%- include('./partials/admin/scripts/delete-handlers') %>
+
+    <!-- New Features Handlers (Attendance, Fees, Marks, Assignments) -->
+    <%- include('./partials/admin/scripts/new-features-handlers') %>
 
     <!-- Socket.IO and Initialization -->
     <%- include('./partials/admin/scripts/socket-and-init') %>

@@ -1,6 +1,7 @@
 # Student Management System + ERP - Project Plan
 
 ## 🎯 Project Overview
+
 An automation-first, enterprise-grade Student Management System with embedded ERP capabilities. The platform delivers fully audited, role-aware experiences for Students, Teachers, Parents/Guardians, Operations, and Super Admins without relying on React—favoring lean, server-rendered UX powered by modern vanilla JavaScript enhancements. Industrial objectives include end-to-end workflow automation (admissions, attendance, finance, library circulation, grievances), real-time insights, autoscaling infrastructure, and compliance-ready observability across every service boundary. Newly scoped enterprise modules cover Library Management, Fee Management, Parent Portal, Certificate Generation, Assignment Lifecycle, Discussion Forums, Academic Event Calendar, and Grievance Management.
 
 ---
@@ -8,6 +9,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ## 🏗️ System Architecture
 
 ### Technology Stack
+
 - **Frontend**: HTML5, CSS3, Tailwind CSS, Vanilla JS (ES2023), Alpine.js/Web Components, Vite bundler, Chart.js, pure HTML templates (no React)
 - **Backend**: Node.js 20 (TypeScript), Express 5, REST + WebSocket services, BullMQ/Agenda for background jobs, Redis for caching/pub-sub
 - **AI Services**: Dedicated AI Orchestrator (Node.js/TypeScript) integrating with Azure OpenAI/GPT-4.5 Turbo, LangChain/AutoGen pipelines, semantic caching, safety filters
@@ -18,12 +20,14 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 - **Observability & Ops**: OpenTelemetry, Prometheus, Grafana, Loki/ELK, Sentry, Winston structured logging, Feature flag service (Unleash/ConfigCat)
 
 ### Automation & Environment Topology
+
 - **Environments**: Dev → QA → Staging → Production with automated promotion gates
 - **Pipelines**: GitHub Actions workflows for lint/test/build, image scans (Trivy), IaC validation, blue/green deploys
 - **Scheduled Jobs**: Cron-backed services for attendance reminders, fee escalations, backup snapshots, SLA monitors
 - **Secrets & Config**: dotenv for local, Azure Key Vault/AWS Secrets Manager for hosted deployments
 
 ### AI Assistant Capability Model
+
 - **Persona Packs**: Student, Teacher, Super Admin, and Support personas with tailored prompt templates and guardrails.
 - **Skills**: FAQ answering, policy lookup, timetable queries, fee breakdown, admissions onboarding guidance, and troubleshooting checklists.
 - **Grounding Data**: Combines RAG pipelines over documentation (policies, schedules, knowledge base articles) with live API lookups for marks, attendance, and fee ledgers.
@@ -36,6 +40,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ## 👥 User Roles & Access Levels
 
 ### 1. **Student**
+
 - View personal profile with automated data sync from admissions
 - View marks/grades and AI-assisted performance insights
 - Monitor attendance with anomaly alerts pushed via email/SMS
@@ -46,6 +51,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 - Access contextual AI study assistant for schedule, assignment, and policy queries with live data grounding
 
 ### 2. **Teacher**
+
 - View assigned classes/subjects with capacity/utilization indicators
 - Mark attendance (manual, RFID import, or bulk CSV automation)
 - Enter/update marks with rubric templates and Excel ingestion
@@ -56,6 +62,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 - Use AI co-pilot to draft announcements, rubrics, and personalized feedback summaries
 
 ### 3. **Super Admin**
+
 - Complete system access with approval workflows & dual-control actions
 - Manage omni-channel notifications and automated drip campaigns
 - Annual mass student admission (bulk import, OCR pipeline)
@@ -75,6 +82,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 - AI operations co-pilot for analytics insights, anomaly detection, and workflow recommendations
 
 ### 4. **Parent / Guardian**
+
 - Secure parent portal with MFA + delegated access controls
 - Real-time monitoring of student attendance, marks, assignments, and upcoming events
 - Digital fee ledger with online payments, payment plans, and automated reminders
@@ -90,6 +98,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ### MongoDB Collections
 
 #### 1. **users** (Authentication)
+
 ```javascript
 {
   _id: ObjectId,
@@ -104,6 +113,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 2. **students**
+
 ```javascript
 {
   _id: ObjectId,
@@ -120,7 +130,9 @@ An automation-first, enterprise-grade Student Management System with embedded ER
   guardianName: String,
   guardianPhone: String,
   guardianEmail: String,
-  classId: ObjectId (ref: 'classes'),
+  courseId: ObjectId (ref: 'courses'),
+  semester: String,
+  classId: ObjectId (ref: 'classes'), // Optional
   section: String,
   admissionDate: Date,
   profilePicture: String,
@@ -131,6 +143,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 3. **teachers**
+
 ```javascript
 {
   _id: ObjectId,
@@ -157,6 +170,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 4. **superadmins**
+
 ```javascript
 {
   _id: ObjectId,
@@ -174,6 +188,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 5. **addresses**
+
 ```javascript
 {
   _id: ObjectId,
@@ -187,7 +202,26 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 }
 ```
 
+#### **courses**
+
+```javascript
+{
+  _id: ObjectId,
+  courseCode: String (unique),
+  courseName: String,
+  totalSemesters: Number,
+  durationYears: Number,
+  department: String,
+  hod: ObjectId (ref: 'users'),
+  description: String,
+  isActive: Boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
 #### 6. **subjects**
+
 ```javascript
 {
   _id: ObjectId,
@@ -204,6 +238,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 7. **classes**
+
 ```javascript
 {
   _id: ObjectId,
@@ -221,6 +256,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 8. **marks**
+
 ```javascript
 {
   _id: ObjectId,
@@ -243,11 +279,14 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 9. **attendance**
+
 ```javascript
 {
   _id: ObjectId,
   studentId: ObjectId (ref: 'students'),
-  classId: ObjectId (ref: 'classes'),
+  courseId: ObjectId (ref: 'courses'),
+  semester: String,
+  classId: ObjectId (ref: 'classes'), // Optional
   subjectId: ObjectId (ref: 'subjects'),
   date: Date,
   status: String (enum: ['present', 'absent', 'late', 'excused']),
@@ -260,6 +299,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 10. **announcements**
+
 ```javascript
 {
   _id: ObjectId,
@@ -279,6 +319,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 11. **timetable**
+
 ```javascript
 {
   _id: ObjectId,
@@ -296,6 +337,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 12. **automationJobs**
+
 ```javascript
 {
   _id: ObjectId,
@@ -314,10 +356,13 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 13. **fees**
+
 ```javascript
 {
   _id: ObjectId,
   studentId: ObjectId (ref: 'students'),
+  courseId: ObjectId (ref: 'courses'),
+  semester: String,
   academicYear: String,
   feeType: String (enum: ['tuition', 'transport', 'hostel', 'exam']),
   amountDue: Number,
@@ -333,6 +378,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 14. **payments**
+
 ```javascript
 {
   _id: ObjectId,
@@ -351,6 +397,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 15. **paymentPlans**
+
 ```javascript
 {
   _id: ObjectId,
@@ -367,6 +414,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 16. **notifications**
+
 ```javascript
 {
   _id: ObjectId,
@@ -384,6 +432,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 17. **workflowRuns**
+
 ```javascript
 {
   _id: ObjectId,
@@ -408,6 +457,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 18. **auditLogs**
+
 ```javascript
 {
   _id: ObjectId,
@@ -425,6 +475,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 19. **knowledgeBases**
+
 ```javascript
 {
   _id: ObjectId,
@@ -441,6 +492,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 20. **knowledgeBaseDocuments**
+
 ```javascript
 {
   _id: ObjectId,
@@ -458,6 +510,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 21. **chatSessions**
+
 ```javascript
 {
   _id: ObjectId,
@@ -475,6 +528,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 22. **chatMessages**
+
 ```javascript
 {
   _id: ObjectId,
@@ -490,6 +544,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 23. **aiPolicies**
+
 ```javascript
 {
   _id: ObjectId,
@@ -509,6 +564,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 24. **parents**
+
 ```javascript
 {
   _id: ObjectId,
@@ -531,6 +587,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 25. **libraryBooks**
+
 ```javascript
 {
   _id: ObjectId,
@@ -549,6 +606,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 26. **libraryCopies**
+
 ```javascript
 {
   _id: ObjectId,
@@ -565,6 +623,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 27. **libraryTransactions**
+
 ```javascript
 {
   _id: ObjectId,
@@ -583,6 +642,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 28. **certificateTemplates**
+
 ```javascript
 {
   _id: ObjectId,
@@ -598,6 +658,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 29. **certificates**
+
 ```javascript
 {
   _id: ObjectId,
@@ -616,10 +677,13 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 30. **assignments**
+
 ```javascript
 {
   _id: ObjectId,
-  classId: ObjectId (ref: 'classes'),
+  courseId: ObjectId (ref: 'courses'),
+  semester: String,
+  classId: ObjectId (ref: 'classes'), // Optional
   subjectId: ObjectId (ref: 'subjects'),
   teacherId: ObjectId (ref: 'teachers'),
   title: String,
@@ -635,6 +699,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 31. **assignmentSubmissions**
+
 ```javascript
 {
   _id: ObjectId,
@@ -652,6 +717,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 32. **discussionThreads**
+
 ```javascript
 {
   _id: ObjectId,
@@ -667,6 +733,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 33. **discussionPosts**
+
 ```javascript
 {
   _id: ObjectId,
@@ -684,6 +751,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 34. **events**
+
 ```javascript
 {
   _id: ObjectId,
@@ -703,6 +771,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 35. **eventRegistrations**
+
 ```javascript
 {
   _id: ObjectId,
@@ -718,6 +787,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 36. **grievances**
+
 ```javascript
 {
   _id: ObjectId,
@@ -738,6 +808,7 @@ An automation-first, enterprise-grade Student Management System with embedded ER
 ```
 
 #### 37. **grievanceComments**
+
 ```javascript
 {
   _id: ObjectId,
@@ -823,6 +894,7 @@ education-center-scms/
 ## 🔐 API Endpoints
 
 ### Authentication Routes (`/api/auth`)
+
 ```
 POST   /register          - Register new user
 POST   /login             - Login user
@@ -833,6 +905,7 @@ GET    /verify-token      - Verify JWT token
 ```
 
 ### Student Routes (`/api/students`)
+
 ```
 GET    /                  - Get all students (Admin/Teacher)
 GET    /:id               - Get student by ID
@@ -846,6 +919,7 @@ GET    /:id/report        - Generate student report
 ```
 
 ### Teacher Routes (`/api/teachers`)
+
 ```
 GET    /                  - Get all teachers (Admin)
 GET    /:id               - Get teacher by ID
@@ -858,6 +932,7 @@ GET    /:id/students      - Get teacher's students
 ```
 
 ### Admin Routes (`/api/admin`)
+
 ```
 GET    /dashboard              - Get dashboard statistics
 GET    /users                  - Get all users
@@ -875,6 +950,7 @@ POST   /notifications          - Create system notification
 ```
 
 ### Marks Routes (`/api/marks`)
+
 ```
 GET    /                  - Get all marks (filtered by role)
 GET    /:id               - Get marks by ID
@@ -886,6 +962,7 @@ GET    /subject/:id       - Get marks for specific subject
 ```
 
 ### Attendance Routes (`/api/attendance`)
+
 ```
 GET    /                  - Get all attendance (filtered)
 GET    /:id               - Get attendance by ID
@@ -898,6 +975,7 @@ GET    /date/:date        - Get attendance by date
 ```
 
 ### Subject Routes (`/api/subjects`)
+
 ```
 GET    /                  - Get all subjects
 GET    /:id               - Get subject by ID
@@ -907,6 +985,7 @@ DELETE /:id               - Delete subject (Admin)
 ```
 
 ### Announcement Routes (`/api/announcements`)
+
 ```
 GET    /                  - Get all announcements
 GET    /:id               - Get announcement by ID
@@ -916,6 +995,7 @@ DELETE /:id               - Delete announcement
 ```
 
 ### Fee Routes (`/api/fees`)
+
 ```
 GET    /                  - List fee ledgers with filters & pagination
 GET    /:id               - Retrieve fee record
@@ -926,6 +1006,7 @@ POST   /:id/remind        - Trigger automated reminder workflow
 ```
 
 ### Payment Routes (`/api/payments`)
+
 ```
 POST   /initiate          - Begin payment via preferred gateway
 POST   /webhook/:gateway  - Handle gateway callbacks
@@ -934,6 +1015,7 @@ POST   /:transactionId/refund - Initiate refund (Admin)
 ```
 
 ### Workflow Routes (`/api/workflows`)
+
 ```
 GET    /definitions       - List workflow templates
 POST   /definitions       - Create/Update workflow definition
@@ -944,6 +1026,7 @@ POST   /runs/:id/reject   - Reject current step
 ```
 
 ### Notification Routes (`/api/notifications`)
+
 ```
 GET    /templates         - Retrieve message templates
 POST   /templates         - Create/update template
@@ -952,6 +1035,7 @@ GET    /logs              - Delivery logs with status filters
 ```
 
 ### Automation Routes (`/api/automation`)
+
 ```
 GET    /jobs              - List scheduled/queue jobs
 POST   /jobs              - Create job definition
@@ -961,6 +1045,7 @@ PUT    /jobs/:id/resume   - Resume automation
 ```
 
 ### AI Assistant Routes (`/api/ai`)
+
 ```
 POST   /chat                      - Start/continue chat session (student/teacher/admin personas)
 GET    /chat/:sessionId           - Retrieve conversation history
@@ -970,6 +1055,7 @@ POST   /moderation/check          - Run content through safety filters
 ```
 
 ### Knowledge Base Routes (`/api/knowledge-base`)
+
 ```
 GET    /                           - List knowledge bases
 POST   /                           - Create/update knowledge base configuration
@@ -979,6 +1065,7 @@ POST   /:id/reindex                - Trigger embedding regeneration job
 ```
 
 ### Parent Portal Routes (`/api/parents`)
+
 ```
 GET    /dashboard                  - Consolidated metrics for all wards
 GET    /wards                      - List linked students and permissions
@@ -989,6 +1076,7 @@ POST   /grievances                 - File grievance on behalf of ward
 ```
 
 ### Library Routes (`/api/library`)
+
 ```
 GET    /catalog                    - Search books with filters
 POST   /books                      - Create/update book metadata (Admin)
@@ -999,6 +1087,7 @@ GET    /transactions               - Circulation history with overdue filters
 ```
 
 ### Certificate Routes (`/api/certificates`)
+
 ```
 GET    /templates                  - List templates
 POST   /templates                  - Create/update template
@@ -1009,6 +1098,7 @@ GET    /verify/:code               - Public verification endpoint
 ```
 
 ### Assignment Routes (`/api/assignments`)
+
 ```
 GET    /class/:classId             - List assignments per class/subject
 POST   /                           - Create assignment (Teacher)
@@ -1020,6 +1110,7 @@ POST   /:id/grade                  - Grade submission + feedback
 ```
 
 ### Discussion Forum Routes (`/api/discussions`)
+
 ```
 GET    /threads                    - List threads with filters
 POST   /threads                    - Create thread
@@ -1029,6 +1120,7 @@ GET    /threads/:id/summary        - AI-generated recap + action items
 ```
 
 ### Event Calendar Routes (`/api/events`)
+
 ```
 GET    /                           - Calendar feed with filters
 POST   /                           - Create event (Admin/Teacher)
@@ -1040,6 +1132,7 @@ POST   /:id/consent                - Parent consent workflow
 ```
 
 ### Grievance Routes (`/api/grievances`)
+
 ```
 GET    /                           - List grievances with SLA filters
 POST   /                           - Submit grievance
@@ -1054,45 +1147,52 @@ POST   /:id/escalate               - Trigger escalation workflow
 ## 🔒 Security Features
 
 1. **Identity & Access Hardening**
-  - bcrypt/argon2 hashing (min 12 salt rounds) with breached password screening
-  - Passwordless/SSO readiness via SAML/OAuth2, optional MFA (email/SMS/app)
-  - JWT access tokens (15m) + rotating refresh tokens (7d) stored in httpOnly, SameSite=strict cookies
-  - Device fingerprinting and session revocation service
+
+- bcrypt/argon2 hashing (min 12 salt rounds) with breached password screening
+- Passwordless/SSO readiness via SAML/OAuth2, optional MFA (email/SMS/app)
+- JWT access tokens (15m) + rotating refresh tokens (7d) stored in httpOnly, SameSite=strict cookies
+- Device fingerprinting and session revocation service
 
 2. **Authorization & Governance**
-  - ABAC/RBAC hybrid with policy decision service
-  - Route protection middleware enforcing scopes + ownership validation
-  - Dual-control approval for destructive operations (bulk deletion, fee refunds)
-  - Feature flags to isolate risky rollouts
+
+- ABAC/RBAC hybrid with policy decision service
+- Route protection middleware enforcing scopes + ownership validation
+- Dual-control approval for destructive operations (bulk deletion, fee refunds)
+- Feature flags to isolate risky rollouts
 
 3. **Input & API Security**
-  - Central validation schemas (Zod/express-validator)
-  - Auto-sanitization (XSS, NoSQL injection), rate limiting, and bot protection (hCaptcha)
-  - Payload signing for inbound webhooks, mTLS for system integrations
+
+- Central validation schemas (Zod/express-validator)
+- Auto-sanitization (XSS, NoSQL injection), rate limiting, and bot protection (hCaptcha)
+- Payload signing for inbound webhooks, mTLS for system integrations
 
 4. **Data Protection & Compliance**
-  - Secrets in Azure Key Vault/AWS Secrets Manager + runtime rotation
-  - Database encryption at rest, TLS 1.3 in transit, field-level encryption for PII
-  - Automated backups + PITR, retention policies, GDPR-compliant data deletion workflows
-  - Audit logging with immutability (WORM storage option)
+
+- Secrets in Azure Key Vault/AWS Secrets Manager + runtime rotation
+- Database encryption at rest, TLS 1.3 in transit, field-level encryption for PII
+- Automated backups + PITR, retention policies, GDPR-compliant data deletion workflows
+- Audit logging with immutability (WORM storage option)
 
 5. **Operational Security**
-  - Dependency & image scanning (Dependabot, Trivy)
-  - Infrastructure drift detection (Terraform Cloud/Atlantis)
-  - Continuous compliance checks against CIS benchmarks
-  - Incident response runbooks + on-call rotation with PagerDuty/MS Teams hooks
+
+- Dependency & image scanning (Dependabot, Trivy)
+- Infrastructure drift detection (Terraform Cloud/Atlantis)
+- Continuous compliance checks against CIS benchmarks
+- Incident response runbooks + on-call rotation with PagerDuty/MS Teams hooks
 
 6. **AI Safety & Privacy**
-  - Prompt injection and data exfiltration filters, context allowlists, and semantic firewalls
-  - Safety classifiers (harmful, biased, or policy-violating content) with auto-block + alerting
-  - PII masking before sending context to external LLMs; regional data residency enforcement
-  - Conversation transcripts stored with least-privilege access and configurable retention windows
+
+- Prompt injection and data exfiltration filters, context allowlists, and semantic firewalls
+- Safety classifiers (harmful, biased, or policy-violating content) with auto-block + alerting
+- PII masking before sending context to external LLMs; regional data residency enforcement
+- Conversation transcripts stored with least-privilege access and configurable retention windows
 
 ---
 
 ## 📧 Email Functionality
 
 ### Email Types
+
 1. **Welcome Email** - New user registration and account creation
 2. **Password Reset** - Forgot password with secure token
 3. **OTP Verification** - One-time password for secure authentication
@@ -1109,6 +1209,7 @@ POST   /:id/escalate               - Trigger escalation workflow
 14. **Timetable Changes** - Schedule updates and modifications
 
 ### Nodemailer Configuration
+
 ```javascript
 // Email Templates (backend/templates/emails/)
 - welcome.html                    // New user welcome
@@ -1144,6 +1245,7 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 ## 🎨 Frontend Features
 
 ### Common Features
+
 - Server-rendered HTML templates enhanced with vanilla JS + Alpine.js (explicitly no React usage)
 - Responsive design (Mobile, Tablet, Desktop)
 - Loading states and spinners
@@ -1154,6 +1256,7 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 - Embedded AI chat widget with streaming responses and tool-trigger buttons
 
 ### Student Dashboard
+
 - Personal information card
 - Attendance summary (pie chart)
 - Recent marks/grades
@@ -1164,6 +1267,7 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 - Library loans/holds snapshot and grievance ticket tracker
 
 ### Teacher Dashboard
+
 - Assigned classes overview
 - Quick attendance marking
 - Recent marks entered
@@ -1174,6 +1278,7 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 - Library requests pending approval and event facilitation tasks
 
 ### Admin Dashboard
+
 - Total students/teachers count
 - Attendance statistics
 - Performance analytics
@@ -1184,6 +1289,7 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 - Event calendar management with consent status monitoring
 
 ### Parent Portal Dashboard
+
 - Multi-ward switcher with at-a-glance attendance/marks alerts
 - Fee dues, payment actions, and downloadable receipts
 - Upcoming events requiring consent plus transport/hostel notices
@@ -1229,27 +1335,32 @@ Automation workloads run on BullMQ queues backed by Redis with horizontal worker
 ## 📋 Backlog Priorities & Test Strategy (New Modules)
 
 1. **Library Service (P1)**
-  - Sprint Goals: Catalog CRUD, circulation APIs, fines engine, parent/student reservations.
-  - Dependencies: Barcode/RFID integration spike, data migration of legacy inventory.
-  - Test Cases: Issue/renew/return flows, overdue fine calculation, concurrent reservation conflict, role-based access (student vs. librarian), API contract tests for `/api/library`.
+
+- Sprint Goals: Catalog CRUD, circulation APIs, fines engine, parent/student reservations.
+- Dependencies: Barcode/RFID integration spike, data migration of legacy inventory.
+- Test Cases: Issue/renew/return flows, overdue fine calculation, concurrent reservation conflict, role-based access (student vs. librarian), API contract tests for `/api/library`.
 
 2. **Event & Consent Platform (P1)**
-  - Sprint Goals: Calendar UI, registration workflow, consent capture, parent notification loop, attendance check-in.
-  - Dependencies: Parent portal release, notification templates, ICS export.
-  - Test Cases: Consent approval/withdrawal, waitlist auto-promotion, capacity enforcement, multi-timezone rendering, integration with AI assistant prompts.
+
+- Sprint Goals: Calendar UI, registration workflow, consent capture, parent notification loop, attendance check-in.
+- Dependencies: Parent portal release, notification templates, ICS export.
+- Test Cases: Consent approval/withdrawal, waitlist auto-promotion, capacity enforcement, multi-timezone rendering, integration with AI assistant prompts.
 
 3. **Grievance Management (P2)**
-  - Sprint Goals: Intake forms, SLA tracking engine, counselor assignment, escalation, analytics widgets.
-  - Dependencies: Workflow service enhancements, compliance reviews.
-  - Test Cases: SLA breach notifications, multi-level escalation path, visibility controls (public vs. internal notes), satisfaction survey capture, data-retention purge job.
+
+- Sprint Goals: Intake forms, SLA tracking engine, counselor assignment, escalation, analytics widgets.
+- Dependencies: Workflow service enhancements, compliance reviews.
+- Test Cases: SLA breach notifications, multi-level escalation path, visibility controls (public vs. internal notes), satisfaction survey capture, data-retention purge job.
 
 4. **Certificate Automation (P2)**
-  - Sprint Goals: Template designer, issuance pipeline, QR verification service, revocation flows.
-  - Test Cases: Template versioning, signature validation, revocation audit logs, localization.
+
+- Sprint Goals: Template designer, issuance pipeline, QR verification service, revocation flows.
+- Test Cases: Template versioning, signature validation, revocation audit logs, localization.
 
 5. **Assignment & Discussion Suite (P3)**
-  - Sprint Goals: Assignment CRUD, submission portal, grading queue, discussion threads with moderation.
-  - Test Cases: Plagiarism flag handling, AI summary accuracy, moderation role checks, file upload limits.
+
+- Sprint Goals: Assignment CRUD, submission portal, grading queue, discussion threads with moderation.
+- Test Cases: Plagiarism flag handling, AI summary accuracy, moderation role checks, file upload limits.
 
 QA teams derive detailed test scripts from these priorities; traceability matrix updated in TestRail/Azure Test Plans referencing this plan.
 
@@ -1258,6 +1369,7 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 ## 🧩 Enterprise Modules
 
 ### Library Management
+
 - Central catalog with ISBN metadata, tags, and digital asset links
 - Inventory tracking for physical copies, barcodes/RFID, and shelf locations
 - Circulation workflows (issue, renew, reserve, recall) with SLA policies
@@ -1265,37 +1377,44 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 - Reports: popular titles, overdue trends, utilization heatmaps
 
 ### Fee Management Enhancements
+
 - Multi-ledger support (tuition, transport, hostel, extracurricular)
 - Configurable payment plans, scholarships, concessions, and penalties
 - Parent self-service payments, instant receipts, partial payments, auto-reconciliations
 - Finance dashboards with DSO (days sales outstanding), collection funnels, and escalations
 
 ### Parent Portal
+
 - Role-based dashboards combining attendance, marks, assignments, fees, events, grievances
 - AI guardian assistant with multilingual responses and consent tracking
 - Notification digest and communication preferences per guardian
 
 ### Certificate Generation
+
 - Templates for bonafide, transfer, conduct, admit, and custom certificates
 - Data binding using student/teacher datasets with versioned templates
 - eSignature + QR verification, download history, and revocation logs
 
 ### Assignment Lifecycle
+
 - Assignment authoring with rubric builder, file attachments, and plagiarism integration
 - Submission portal for students, automatic late penalties, peer-review support
 - Teacher grading workflows, moderation, and analytics on completion rates
 
 ### Discussion Forum
+
 - Threaded discussions per class/subject with moderation queue
 - Rich-text/attachments support, reactions, AI summarization, toxicity detection
 - Integration with assignments and announcements for contextual links
 
 ### Event Calendar
+
 - Academic and extracurricular calendar with recurring events and blackout windows
 - Registration workflows, capacity management, waitlists, and attendance capture
 - Consent collection, reminders, and ics feed for external calendar sync
 
 ### Grievance Management
+
 - Intake forms categorized by type/severity with SLA-driven workflows
 - Assignment to counselors/admins, multi-level escalation, and audit trails
 - Analytics on resolution time, root causes, and satisfaction feedback
@@ -1303,6 +1422,7 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 ---
 
 ## 🧱 UX & Wireframe Alignment
+
 - **Parent Portal**: Responsive dashboard wireframes covering multi-ward switcher, assignment digest, fee actions, consent modals, and AI guardian widget placement. Validate accessibility and localization requirements with guardians focus group.
 - **Library**: Circulation console mockups (admin) plus student/teacher search + reservation flows. Ensure barcode/RFID scan interactions are represented in low-fidelity prototypes.
 - **Assignments & Forums**: Dual-pane layout for teacher authoring vs. student submissions, along with moderation/flagging UI states. Include plagiarism alerts and AI summarization entry points.
@@ -1312,6 +1432,7 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 - Capture design decisions in Figma with versioned links; require design sign-off before sprint kick-off.
 
 ### Wireframe Production & Sign-Off Plan
+
 - **Tools & Format**: Figma (desktop + mobile frames), exported PNG/PDF snapshots stored in `docs/ux/` with versioned filenames (`vX.Y`). Keep interaction notes and accessibility annotations in-page.
 - **Ownership**: UX lead drives production; PM + Eng lead + QA sign off. Parents/teachers focus group for portal/library usability validation.
 - **Deliverables** (one page per flow unless noted):
@@ -1344,22 +1465,26 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 ## 🚀 Development Phases
 
 ### Phase 0: Foundation & Tooling (Week 0-1)
+
 - [ ] Finalize requirements, personas, and KPIs
 - [ ] Provision CI/CD pipelines, IaC scaffolding, secrets management
 - [ ] Set up linting, formatting, commit hooks, shared DTO package
 
 ### Phase 1: Identity & Core Platform (Week 1-3)
+
 - [ ] Database schemas + seed scripts
 - [ ] Authentication/authorization services, SSO hooks, session management
 - [ ] Global UI shell (vanilla JS + Alpine.js) and access control guards
 
 ### Phase 2: User & Academic Management (Week 3-6)
+
 - [ ] Student/Teacher/Admin CRUD + workflow approvals
 - [ ] Address, document management, profile automation
 - [ ] Class/subject/timetable services with conflict detection
 - [ ] Parent/Guardian onboarding, linking workflows, and consent models
 
 ### Phase 3: Academic Operations (Week 6-8)
+
 - [ ] Attendance automation (manual + bulk import + cron jobs)
 - [ ] Marks & grading pipelines, report generation, analytics widgets
 - [ ] Announcement + notification templates
@@ -1368,6 +1493,7 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 - [ ] Certificate template builder + issuance APIs
 
 ### Phase 4: Finance & Advanced ERP (Week 8-10)
+
 - [ ] Fee schedules, payment integrations, reminder automation
 - [ ] Workflow builder MVP, audit logging, analytics dashboards
 - [ ] Email/SMS orchestration, PDF/excel export automation
@@ -1378,12 +1504,14 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 - [ ] Parent portal UX with payments, certificates, and AI guardian assistant
 
 ### Phase 5: Quality, Security & Observability (Week 10-11)
+
 - [ ] Automated tests (unit, integration, E2E) + coverage gates
 - [ ] Performance tuning, chaos drills, failover validation
 - [ ] Security hardening, compliance review, data retention policies
 - [ ] AI red-teaming, guardrail validation, bias & hallucination testing
 
 ### Phase 6: Launch & Hypercare (Week 11-12)
+
 - [ ] Blue/green deployment, smoke tests, synthetics
 - [ ] Production monitoring dashboards + alert tuning
 - [ ] Hypercare support playbooks, knowledge transfer, backlog grooming
@@ -1393,6 +1521,7 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 ## 📊 Key Features Summary
 
 ### For Students
+
 ✅ View personal dashboard
 ✅ Check marks/grades
 ✅ Monitor attendance
@@ -1403,6 +1532,7 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 ✅ View events, register, raise grievances, and chat with AI assistant
 
 ### For Teachers
+
 ✅ Mark attendance
 ✅ Enter/update marks
 ✅ View student lists
@@ -1413,6 +1543,7 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 ✅ Manage library approvals, events, and respond to grievances
 
 ### For Super Admin
+
 ✅ Complete user management
 ✅ Mass student admission (bulk import)
 ✅ Single student admission
@@ -1428,6 +1559,7 @@ QA teams derive detailed test scripts from these priorities; traceability matrix
 ✅ Certificate template builder + automation, AI guardrail oversight
 
 ### For Parents/Guardians
+
 ✅ Unified portal for attendance, marks, assignments, and fees per ward
 ✅ Online payments, receipts, consent approvals, and certificate downloads
 ✅ Register for events, borrow/track library assets, and raise grievances
@@ -1551,6 +1683,7 @@ AI_SAFETY_WEBHOOK=https://hooks.scms.com/ai-alerts
 ---
 
 ## 🛡️ Compliance, Data Retention & Consent Validation
+
 - **Certificates**: Define retention by certificate type (bonafide vs. transfer), with auto-expiry + revocation logs. Require compliance sign-off on eSign providers, QR verification, and archival format (PDF/A). Consent for data use captured per issuance and stored with certificate metadata.
 - **Grievances**: Retain full case history for minimum 5 years (configurable) with right-to-be-forgotten workflow once legal holds expire. Escalations and counselor notes flagged for restricted access; consent obtained before sharing with third parties. Quarterly audits with legal/compliance leads.
 - **Event Registrations**: Store parental/guardian consent records, timestamps, and IP/device data. Support opt-out and withdrawal, plus regional requirements (e.g., GDPR/FERPA). Automatically purge PII after event retention period while keeping aggregate analytics.
@@ -1561,24 +1694,28 @@ AI_SAFETY_WEBHOOK=https://hooks.scms.com/ai-alerts
 ## 📝 Notes & Best Practices
 
 1. **Code Organization**
-  - Follow modular MVC with domain-driven folders + shared DTOs
-  - Enforce TypeScript strictness, async/await, and centralized error handling
-  - Isolate automation handlers (queues/cron) from request lifecycle
-  - Document APIs via OpenAPI + publish auto-generated docs
+
+- Follow modular MVC with domain-driven folders + shared DTOs
+- Enforce TypeScript strictness, async/await, and centralized error handling
+- Isolate automation handlers (queues/cron) from request lifecycle
+- Document APIs via OpenAPI + publish auto-generated docs
 
 2. **Database**
-  - Use compound indexes + TTL indexes for logs/notifications
-  - Enforce schema validation via Mongoose + JSON schema for queues
-  - Automate backups (daily full + hourly incremental) and verify restore monthly
-  - Utilize aggregation pipelines/materialized views for dashboards
+
+- Use compound indexes + TTL indexes for logs/notifications
+- Enforce schema validation via Mongoose + JSON schema for queues
+- Automate backups (daily full + hourly incremental) and verify restore monthly
+- Utilize aggregation pipelines/materialized views for dashboards
 
 3. **Security**
-  - Never commit .env; use secret managers per environment
-  - Sanitize inputs, apply allowlists, and store PII encrypted
-  - Run dependency/image scans per pipeline, respond to alerts promptly
-  - Schedule penetration testing + tabletop exercises each release
+
+- Never commit .env; use secret managers per environment
+- Sanitize inputs, apply allowlists, and store PII encrypted
+- Run dependency/image scans per pipeline, respond to alerts promptly
+- Schedule penetration testing + tabletop exercises each release
 
 4. **Performance**
+
    - Implement pagination
    - Use caching where appropriate
    - Optimize database queries
@@ -1586,25 +1723,29 @@ AI_SAFETY_WEBHOOK=https://hooks.scms.com/ai-alerts
    - Lazy load images
 
 5. **Automation & Ops**
-  - Keep workflow definitions declarative (YAML/JSON) for quick iteration
-  - Tag every job with correlation IDs for traceability
-  - Build runbooks for auto-remediation tasks triggered via webhooks
+
+- Keep workflow definitions declarative (YAML/JSON) for quick iteration
+- Tag every job with correlation IDs for traceability
+- Build runbooks for auto-remediation tasks triggered via webhooks
 
 6. **Documentation & Enablement**
-  - Maintain living architecture diagrams (C4) and ADRs
-  - Provide onboarding playbooks and sandbox datasets for testers
+
+- Maintain living architecture diagrams (C4) and ADRs
+- Provide onboarding playbooks and sandbox datasets for testers
 
 5. **Testing**
+
    - Unit tests for models
    - Integration tests for APIs
    - E2E tests for critical flows
    - Load testing
 
-7. **AI Operations**
-  - Version prompts and knowledge sources in Git; require review before promotion
-  - Capture every AI response with citations and safety metadata for auditing
-  - Establish data minimization policies for context windows; scrub sensitive payloads
-  - Periodically retrain embeddings and evaluate accuracy with curated test suites
+6. **AI Operations**
+
+- Version prompts and knowledge sources in Git; require review before promotion
+- Capture every AI response with citations and safety metadata for auditing
+- Establish data minimization policies for context windows; scrub sensitive payloads
+- Periodically retrain embeddings and evaluate accuracy with curated test suites
 
 ---
 
@@ -1642,4 +1783,4 @@ AI_SAFETY_WEBHOOK=https://hooks.scms.com/ai-alerts
 
 ---
 
-*Last Updated: December 1, 2025*
+_Last Updated: December 1, 2025_
