@@ -119,8 +119,11 @@ export const getStudentById = async (req: Request, res: Response) => {
  */
 export const createStudent = async (req: Request, res: Response) => {
   try {
+    console.log('createStudent called with body:', JSON.stringify(req.body, null, 2));
+    
     const parsed = createStudentSchema.safeParse(req.body);
     if (!parsed.success) {
+      console.error('Validation failed:', parsed.error.errors);
       return res.status(400).json({
         message: 'Validation failed',
         errors: parsed.error.errors
@@ -132,6 +135,7 @@ export const createStudent = async (req: Request, res: Response) => {
     // Check if user with email exists
     const existingUser = await User.findOne({ email: data.email.toLowerCase() });
     if (existingUser) {
+      console.log('User already exists with email:', data.email);
       return res.status(400).json({ 
         message: 'User with this email already exists' 
       });
@@ -140,6 +144,7 @@ export const createStudent = async (req: Request, res: Response) => {
     // Check if student ID already exists
     const existingStudentId = await Student.findOne({ studentId: data.studentId });
     if (existingStudentId) {
+      console.log('Student ID already exists:', data.studentId);
       return res.status(400).json({ 
         message: 'Student ID already exists' 
       });
@@ -156,6 +161,7 @@ export const createStudent = async (req: Request, res: Response) => {
       isActive: true
     });
     await user.save();
+    console.log('User created successfully:', user._id);
 
     // Create student profile
     const student = new Student({
@@ -181,6 +187,7 @@ export const createStudent = async (req: Request, res: Response) => {
       status: 'active'
     });
     await student.save();
+    console.log('Student created successfully:', student._id);
 
     // Emit Socket.IO event for real-time updates (optional)
     try {

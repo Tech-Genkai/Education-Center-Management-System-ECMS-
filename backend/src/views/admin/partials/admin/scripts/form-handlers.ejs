@@ -677,12 +677,18 @@
                 const alpineElement = document.querySelector('body[x-data]') || document.querySelector('[x-data]');
                 if (alpineElement && alpineElement._x_dataStack && alpineElement._x_dataStack[0]) {
                     const alpineData = alpineElement._x_dataStack[0];
+                    if (typeof alpineData.loadSubjectsForDropdown === 'function') {
+                        await alpineData.loadSubjectsForDropdown();
+                    }
                     // Set selected subjects
                     alpineData.selectedSubjects = cls.subjects?.map(s => s._id || s) || [];
                     alpineData.modalType = 'editClass';
                     alpineData.showModal = true;
                 } else if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
                     const alpineData = alpineElement.__x.$data;
+                    if (typeof alpineData.loadSubjectsForDropdown === 'function') {
+                        await alpineData.loadSubjectsForDropdown();
+                    }
                     // Set selected subjects
                     alpineData.selectedSubjects = cls.subjects?.map(s => s._id || s) || [];
                     alpineData.modalType = 'editClass';

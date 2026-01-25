@@ -22,7 +22,7 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject *</label>
                         <select name="subjectId" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
                             <option value="">-- Select Subject --</option>
-                            <template x-for="subject in availableSubjects.filter(s => String(s.semester) === String(currentSemester?.semesterNumber))" :key="subject._id">
+                            <template x-for="subject in availableSubjects.filter(s => String(s.semester) === String(currentSemester?.semesterNumber) && (!s.branch || s.branch === currentCourse.courseCode || s.branch === currentCourse.courseName))" :key="subject._id">
                                 <option :value="subject._id" x-text="`${subject.subjectCode} - ${subject.subjectName}`"></option>
                             </template>
                         </select>

@@ -397,6 +397,7 @@
                     if (response.ok) {
                         this.showModal = false;
                         e.target.reset();
+                        await this.loadSubjectsForDropdown();
                         loadSubjects();
                         alert('Subject added successfully!');
                     } else {
@@ -498,6 +499,7 @@
                         this.showModal = false;
                         form.reset();
                         document.getElementById('subjectId_db').value = '';
+                        await this.loadSubjectsForDropdown();
                         loadSubjects();
                         alert('Subject updated successfully!');
                     } else {

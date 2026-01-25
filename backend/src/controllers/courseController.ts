@@ -188,12 +188,12 @@ export const createCourse = async (req: Request, res: Response) => {
       academicYearId: academicYearId,
       description: data.description,
       isActive: data.isActive !== undefined ? data.isActive : true,
-      createdBy: req.user?.userId
+      createdBy: req.user?._id
     });
     await newCourse.save();
 
     // Auto-create semesters based on totalSemesters
-    const semesterPromises = [];
+    const semesterPromises: Array<Promise<unknown>> = [];
     for (let i = 1; i <= data.totalSemesters; i++) {
       const semester = new Semester({
         semesterNumber: i,
@@ -244,7 +244,7 @@ export const updateCourse = async (req: Request, res: Response) => {
       
       if (data.totalSemesters > currentSemesterCount) {
         // Add new semesters
-        const semesterPromises = [];
+        const semesterPromises: Array<Promise<unknown>> = [];
         for (let i = currentSemesterCount + 1; i <= data.totalSemesters; i++) {
           const semester = new Semester({
             semesterNumber: i,
@@ -326,13 +326,28 @@ export const deleteCourse = async (req: Request, res: Response) => {
 
     // Verify admin password
     const { SuperAdmin } = await import('../models/SuperAdmin.ts');
-    const admin = await SuperAdmin.findOne({ userId: req.user?.userId });
+    const { User } = await import('../models/User.ts');
+    
+    console.log('Delete Course Request - User:', req.user);
+    const userId = (req.user as any)?._id || (req.user as any)?.userId;
+    console.log('Delete Course Request - Extracted User ID:', userId);
+    
+    const admin = await SuperAdmin.findOne({ userId: userId });
     
     if (!admin) {
+      console.log('Delete Course Failed: SuperAdmin not found for userId:', userId);
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, admin.password);
+    const user = await User.findById(userId);
+    if (!user) {
+      console.log('Delete Course Failed: User not found for userId:', userId);
+      return res.status(403).json({ message: 'User not found' });
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+    console.log('Delete Course - Password Valid:', isPasswordValid);
+    
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid password' });
     }
